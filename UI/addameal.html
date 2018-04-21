@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="stylesheet" href="static/css/styles.css">
+    <title>Add Meal</title>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="header">
+            <header>
+                <section class="bname">
+                    <a href="startpage.html"><h1 style="color: black;">Hot Corner Delicacies</h1></a>
+                    <h3><em>Food is our business, you eat!</em></h3>
+                </section>
+                <div class="logo">
+                    <img src="static/img/logo.jpg" alt="Logo">
+                </div>
+                <h2>Add A Meal</h2>
+            </header>
+        </div>
+        <div class="menu sidebar">
+            <ul>
+                <li><a href="signin.html" class="menu-button">Sign In</a></li>
+                <li><a href="signup.html" class="menu-button">Sign Up</a></li>
+                <li><a href="home.html" class="menu-button">Home</a></li>
+                <li><a href="menu.html" class="menu-button">Menu</a></li>
+                <li><a href="management.html" class="menu-button">Management</a></li>
+                <li><a href="startpage.html" class="menu-button">Logout</a></li>
+            </ul>
+        </div>
+        <div class="main middle">
+            <form class="addameal" action="" method="post">
+                <input type="text" name="meal" placeholder="Meal Name" required>
+                <br>
+                <span><label for="image" style="font-size: 25px;">Picture: </label></span>
+                <input type="file" name="image" required>
+                <input type="text" name="Description" placeholder="Description" required>
+                <input type="number" name="price" placeholder="price">
+                <br>
+                <button type="submit">Add Meal</button>
+            </form>
+    </div>
+    <div class="footer">
+        <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="legal.html">Legal</a></li>
+        </ul>
+    </div>
+</body>
+</html>

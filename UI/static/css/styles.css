@@ -1,0 +1,299 @@
+body, html{
+    margin: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    height: auto;
+}
+*, *:before, *:after{
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+html{
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+}
+body{
+    line-height: 1;
+}
+h1, h3, h4, h5, p {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+h1 {
+  font-size: 34px;
+  line-height: 40px;
+}
+h2 {
+  font-size: 24px;
+  line-height: 44px;
+}
+h3 {
+  font-size: 21px;
+}
+h4 {
+  font-size: 18px;
+}
+
+ul{
+    list-style: none;
+    display: inline;
+}
+img{
+    border-radius: 2%;
+}
+
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 90%;
+}
+table, th, td {
+    padding: 1%
+}
+th, td {
+    border-bottom: 1px solid #bbb09b;
+}
+td{
+    vertical-align: middle;
+    text-align: left;
+    margin-left: 1%;
+
+}
+td a{
+    padding: 1%;
+}
+th{
+    text-align: left;
+}
+.header{
+    background-color: darkgreen;
+    padding: 0;
+    width: 100%;
+    height: 150px;
+}
+.bname{
+    float: right;
+    text-align: left;
+    width: 85%
+}
+.logo{
+    float: left;
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 15%;
+}
+.logo img{
+    width: 100%;
+    height: 150px;
+}
+
+.container{
+    margin: 0, auto;
+    width: 100%;
+    padding-left: 3%;
+    padding-right: 3%;
+    height: auto;
+}
+.start{
+    width: 100%;
+    text-align: center;
+    margin-top: 10%;
+
+}
+.middle{
+    background-color: Silver;
+    float: right;
+    width: 84%
+}
+.sidebar{
+    float: left;
+    width: 15%;
+
+}
+.col-1,
+.col-2,
+.col-3{
+    margin: 0;
+    width:28%;
+    padding: .5%;
+    display: inline-block;
+    height: auto;
+}
+.row{
+    height: auto;
+    margin: 1%;
+    padding: 1%;
+    border-bottom: : 1px solid white;
+}
+
+form{
+    margin-left: 1%;
+    padding: 1%
+}
+.signupform input{
+    width: 70%;
+    padding: 1%;
+    margin: 1%;
+}
+.signinform input{
+    width: 70%;
+    padding: 1%;
+    margin: 1%;
+}
+.addameal input{
+    width: 70%;
+    padding: 1%;
+    margin: 0.5%;
+}
+.footer{
+    height: 50px;
+    width: 100%;
+}
+.footer ul{
+    margin-left: 30%;
+}
+.footer li{
+    display: inline-block;
+    margin: 1%;
+
+}
+
+blockquote {
+    color: #e26d5a;
+    max-width: 50%;
+    background: #bbb09b;
+    border-left: 10px solid #ccc;
+    margin: 1%;
+    padding: 0.5%;
+    quotes: "\201C""\201D""\2018""\2019";
+}
+blockquote:before {
+    color: #ccc;
+    content: open-quote;
+    font-size: 1;
+}
+blockquote:after {
+    color: #ccc;
+    content: close-quote;
+    font-size: 1;
+}
+blockquote p {
+  display: inline;
+}
+
+a {
+  color: Blue;
+  text-decoration: none;
+}
+a:hover {
+  color: purple;
+}
+a:active{
+    color: lightblue;
+}
+
+
+.menu a,
+{
+    height: auto;
+    text-decoration: none;
+    background-color: #131f3d;
+    color: white;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    }
+.menu li{
+    padding: 0;
+    margin: 0;
+    display: block;
+    font-weight: 100px;
+    text-transform: uppercase;
+
+}
+.menu ul{
+    display: block;
+}
+
+button{
+    background-color: #131f3d;
+    border-style: solid;
+    font-size: 3;
+    color: White;
+    height: auto;
+    text-transform: uppercase;
+    display: inline-block;
+    text-align: center;
+}
+.button-grp{
+    display: inline-flex;
+}
+.button-grp:hover,
+.button:hover{
+    color: blue;
+    background-color: white;
+}
+.button,
+.button-grp{
+    background-color: darkblue;
+    height: 50px;
+    width: 25%;
+    text-transform: uppercase;
+    padding: 1%;
+    color: white;
+    text-align: center;
+    margin: 0;
+}
+.advert{
+    float: left;
+    max-width: 20%;
+}
+.order{
+    float: right;
+    width: 60%
+}
+.order-form input{
+    width: 80%;
+    padding: 1%;
+    margin: 1%;
+}
+.navbar{
+    width: 100%;
+}
+
+.navbar ul{
+    display: flex;
+    padding: 1%;
+
+}
+.navbar li{
+    margin: 1%;
+
+}
+.team{
+    text-align: center;
+}
+.team img{
+    width:50%;
+}
+.nav-management{
+    text-align: center;
+}
+.notice{
+    text-align: justify;
+    padding: 1%;
+    margin: 1%;
+}
+.menu-item{
+    text-align: justify;
+    top: 0;
+    left: 0;
+}
+.welcomebanner{
+    text-align: center;
+    
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="stylesheet" href="static/css/styles.css">
+    <title>Today's Menu</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <header>
+                <section class="bname">
+                    <a href="startpage.html"><h1 style="color: black;">Hot Corner Delicacies</h1></a>
+                    <h3><em>Food is our business, you eat!</em></h3>
+                </section>
+                <div class="logo">
+                    <img src="static/img/logo.jpg" alt="Logo">
+                </div>
+                <h2>Today's Menu</h2>
+            </header>
+        </div>
+        <div class="menu sidebar">
+            <ul>
+                <li><a href="signin.html" class="menu-button">Sign In</a></li>
+                <li><a href="signup.html" class="menu-button">Sign Up</a></li>
+                <li><a href="home.html" class="menu-button">Home</a></li>
+                <li><a href="menu.html" class="menu-button">Menu</a></li>
+                <li><a href="management.html" class="menu-button">Management</a></li>
+                <li><a href="startpage.html" class="menu-button">Logout</a></li>
+            </ul>
+        </div>
+        
+        <div class="main middle">
+            <div class="navbar">
+                <ul>
+                    <li><a href="todaysorders.html">Today's Orders</a></li>
+                    <li><a href="viewmeals.html">Meals</a></li>
+                    <li><a href="todaysmenu.html">Today's Menu</a></li>
+                    <li><a href="feedback.html">Customer Feedback</a></li>
+                </ul>  
+            </div>
+            <h3>Today's Menu</h3>
+            <div class="list-menu">
+                <p>This is today's Menu</p>
+                <table>
+                    <thead>
+                        <th>Meal</th>
+                        <th>Price</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>French Fries</td>
+                            <td>KSh. 200.00</td>
+                            <td><button type="submit">Remove</button></td>
+                        </tr>
+                        <tr>
+                            <td>Steak</td>
+                            <td>KSh. 1500.00</td>
+                            <td><button type="submit">Remove</button></td>
+                        </tr>
+                        <tr>
+                            <td>Lamb chops</td>
+                            <td>KSh. 2000.00</td>
+                            <td><button type="submit">Remove</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Add To Menu</strong></p>
+                <form class="addmenu" action="" method="post">
+                    <label for="meal">Meal</label>
+                    <select name="meal">
+                        <option value="">Please Select a meal</option>
+                        <option value="habaneromatumbo">Habanero Matumbo</option>
+                        <option value="roastedpotato">Roasted Potatoes</option>
+                        <option value="dirtyrice">Dirty Rice</option>
+                    </select>
+                    <button type="submit">Add</button>
+                </form>
+                
+            </div>
+                
+    <div class="footer">
+        <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="legal.html">Legal</a></li>
+        </ul>
+    </div>
+</body>
+</html>

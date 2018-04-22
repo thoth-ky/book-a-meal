@@ -60,7 +60,6 @@ td{
     vertical-align: middle;
     text-align: left;
     margin-left: 1%;
-
 }
 td a{
     padding: 1%;
@@ -100,20 +99,27 @@ th{
 .container{
     margin: 0, auto;
     width: 100%;
-    padding-left: 3%;
-    padding-right: 3%;
+    padding-left: 1%;
+    padding-right: 1%;
     height: auto;
 }
 .start{
     width: 100%;
     text-align: center;
     margin-top: 10%;
+    padding-left: 1%;
+    padding-right: 1%;
 
 }
+.main{
+    padding: 1%;
+}
+.main,
 .middle{
+    padding-top: : 1%;
     background-color: Silver;
     float: right;
-    width: 84%
+    width: 85%
 }
 .sidebar{
     float: left;
@@ -124,7 +130,7 @@ th{
 .col-2,
 .col-3{
     margin: 0;
-    width:28%;
+    width:33%;
     padding: .5%;
     display: inline-block;
     height: auto;
@@ -133,30 +139,22 @@ th{
     height: auto;
     margin: 1%;
     padding: 1%;
-    border-bottom: : 1px solid white;
 }
 
 form{
     margin-left: 1%;
     padding: 1%
 }
-.signupform input{
+.signupform input,
+.signinform input,
+.addameal input,
+.order-form input{
     width: 70%;
     padding: 1%;
     margin: 1%;
 }
-.signinform input{
-    width: 70%;
-    padding: 1%;
-    margin: 1%;
-}
-.addameal input{
-    width: 70%;
-    padding: 1%;
-    margin: 0.5%;
-}
+
 .footer{
-    height: 50px;
     width: 100%;
 }
 .footer ul{
@@ -175,7 +173,6 @@ blockquote {
     border-left: 10px solid #ccc;
     margin: 1%;
     padding: 0.5%;
-    quotes: "\201C""\201D""\2018""\2019";
 }
 blockquote:before {
     color: #ccc;
@@ -192,7 +189,7 @@ blockquote p {
 }
 
 a {
-  color: Blue;
+  color: blue;
   text-decoration: none;
 }
 a:hover {
@@ -203,71 +200,75 @@ a:active{
 }
 
 
-.menu a,
-{
-    height: auto;
-    text-decoration: none;
-    background-color: #131f3d;
+.menu{
+    background-color: green;
+    min-height: 700px; 
+}
+.menu-item{
+    text-align: justify;
+    top: 0;
+    left: 0;
+    border: 1px solid black;
+    border-radius: 3%;
+}
+.menu-item img{
+    text-align: justify;
+    top: 0;
+    left: 0;
+    height: 100px;
+    width: 50%;
+}
+
+
+.button,
+.button-grp{
+    height: 50px;
+    width: 25%;
+    margin: 0;
+    border: 1px solid darkblue;
+    border-radius: 3%;
+}
+
+.button,
+.button-grp,
+.menu-button{
+    background-color: darkblue;
+    text-transform: uppercase;
+    padding: 1%;
     color: white;
-    padding: 0;
-    margin: 0;
     text-align: center;
-    }
-.menu li{
-    padding: 0;
-    margin: 0;
-    display: block;
-    font-weight: 100px;
-    text-transform: uppercase;
 
 }
-.menu ul{
-    display: block;
-}
-
-
-button{
-    background-color: #131f3d;
-    border-style: solid;
-    font-size: 3;
-    color: White;
-    height: auto;
-    text-transform: uppercase;
-    display: inline-block;
-    text-align: center;
+.menu-button{
+    display: flex;
+    height: 40px;
+    margin-left: 3%;
+    margin-right: 3%;
 }
 .button-grp{
     display: inline-flex;
 }
+.menu-button:hover,
 .button-grp:hover,
 .button:hover{
     color: blue;
     background-color: white;
 }
-.button,
-.button-grp{
-    background-color: darkblue;
-    height: 50px;
-    width: 25%;
-    text-transform: uppercase;
-    padding: 1%;
-    color: white;
-    text-align: center;
-    margin: 0;
-}
+
+
 .advert{
     float: left;
     max-width: 20%;
+    margin: 1%;
+    padding: 1%;
 }
 .order{
     float: right;
-    width: 60%
+    width: 75%
 }
-.order-form input{
-    width: 80%;
-    padding: 1%;
-    margin: 1%;
-}
+
+
+
 .navbar{
     width: 100%;
 }
@@ -281,32 +282,46 @@ button{
     margin: 1%;
 
 }
+
+
 .team{
-    text-align: center;
+    text-align: justify;
+    margin: 1%;
 }
-.team img{
-    width:50%;
+.profile img{
+    width:70%;
+    height: 150px;
 }
+.profile{
+    border: 1px solid black;
+    border-radius: 2%;
+    padding: 1%;
+}
+
+
+.inspirational{
+    padding: 3%;
+    margin: 0;
+}
+
+
+
 .nav-management{
     text-align: center;
+    margin: 0;
 }
 .notice{
     text-align: justify;
     padding: 1%;
     margin: 1%;
+    border: 1px solid black;
+    border-radius: 10%;
 }
-.menu-item{
-    text-align: justify;
-    top: 0;
-    left: 0;
-}
-.menu-item img{
-    text-align: justify;
-    top: 0;
-    left: 0;
-    height: 100px;
-    width: 50%;
+
+
 .welcomebanner{
     text-align: center;
+    padding: 1%;
+    margin: 2%;
     
 }

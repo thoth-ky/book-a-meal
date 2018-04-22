@@ -31,23 +31,36 @@
             </ul>
         </div>
         <div class="main middle">
+            <div class="navbar">
+                <ul>
+                    <li><a href="todaysorders.html">Today's Orders</a></li>
+                    <li><a href="viewmeals.html">Meals</a></li>
+                    <li><a href="todaysmenu.html">Today's Menu</a></li>
+                    <li><a href="feedback.html">Customer Feedback</a></li>
+                </ul>  
+            </div>
             <form class="addameal" action="" method="post">
+                <h4>Add a Meal</h4>
                 <input type="text" name="meal" placeholder="Meal Name" required>
                 <br>
                 <span><label for="image" style="font-size: 25px;">Picture: </label></span>
-                <input type="file" name="image" required>
+                <input type="file" name="image" value="Select Image" placeholder="Select Image" required>
                 <input type="text" name="Description" placeholder="Description" required>
                 <input type="number" name="price" placeholder="price">
                 <br>
-                <button type="submit">Add Meal</button>
+                <button type="submit" class="button">Add Meal</button>
             </form>
+            <div class="footer">
+                <footer>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="legal.html">Legal</a></li>
+                    </ul>
+                </footer>
+            </div>
+        </div>
     </div>
-    <div class="footer">
-        <ul>
-            <li><a href="about.html">About</a></li>
-            <li><a href="contact.html">Contact Us</a></li>
-            <li><a href="legal.html">Legal</a></li>
-        </ul>
-    </div>
+    
 </body>
 </html>

@@ -56,14 +56,19 @@ class Database:
 
     def add(self, item):
         if isinstance(item, User):
+            # add to users
             self.users.append(item)
         elif isinstance(item, Meal):
+            # add to meals
             self.meals.append(item)
         elif isinstance(item, Menu):
+            # add to current menu
             self.current_menu.append(item)
         elif isinstance(item, Order):
+            # add to orders
             self.orders.append(item)
         elif isinstance(item, Admin):
+            # add to admins
             self.admins.append(item)
         else:
             return 'Unknown type'

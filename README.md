@@ -23,6 +23,13 @@ The app UI  contains:
   5.  A page where the caterer can see t he summary of the orders for a specific day and the details for all the orders .
 
 Check it out  at gh-pages using this url https://jmutuku95.github.io/book-a-meal/UI/startpage.html , or just clone this repo into your machine: https://github.com/jmutuku95/book-a-meal.git
+# Preview
+Home page
+![hotcornerhome](https://user-images.githubusercontent.com/28805113/39204996-233f0b4a-4802-11e8-8a1b-9283be8653ec.png)
+Menu Page
+![menuhotcorner](https://user-images.githubusercontent.com/28805113/39205079-5eef6a68-4802-11e8-917b-6d4f62bab9d3.png)
+Order Page
+![orderhotcorner](https://user-images.githubusercontent.com/28805113/39205084-63b48ce0-4802-11e8-8dec-9b48c5f7835e.png)
 
 # Testing
 To run the tests, **pytest** is recommended, just navigate to project root folder and run py.test in the terminal. The tests

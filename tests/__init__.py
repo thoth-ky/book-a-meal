@@ -3,8 +3,12 @@
 from unittest import TestCase
 import json
 # local imports
-from app import create_app
-from app.models import Database, Meal
+try:
+    from app import create_app
+    from app.models import Database, Meal, User, Menu, Admin, Order
+except ModuleNotFoundError:
+    from .app import create_app
+    from .app.models import Database, Meal, User, Menu, Admin, Order
 
 
 class BaseTestClass(TestCase):
@@ -21,6 +25,11 @@ class BaseTestClass(TestCase):
                          'password': 'password', 'admin': True}
         self.Database = Database()
         self.Meal = Meal
+        self.Order = Order
+        self.Menu = Menu
+        self.Order = Order
+        self.User = User
+        self.Admin = Admin
         self.meal = {'meal_id': 1, 'name': 'Fish', 'price': 100, 'description': 'Tasty Tilapia'}
 
     def login_user(self):
@@ -34,3 +43,14 @@ class BaseTestClass(TestCase):
         data = {'password': self.new_user['password'], 'email': self.admin_user['email']}
         self.client.post('v1/auth/signin', data=json.dumps(data))
 
+    def create_meal(self):
+        meal = self.Meal(meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
+        self.Database.add(meal)
+
+    def tearDown(self):
+        # reset all database list to empty lists
+        self.Database.meals = []
+        self.Database.admins = []
+        self.Database.users = []
+        self.Database.current_menu = []
+        self.Database.orders = []

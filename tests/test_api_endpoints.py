@@ -5,7 +5,7 @@ import json
 from . import BaseTestClass
 
 
-class TestUserManagement(BaseTestClass)
+class TestUserManagement(BaseTestClass):
     '''Test User registration and logging in and out'''
     def test_user_registration(self):
         '''test user can register'''

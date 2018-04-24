@@ -17,7 +17,7 @@ class TestingConfig(Config):
     DEBUG = True
 
 
-config = {
+config_dict = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
 }

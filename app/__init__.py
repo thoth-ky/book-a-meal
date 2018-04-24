@@ -3,23 +3,27 @@ from flask import Flask
 from flask_restful import Api
 
 # local imports
-from config import config
+try:
+    from config.config import config_dict
+except ModuleNotFoundError:
+    from ..config.config import config_dict
 
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
     the value for config can be either: 'development', 'testing'. 
     These act as deictionary keys and call up the specific
-    configuration setting'''
+    con .gitifiguration setting'''
 
     # create fllask app
     app = Flask(__name__)
+    
     # insert configurations
-    app.config.from_object(config[config_name])
+    app.config.from_object(config_dict[config_name])
 
     # import view resources and models here to avoid circular imports
     from . import models
-    from views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource
+    from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource
 
     # create flask api
     api = Api(app)

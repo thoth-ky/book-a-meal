@@ -3,7 +3,10 @@ This script creates a flask app and runs it at specified host and port,
 '''
 import os
 # local imports
-from app import create_app
+try:
+    from app import create_app
+except ModuleNotFoundError:
+    from .app import create_app
 
 # get configuration environment
 config = os.environ.get('APP_SETTINGS')

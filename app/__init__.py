@@ -1,5 +1,6 @@
+'''Initialize app'''
 from flask import Flask
-from flask_resful import Api
+from flask_restful import Api
 
 # local imports
 from config import config
@@ -17,8 +18,8 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
 
     # import view resources and models here to avoid circular imports
-    from .models import *
-    from .views import *
+    from . import models
+    from . import views
 
     # create flask api
     api = Api(app)

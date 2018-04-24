@@ -28,16 +28,16 @@ Check it out  at gh-pages using this url https://jmutuku95.github.io/book-a-meal
 To run the tests, **pytest** is recommended, just navigate to project root folder and run py.test in the terminal. The tests
 contained here test the following api endpoints:
 
-  1. /v1/auth/signup, /v1/auth/signup/ - For user registration
-  2. /v1/auth/signin, /v1/auth/signin - For user login
-  3. /v1/meals, /v1/meals/, /v1/meals/<mealid>/, /v1/meals/<mealid> - For adding, modifying and deleting meals
-  4. /v1/menu, /v1/menu/ - For setting up the menu and viewing menu
-  5. /v1/orders', '/v1/orders/', '/v1/orders/<orderid>', '/v1/orders/<orderid>/ - For editing, adding and viewing menus
+  1. **_/v1/auth/signup, /v1/auth/signup/_** - For user registration
+  2. **_/v1/auth/signin, /v1/auth/signin_** - For user login
+  3. **_/v1/meals, /v1/meals/, /v1/meals/\<mealid>/, /v1/meals/\<mealid>_** - For adding, modifying and deleting meals
+  4. **_/v1/menu, /v1/menu/_** - For setting up the menu and viewing menu
+  5. **_/v1/orders', '/v1/orders/', '/v1/orders/\<orderid>', '/v1/orders/\<orderid>/_** - For editing, adding and viewing menus
   
  The tests also check if user has rights to access the specific endpoint and with what method to ensure integrity is mantained
 
 # Environment
-Ensure your environment contains all libraries specified in _requirements.txt_ 
+  Ensure your environment contains all libraries specified in _requirements.txt_ 
 
 
-Feel free to give suggestions on how to improve the site more.
+_Feel free to give suggestions on how to improve the site more._

@@ -1,8 +1,10 @@
 '''This is where code for api resources will go'''
 import json
 from flask_restful import Resource
-from .models import Database, Menu, Meal, User, Admin, Order
+from .models import database, Menu, Meal, User, Admin, Order, Database
 from flask import request
+
+app_db = Database()
 
 
 class UserRegistrationResource(Resource):
@@ -20,11 +22,12 @@ class UserRegistrationResource(Resource):
                 admin = Admin(
                     username=username, password=password, email=email,
                     admin=admin)
-                err = Database.add(admin)
-                if err:
+                try:
+                    app_db.add(item=admin)
+                except ItemAlreadyExists as e:
                     return {
-                        'message': 'Registration not succesful',
-                        'error': err
+                        'message': 'User already exists',
+                        'error': str(e)
                     }, 202
                 return {
                     'message': 'Admin registration succesful, proceed to login'
@@ -33,11 +36,12 @@ class UserRegistrationResource(Resource):
             else:
                 # register normal user
                 user = User(username=username, password=password, email=email)
-                err = Database.add(user)
-                if err:
+                try:
+                    app_db.add(item=user)
+                except Exception as e:
                     return {
-                        'message': 'Registration not succesful',
-                        'error': err
+                        'message': 'User already exists',
+                        'error': str(e)
                     }, 202
                 return {
                     'message': 'User registration succesful, proceed to login'
@@ -59,20 +63,20 @@ class LoginResource(Resource):
             email = post_data.get('email', '')
             password = post_data.get('password')
             if username:
-                user = Database.get_user_by_username(username)
+                user = app_db.get_user_by_username(username)
             elif email:
-                user = Database.get_user_by_email(username)
+                user = app_db.get_user_by_email(email)
             else:
                 user = None
             if user and User.validate_password(user, password):
-                access_token = User.generate_token(username)
+                access_token = user.generate_token(username).decode()
                 return {
                     'message': 'Successfully logged in',
-                    'access_token': access_token}, 200
+                    'access_token': access_token
+                }, 200
             else:
                 return {
-                    'message': 'The username/email or password provided is not\
-                    correct'}, 401
+                    'message': 'The username/email or password provided is not correct'}, 401
         except Exception as e:
             return {
                 'message': 'Encountered an error during log in',
@@ -89,23 +93,27 @@ class MealResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                if username in Database.admins.keys():
-                    post_data = json.loads(request.data)
-                    meal_id = post_data.get('meal_id')
-                    name = post_data.get('name')
-                    price = post_data.get('price')
-                    description = post_data.get('description')
-                    meal = Meal(
-                        meal_id=meal_id, name=name, price=price,
-                        description=description)
-                    err = Database.add(meal)
-                    if err:
-                        return {
-                            'message': 'Registration not succesful',
-                            'error': err,
-                            }, 202
-                else:
-                    return {'message': 'Not authorized for this action'}, 401
+                user = app_db.get_user_by_username(username)
+                try:
+                    if user.admin:
+                        post_data = json.loads(request.data)
+                        meal_id = post_data.get('meal_id')
+                        name = post_data.get('name')
+                        price = post_data.get('price')
+                        description = post_data.get('description')
+                        meal = Meal(
+                            meal_id=meal_id, name=name, price=price,
+                            description=description)
+                        err = app_db.add(meal)
+                        if err:
+                            return {
+                                'message': 'Meal not added',
+                                'error': err,
+                                }, 202
+                        return {'message': 'New meal created'}, 201
+                except AttributeError as e:
+                    return {'message': 'Not authorized for this action',
+                            'Error': str(e)}, 401
         except Exception as e:
             return {
                 'message': 'an error occured',
@@ -116,23 +124,26 @@ class MealResource(Resource):
         '''Get all meals, if meal_id is specified, get a specific meal'''
         try:
             auth_header = request.headers.get('Authorization')
-            access_token = auth_header.split(' ')[1]
+            access_token = auth_header.split(" ")[1]
             if access_token:
                 username = User.decode_token(access_token)
-                if username in Database.admins.keys():
-                    if meal_id:
-                        meal = Database.meals[meal_id]
-                        return {
-                            'message': 'Meal {}'.format(meal_id),
-                            'meals': meal
-                        }, 200
-                    else:
-                        meals = Database.meals
-                        return {
-                            'message': 'All Meals',
-                            'meals': meals
-                        }, 200
-                else:
+                user = app_db.get_user_by_username(username)
+                try:
+                    if user.admin:
+                        if meal_id:
+                            meal = app_db.meals.get(meal_id, '')
+                            return {
+                                'message': 'Meal {}'.format(meal_id),
+                                'meals': meal
+                            }, 200
+                        else:
+                            meals = app_db.meals
+                            meals = [meals[meal].make_dict() for meal in meals]
+                            return {
+                                'message': 'Succesful request',
+                                'data': meals
+                            }, 200
+                except AttributeError as e:
                     return {'message': 'Not authorized for this action'}, 401
         except Exception as e:
             return {
@@ -147,13 +158,18 @@ class MealResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                if username in Database.admins.keys():
-                    del Database.meals[meal_id]
+                user = app_db.get_user_by_username(username)
+                try:
+                    if user.admin:
+                        del app_db.meals[meal_id]
+                        return {
+                            'message': 'Meal {} deleted'.format(meal_id),
+                        }, 200
+                except AttributeError as e:
                     return {
-                        'message': 'Meal {} deleted'.format(meal_id),
-                    }, 202
-                else:
-                    return {'message': 'Not authorized for this action'}, 401
+                        'message': 'Not authorized for this action',
+                        'Error': str(e)
+                    }, 401
         except Exception as e:
             return {
                 'message': 'an error occured',
@@ -167,14 +183,21 @@ class MealResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                if username in Database.admins.keys():
-                    json_data = json.loads(request.data)
-                    new_data = json_data['new_data']
-                    meal = Database.meals[meal_id]
-                    meal.update(new_data)
-                    return {'message': 'Meal {} edited'.format(meal_id)}, 202
-                else:
-                    return {'message': 'Not authorized for this action'}, 401
+                user = app_db.get_user_by_username(username)
+                try:
+                    if user.admin:
+                        json_data = json.loads(request.data)
+                        new_data = json_data['new_data']
+                        meal = app_db.meals.get(meal_id, '')
+                        meal.update(new_data)
+                        return {
+                            'message': 'Meal {} edited'.format(meal_id),
+                        }, 202
+                except AttributeError as e:
+                    return {
+                        'message': 'Unauthorized',
+                        'Error': str(e)
+                    }, 401
         except Exception as e:
             return {
                 'message': 'an error occured',

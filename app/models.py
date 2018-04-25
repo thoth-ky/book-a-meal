@@ -6,6 +6,14 @@ from flask import current_app
 today = datetime.utcnow().date()
 
 
+class ItemAlreadyExists(Exception):
+    pass
+
+
+class BadToken(Exception):
+    pass
+
+
 class BaseModel:
     
     def make_dict(self):
@@ -44,7 +52,6 @@ class User(BaseModel):
         else:
             return False
 
-    @staticmethod
     def generate_token(self, username):
         '''generate access_token'''
         try:
@@ -58,6 +65,7 @@ class User(BaseModel):
                 str(current_app.config.get('SECRET')),
                 algorithm='HS256'
                 )
+            return token
         except Exception as e:
             return str(e)
 
@@ -65,7 +73,8 @@ class User(BaseModel):
     def decode_token(token):
         '''decode access token from authorization header'''
         try:
-            payload = jwt.decode(token, str(current_app.config.get('SECRET')))
+            payload = jwt.decode(
+                token, str(current_app.config.get('SECRET')), algorithms=['HS256'])
             return payload['username']
         except jwt.ExpiredSignatureError:
             # the token is expired, return an error string
@@ -77,7 +86,7 @@ class User(BaseModel):
 
 class Admin(User):
     def __init__(self, username, email, password, admin=True):
-        User.__init__(username, email, password)
+        User.__init__(self, username=username, email=email, password=password)
         self.admin = admin
 
 
@@ -99,35 +108,35 @@ class Database:
         self.admins = {}
         self.meals = {}
         self.users = {}
+        self.users_email = {}
         self.current_menu = {}
         self.orders = {}
 
     def add(self, item):
         if isinstance(item, User):
-            # add to users
-            if not self.check_exists(item, self.users):
+            if (item.username in self.users.keys() or item.email in self.users_email.keys()):
+                raise ItemAlreadyExists('User exists')
+            else:
                 self.users.update({str(item.username): item})
-        elif isinstance(item, Meal):
-            # add to meals
-            if not self.check_exists(item, self.meals):
-                self.meals.update({str(item.meal_id): item})
-        elif isinstance(item, Menu):
-            # add to current menu
-            if not self.check_exists(item, self.current_menu):
-                self.current_menu.update({str(item.date): item})
-        elif isinstance(item, Order):
-            # add to orders
-            if not self.check_exists(item, self.orders):
-                self.orders.update({str(item.order_id): item})
+                self.users_email.update({str(item.email): item})
         elif isinstance(item, Admin):
-            # add to admins
-            if not self.check_exists(item, self.admins):
-                self.admins.update({str(item.username): item})
+            self.admins.update({str(item.username): item})
+        elif isinstance(item, Meal):
+            self.meals.update({str(item.meal_id): item})
+        elif isinstance(item, Menu):
+            self.current_menu.update({str(item.date): item})
+        elif isinstance(item, Order):
+            self.orders.update({str(item.order_id): item})
         else:
             return 'Unknown type'
 
-    def check_exists(self, item, conatiner):
-        if item in conatiner.values():
-            return True
-        else:
-            False
+    def get_user_by_username(self, username):
+        return self.users.get(username, '')
+
+    def get_user_by_email(self, email):
+        return self.users_email.get(email, '')
+
+    def get_admin_by_username(self, username):
+        return self.admins.get(username, '')
+
+database = Database()

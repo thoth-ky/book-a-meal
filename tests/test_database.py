@@ -1,6 +1,6 @@
 '''Tests for database'''
 from datetime import datetime
-from . import BaseTestClass
+from . import BaseTestClass, Database
 
 
 class TestDatabase(BaseTestClass):

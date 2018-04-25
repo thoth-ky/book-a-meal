@@ -22,7 +22,7 @@ class BaseTestClass(TestCase):
         self.new_user = {'username': 'john', 'email': 'john@mail.com',
                          'password': 'password'}
         self.admin_user = {'username': 'admin', 'email': 'admin@mail.com',
-                         'password': 'password', 'admin': True}
+                           'password': 'password', 'admin': True}
         self.Database = Database()
         self.Meal = Meal
         self.Order = Order
@@ -30,27 +30,35 @@ class BaseTestClass(TestCase):
         self.Order = Order
         self.User = User
         self.Admin = Admin
-        self.meal = {'meal_id': 1, 'name': 'Fish', 'price': 100, 'description': 'Tasty Tilapia'}
+        self.meal = {'meal_id': 1, 'name': 'Fish', 'price': 100,
+                     'description': 'Tasty Tilapia'}
 
     def login_user(self):
+        '''helper function to create a normal user and log them in '''
         # register user
         self.client.post('/v1/auth/signup', data=json.dumps(self.new_user))
-        data = {'password': self.new_user['password'], 'email': self.new_user['email']}
+        data = {'password': self.new_user['password'],
+                'email': self.new_user['email']}
         self.client.post('v1/auth/signin', data=json.dumps(data))
 
     def login_admin(self):
+        '''helper function to create an admin user and log them in '''
         self.client.post('/v1/auth/signup', data=json.dumps(self.admin_user))
-        data = {'password': self.new_user['password'], 'email': self.admin_user['email']}
+        data = {'password': self.new_user['password'],
+                'email': self.admin_user['email']}
         self.client.post('v1/auth/signin', data=json.dumps(data))
 
     def create_meal(self):
-        meal = self.Meal(meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
+        '''helper function to populate Meals so tests on menu and orders 
+        can work'''
+        meal = self.Meal(
+            meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
         self.Database.add(meal)
 
     def tearDown(self):
-        # reset all database list to empty lists
-        self.Database.meals = []
-        self.Database.admins = []
-        self.Database.users = []
-        self.Database.current_menu = []
-        self.Database.orders = []
+        # reset all database entries to empty dicts
+        self.Database.meals = {}
+        self.Database.admins = {}
+        self.Database.users = {}
+        self.Database.current_menu = {}
+        self.Database.orders = {}

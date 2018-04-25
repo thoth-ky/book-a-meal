@@ -1,15 +1,25 @@
 '''Create a database'''
-from datetime import datetime
-
+from datetime import datetime, timedelta
+import jwt
+from flask import current_app
 
 today = datetime.utcnow().date()
 
 
 class BaseModel:
     
-    @classmethod
-    def make_dict(cls):
-        return cls.__dict__
+    def make_dict(self):
+        return self.__dict__
+
+    def update(self, new_data):
+        '''new_data is a dictionary containing new info'''
+        current_data = self.make_dict()
+        data_keys = current_data.keys()
+        new_keys = new_data.keys()
+        for key in data_keys:
+            for new_data_key in new_keys:
+                if key == new_data_key:
+                    current_data[key] = new_data[new_data_key]
 
 
 class Meal(BaseModel):
@@ -21,11 +31,48 @@ class Meal(BaseModel):
 
 
 class User(BaseModel):
-    """docstring for User"""
+    """General user details"""
     def __init__(self, username, email, password):
         self.username = username
         self.email = email
         self.password = password
+
+    def validate_password(self, password):
+        '''check if user password is correct'''
+        if password == self.password:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def generate_token(self, username):
+        '''generate access_token'''
+        try:
+            payload = {
+                'exp': datetime.utcnow() + timedelta(minutes=120),
+                'iat': datetime.utcnow(),
+                'username': username,
+            }
+            token = jwt.encode(
+                payload,
+                str(current_app.config.get('SECRET')),
+                algorithm='HS256'
+                )
+        except Exception as e:
+            return str(e)
+
+    @staticmethod
+    def decode_token(token):
+        '''decode access token from authorization header'''
+        try:
+            payload = jwt.decode(token, str(current_app.config.get('SECRET')))
+            return payload['username']
+        except jwt.ExpiredSignatureError:
+            # the token is expired, return an error string
+            return "Expired token. Please login to get a new token"
+        except jwt.InvalidTokenError:
+            # the token is invalid, return an error string
+            return "Invalid token. Please register or login"
 
 
 class Admin(User):

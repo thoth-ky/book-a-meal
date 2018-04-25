@@ -91,7 +91,7 @@ class Order(BaseModel):
 class Menu(BaseModel):
     def __init__(self, meals=[], date=today):
         self.meals = meals
-        date = date
+        self.date = date
         
 
 class Database:

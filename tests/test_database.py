@@ -1,4 +1,5 @@
 '''Tests for database'''
+from datetime import datetime
 from . import BaseTestClass
 
 
@@ -22,7 +23,7 @@ class TestDatabase(BaseTestClass):
         new_data = {'price': 400}
         meal = self.Database.meals['1']
         meal.update(new_data)
-        self.assertEqual(meal['price'], new_data['price'])
+        self.assertEqual(meal.price, new_data['price'])
 
     def test_can_store_orders(self):
         self.create_meal()
@@ -36,7 +37,7 @@ class TestDatabase(BaseTestClass):
         menu_list = [self.Database.meals['1']]
         menu = self.Menu(menu_list)
         self.Database.add(menu)
-        self.assertEqual(menu, self.Database.current_menu)
+        self.assertEqual(menu, self.Database.current_menu[str(datetime.utcnow().date())])
 
     def test_adding_unrecognized_type(self):
         string = 'this is not a model class object'

@@ -219,7 +219,7 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(200, response.status_code)
         current_menu = json.loads(response.data)['menu']
         meal_to_order = current_menu[0]
-        data = {'order_id': 1'meal': meal_to_order, 'quantity': 1}
+        data = {'order_id': 1, 'meal': meal_to_order, 'quantity': 1}
         # place order
         response = self.client.post('/v1/orders', data=json.dumps(data))
         self.assertEqual(201, response.status_code)

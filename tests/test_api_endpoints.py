@@ -89,6 +89,19 @@ class TestMealsManagement(BaseTestClass):
                     'data': all_meals}
         self.assertEqual(expected, json.loads(response.data))
 
+    def test_get_meal_with_meal_id(self):
+        '''test client can get a specific meal using meal id only'''
+        # login an admin user
+        self.login_admin()
+        # populate meals table
+        self.create_meal()
+        meal_id = 1
+        response = self.client.get('/v1/meals/{}'.format(meal_id))
+        expected = self.Database.meals[str(meal_id)]
+        result = json.loads(response.data)['meal']
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(expected, result)
+
     def test_only_admin_can_get_all_meals(self):
         '''GET /v1/meals is reserved for admin only'''
         self.login_user()
@@ -193,7 +206,7 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(200, response.status_code)
         current_menu = json.loads(response.data)['menu']
         meal_to_order = current_menu[0]
-        data = {'meal': meal_to_order, 'quantity': 1}
+        data = {'order_id': 1, 'meal': meal_to_order, 'quantity': 1}
         response = self.client.post('/v1/orders', data=json.dumps(data))
         self.assertEqual(201, response.status_code)
         expected = {'message': 'Order has been placed', 'order_id': 1}
@@ -206,7 +219,7 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(200, response.status_code)
         current_menu = json.loads(response.data)['menu']
         meal_to_order = current_menu[0]
-        data = {'meal': meal_to_order, 'quantity': 1}
+        data = {'order_id': 1'meal': meal_to_order, 'quantity': 1}
         # place order
         response = self.client.post('/v1/orders', data=json.dumps(data))
         self.assertEqual(201, response.status_code)

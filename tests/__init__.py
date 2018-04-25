@@ -7,8 +7,8 @@ try:
     from app import create_app
     from app.models import Database, Meal, User, Menu, Admin, Order
 except ModuleNotFoundError:
-    from .app import create_app
-    from .app.models import Database, Meal, User, Menu, Admin, Order
+    from ..app import create_app
+    from ..app.models import Database, Meal, User, Menu, Admin, Order
 
 
 class BaseTestClass(TestCase):

@@ -13,6 +13,13 @@ class TestDatabase(BaseTestClass):
         self.Database.add(meal)
         self.assertEqual(meal, self.Database.meals[0])
 
+    def test_can_update_meals(self):
+        self.create_meal()
+        new_data = {'price': 400}
+        meal = self.Database.meals['1']
+        meal.update(new_data)
+        self.assertEqual(meal['price'], new_data['price'])
+
     def test_can_store_orders(self):
         self.create_meal()
         meals_list = [self.Database.meals[0]]

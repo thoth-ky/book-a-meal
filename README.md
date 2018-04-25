@@ -1,4 +1,6 @@
 # book-a-meal
+![image](https://user-images.githubusercontent.com/28805113/39232293-83a1e494-4875-11e8-8d5a-41a11ce5e6df.png)
+
 This is a simple Application to help a restaurant track it's customer's needs and customers make orders easily. The customers
 are supposed to create accounts which they can use later to view menus or place orders for meals
 The Restaurant staff/caterers use priviledged user accounts which allow them to modify, delete some resources

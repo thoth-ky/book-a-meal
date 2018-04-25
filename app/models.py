@@ -82,9 +82,10 @@ class Admin(User):
 
 
 class Order(BaseModel):
-    def __init__(self, meals=[], quantity=1):
+    def __init__(self, order_id, meals=[], quantity=1):
         self.meals = meals
         self.quantity = quantity
+        self.order_id = order_id
 
 
 class Menu(BaseModel):
@@ -95,27 +96,38 @@ class Menu(BaseModel):
 
 class Database:
     def __init__(self):
-        self.admins = []
-        self.meals = []
-        self.users = []
-        self.current_menu = []
-        self.orders = []
+        self.admins = {}
+        self.meals = {}
+        self.users = {}
+        self.current_menu = {}
+        self.orders = {}
 
     def add(self, item):
         if isinstance(item, User):
             # add to users
-            self.users.append(item)
+            if not self.check_exists(item, self.users):
+                self.users.update({str(item.username): item})
         elif isinstance(item, Meal):
             # add to meals
-            self.meals.append(item)
+            if not self.check_exists(item, self.meals):
+                self.meals.update({str(item.meal_id): item})
         elif isinstance(item, Menu):
             # add to current menu
-            self.current_menu.append(item)
+            if not self.check_exists(item, self.current_menu):
+                self.current_menu.update({str(item.date): item})
         elif isinstance(item, Order):
             # add to orders
-            self.orders.append(item)
+            if not self.check_exists(item, self.orders):
+                self.orders.update({str(item.order_id): item})
         elif isinstance(item, Admin):
             # add to admins
-            self.admins.append(item)
+            if not self.check_exists(item, self.admins):
+                self.admins.update({str(item.username): item})
         else:
             return 'Unknown type'
+
+    def check_exists(self, item, conatiner):
+        if item in conatiner.values():
+            return True
+        else:
+            False

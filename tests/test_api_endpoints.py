@@ -1,5 +1,6 @@
 '''Tests for api endpoints'''
 import json
+from datetime import datetime
 
 # local imports
 from . import BaseTestClass
@@ -17,7 +18,6 @@ class TestUserManagement(BaseTestClass):
         self.assertEqual(201, response.status_code)
         expected = {'message': 'User registration succesful, proceed to login'}
         # check returned message
-
         self.assertEqual(expected, json.loads(response.data))
 
     def test_can_register_admin(self):
@@ -87,11 +87,6 @@ class TestMealsManagement(BaseTestClass):
         self.create_meal()
         response = self.client.get('/v1/meals/', headers=headers)
         self.assertEqual(200, response.status_code)
-        # correct database concurrency
-        # all_meals = self.Database.meals
-        # expected = {'message': 'succesful request',
-        #             'data': all_meals}
-        # self.assertEqual(expected, json.loads(response.data))
 
     def test_get_meal_with_meal_id(self):
         '''test client can get a specific meal using meal id only'''
@@ -106,9 +101,6 @@ class TestMealsManagement(BaseTestClass):
         meal_id = 1
         response = self.client.get('/v1/meals/{}/'.format(meal_id), headers=headers)
         self.assertEqual(200, response.status_code)
-        expected = self.Database.meals[str(meal_id)]
-    #     result = json.loads(response.data)['meal']
-    #     self.assertEqual(expected, result)
 
     def test_only_admin_can_get_all_meals(self):
         '''GET /v1/meals is reserved for admin only'''
@@ -212,12 +204,12 @@ class TestMenuManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
-        meal1 = self.Meal(
+        meal1 = self.meal_model(
             meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-        meal2 = self.Meal(
+        meal2 = self.meal_model(
             meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
-        self.Database.add(meal1)
-        self.Database.add(meal2)
+        self.database.add(meal1)
+        self.database.add(meal2)
 
         # serialize 
         meal1 = meal1.make_dict()
@@ -248,7 +240,7 @@ class TestMenuManagement(BaseTestClass):
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
         response = self.client.get('/v1/menu', headers=headers)
-        menu = self.Database.current_menu
+        menu = self.database.current_menu
         menu = [menu[item] for item in menu]
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Menu request succesful',
@@ -259,17 +251,18 @@ class TestMenuManagement(BaseTestClass):
 class TestOrdersManagement(BaseTestClass):
     '''Tests for OrderResource '''
     def setup_menu(self):
+        '''this is a helper function, to setup menu to ease testing of placing orders'''
         res = self.login_admin()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
-        meal1 = self.Meal(
+        meal1 = self.meal_model(
             meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-        meal2 = self.Meal(
+        meal2 = self.meal_model(
             meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
-        self.Database.add(meal1)
-        self.Database.add(meal2)
+        self.database.add(meal1)
+        self.database.add(meal2)
 
         # serialize 
         meal1 = meal1.make_dict()
@@ -335,7 +328,7 @@ class TestOrdersManagement(BaseTestClass):
         headers = dict(Authorization='Bearer {}'.format(access_token))
         response = self.client.get('/v1/orders', headers=headers)
         self.assertEqual(200, response.status_code)
-        orders = self.Database.orders
+        orders = self.database.orders
         orders = [orders[item].make_dict() for item in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
@@ -343,7 +336,6 @@ class TestOrdersManagement(BaseTestClass):
 
     def test_user_only_get_own_orders(self):
         '''test only admin can access orders'''
-        # res = self.login_user(username='eve', password='eve123')
         res = self.login_user()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
@@ -351,8 +343,20 @@ class TestOrdersManagement(BaseTestClass):
 
         response = self.client.get('/v1/orders', headers=headers)
         self.assertEqual(200, response.status_code)
-        orders = self.Database.user_orders
+        orders = self.database.user_orders
         orders = [orders[item].make_dict() for item in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
+        self.assertEqual(expected, json.loads(response.data))
+
+    def test_get_order_by_date(self):
+        '''look up for orders using dates'''
+        res = self.setup_menu()
+        self.assertEqual(201, res.status_code)
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        data = {'date': str(datetime.utcnow().date())}
+        response = self.client.get('/v1/orders/', data=json.dumps(data))
+        self.assertEqual(200, response.status_code)
+        expected = 'Orders for date {}'.format(data['date'])
         self.assertEqual(expected, json.loads(response.data))

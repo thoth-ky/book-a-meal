@@ -27,7 +27,6 @@ def create_app(config_name):
     app_context = app.app_context()
     app_context.push()
     # import view resources and models here to avoid circular imports
-    # from . import models
     from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource
     
     # create flask api

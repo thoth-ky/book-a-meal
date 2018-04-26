@@ -16,7 +16,6 @@ class BaseTestClass(TestCase):
     all common variables methods'''
 
     def setUp(self):
-        self.maxDiff = None
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
@@ -27,13 +26,13 @@ class BaseTestClass(TestCase):
                            'password': 'password', 'admin': True}
         self.test_user = {'username': 'martin', 'email': 'mar@ma.com',
                           'password': 'password'}
-        self.Database = app_db
-        self.Meal = Meal
-        self.Order = Order
-        self.Menu = Menu
-        self.Order = Order
-        self.User = User
-        self.Admin = Admin
+        self.database = app_db
+        self.meal_model = Meal
+        self.order_model = Order
+        self.menu_model = Menu
+        self.order_model = Order
+        self.user_model = User
+        self.admin_model = Admin
         self.meal = {'meal_id': 1, 'name': 'Fish', 'price': 100,
                      'description': 'Tasty Tilapia'}
         self.meal2 = {'meal_id': 2, 'name': 'Beef', 'price': 150,
@@ -41,8 +40,8 @@ class BaseTestClass(TestCase):
         self.register_user()
 
     def create_user(self):
-        u = self.User(username=self.test_user['username'], email=self.test_user['email'], password=self.test_user['password'])
-        self.Database.add(u)
+        u = self.user_model(username=self.test_user['username'], email=self.test_user['email'], password=self.test_user['password'])
+        self.database.add(u)
     
     def register_user(self):
         new_user = {'username': 'joe', 'email': 'jo@h.com', 'password': 'test1234'}
@@ -63,9 +62,9 @@ class BaseTestClass(TestCase):
     def create_meal(self):
         '''helper function to populate Meals so tests on menu and orders 
         can work'''
-        meal = self.Meal(
+        meal = self.meal_model(
             meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-        self.Database.add(meal)
+        self.database.add(meal)
 
     def tearDown(self):
         # reset all database entries to empty dicts

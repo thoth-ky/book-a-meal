@@ -3,3 +3,6 @@ env.bat
 */__pycache__/*
 *.pytest_cache/*
 *.db
+.env
+.cache/*
+.coverage

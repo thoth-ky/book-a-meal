@@ -10,7 +10,7 @@ class ItemAlreadyExists(Exception):
     pass
 
 
-class BadToken(Exception):
+class UnknownClass(Exception):
     pass
 
 
@@ -117,20 +117,40 @@ class Database:
 
     def add(self, item):
         if isinstance(item, User):
-            if (item.username in self.users.keys() or item.email in self.users_email.keys()):
+            if item.username in self.users.keys() or item.email in self.users_email.keys():
                 raise ItemAlreadyExists('User exists')
             else:
                 self.users.update({str(item.username): item})
                 self.users_email.update({str(item.email): item})
         elif isinstance(item, Admin):
-            self.admins.update({str(item.username): item})
+            if item.username in self.users.keys():
+                raise ItemAlreadyExists('Admin exists')
+            else:
+                self.admins.update({str(item.username): item})
+                self.users.update({str(item.username): item})
+                self.users_email.update({str(item.email): item})
+
         elif isinstance(item, Meal):
-            self.meals.update({str(item.meal_id): item})
+            if str(item.meal_id) in self.meals.keys():
+                raise ItemAlreadyExists('Meal exists')
+            else:
+                self.meals.update({str(item.meal_id): item})
+
         elif isinstance(item, Menu):
-            self.current_menu.update({str(item.date): item})
+            if str(item.date) in self.current_menu.keys():
+                raise ItemAlreadyExists('Menu exists')
+            else:
+                self.current_menu.update({str(item.date): item})
+
         elif isinstance(item, Order):
-            self.orders.update({str(item.order_id): item})
-            self.users.update({str(item.order_by): item})
+            if str(item.order_id) in self.orders.keys():
+                raise ItemAlreadyExists('Order exists')
+            else:
+                self.orders.update({str(item.order_id): item})
+            if str(item.order_by) in self.user_orders.keys():
+                self.user_orders[str(item.order_by)].append(item)
+            else:
+                self.user_orders.update({str(item.order_by): [item]})
         else:
             return 'Unknown type'
 

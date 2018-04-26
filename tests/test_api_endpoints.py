@@ -1,6 +1,6 @@
 '''Tests for api endpoints'''
 import json
-from datetime import datetime
+from time import time
 
 # local imports
 from . import BaseTestClass
@@ -347,16 +347,4 @@ class TestOrdersManagement(BaseTestClass):
         orders = [orders[item].make_dict() for item in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
-        self.assertEqual(expected, json.loads(response.data))
-
-    def test_get_order_by_date(self):
-        '''look up for orders using dates'''
-        res = self.setup_menu()
-        self.assertEqual(201, res.status_code)
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        data = {'date': str(datetime.utcnow().date())}
-        response = self.client.get('/v1/orders/', data=json.dumps(data))
-        self.assertEqual(200, response.status_code)
-        expected = 'Orders for date {}'.format(data['date'])
         self.assertEqual(expected, json.loads(response.data))

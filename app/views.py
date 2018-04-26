@@ -1,10 +1,8 @@
 '''This is where code for api resources will go'''
-import json
 from flask_restful import Resource
 from .models import Menu, Meal, User, Admin, Order, Database
 from flask import request
 from . import  app_db
-# app_db = Database()
 
 
 class UserRegistrationResource(Resource):
@@ -12,7 +10,7 @@ class UserRegistrationResource(Resource):
     def post(self):
         '''handle the POST request to register users'''
         try:
-            post_data = json.loads(request.data)
+            post_data = request.get_json(force=True)
             username = post_data.get('username')
             password = post_data.get('password')
             email = post_data.get('email')
@@ -58,7 +56,7 @@ class LoginResource(Resource):
     '''Manage user log in'''
     def post(self):
         try:
-            post_data = json.loads(request.data)
+            post_data = request.get_json(force=True)
             username = post_data.get('username', '')
             email = post_data.get('email', '')
             password = post_data.get('password')
@@ -96,7 +94,7 @@ class MealResource(Resource):
                 user = app_db.get_user_by_username(username)
                 try:
                     if user.admin:
-                        post_data = json.loads(request.data)
+                        post_data = request.get_json(force=True)
                         meal_id = post_data.get('meal_id')
                         name = post_data.get('name')
                         price = post_data.get('price')
@@ -192,7 +190,7 @@ class MealResource(Resource):
                 user = app_db.get_user_by_username(username)
                 try:
                     if user.admin:
-                        json_data = json.loads(request.data)
+                        json_data = request.get_json(force=True)
                         new_data = json_data['new_data']
                         meal = app_db.meals.get(meal_id)
                         meal.update(new_data)
@@ -225,7 +223,7 @@ class MenuResource(Resource):
                 user = app_db.get_user_by_username(username)
                 try:
                     if user.admin:
-                        json_data = json.loads(request.data)
+                        json_data = request.get_json(force=True)
                         meals_list = json_data.get('meal_list')
                         if meals_list:
                             menu_object = Menu(meals=meals_list)
@@ -287,7 +285,7 @@ class OrderResource(Resource):
                 user = app_db.get_user_by_username(username)
                 try:
                     if user:
-                        post_data = json.loads(request.data)
+                        post_data = request.get_json(force=True)
                         order_id = post_data.get('order_id')
                         meal_id = post_data.get('meal')
                         quantity = post_data.get('quantity')
@@ -331,6 +329,7 @@ class OrderResource(Resource):
                             orders = [orders[item].make_dict() for item in orders]
                             return {'message': 'All Orders',
                                     'orders': orders}
+                        return 'got user'
                 except AttributeError as e:
                     return {
                         'message': 'Unauthorized',
@@ -352,7 +351,7 @@ class OrderResource(Resource):
                 user = app_db.get_user_by_username(username)
                 try:
                     if user:
-                        post_data = json.loads(request.data)
+                        post_data = request.get_json(force=True)
                         new_data = post_data['new_data']
                         order = app_db.orders.get(order_id, '')
                         if order.order_by == username:

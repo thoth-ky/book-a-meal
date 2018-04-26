@@ -30,12 +30,12 @@ The app UI  contains:
   5.  A page where the caterer can see t he summary of the orders for a specific day and the details for all the orders .
 
 Check it out  at gh-pages using this url https://jmutuku95.github.io/book-a-meal/UI/startpage.html , or just clone this repo into your machine: https://github.com/jmutuku95/book-a-meal.git
-# Preview
-Home page
+# PREVIEW
+  # Home page
 ![hotcornerhome](https://user-images.githubusercontent.com/28805113/39204996-233f0b4a-4802-11e8-8a1b-9283be8653ec.png)
-Menu Page
+  # Menu Page
 ![menuhotcorner](https://user-images.githubusercontent.com/28805113/39205079-5eef6a68-4802-11e8-917b-6d4f62bab9d3.png)
-Order Page
+  # Order Page
 ![orderhotcorner](https://user-images.githubusercontent.com/28805113/39205084-63b48ce0-4802-11e8-8dec-9b48c5f7835e.png)
 
 # Testing
@@ -49,6 +49,16 @@ contained here test the following api endpoints:
   5. **_/v1/orders', '/v1/orders/', '/v1/orders/\<orderid>', '/v1/orders/\<orderid>/_** - For editing, adding and viewing menus
   
  The tests also check if user has rights to access the specific endpoint and with what method to ensure integrity is mantained
+ Below are screenshots of postman tests
+  # New User Registration
+ 
+![user_reg](https://user-images.githubusercontent.com/28805113/39317984-8e728296-4985-11e8-89c7-ca5bb36b6c04.jpg)
+  # Log in
+  
+![loginsuccess](https://user-images.githubusercontent.com/28805113/39317993-947e5eee-4985-11e8-8ab3-1aadfb65f35d.jpg)
+  # New Meals
+![mealpost](https://user-images.githubusercontent.com/28805113/39318016-a38ee052-4985-11e8-979d-90f6ad1de484.png)
+
 
 # Environment
   Ensure your environment contains all libraries specified in _requirements.txt_ 

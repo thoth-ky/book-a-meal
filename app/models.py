@@ -6,6 +6,14 @@ from flask import current_app
 today = datetime.utcnow().date()
 
 
+class ItemAlreadyExists(Exception):
+    pass
+
+
+class UnknownClass(Exception):
+    pass
+
+
 class BaseModel:
     
     def make_dict(self):
@@ -36,6 +44,7 @@ class User(BaseModel):
         self.username = username
         self.email = email
         self.password = password
+        self.admin = False
 
     def validate_password(self, password):
         '''check if user password is correct'''
@@ -44,7 +53,6 @@ class User(BaseModel):
         else:
             return False
 
-    @staticmethod
     def generate_token(self, username):
         '''generate access_token'''
         try:
@@ -58,6 +66,7 @@ class User(BaseModel):
                 str(current_app.config.get('SECRET')),
                 algorithm='HS256'
                 )
+            return token
         except Exception as e:
             return str(e)
 
@@ -65,7 +74,8 @@ class User(BaseModel):
     def decode_token(token):
         '''decode access token from authorization header'''
         try:
-            payload = jwt.decode(token, str(current_app.config.get('SECRET')))
+            payload = jwt.decode(
+                token, str(current_app.config.get('SECRET')), algorithms=['HS256'])
             return payload['username']
         except jwt.ExpiredSignatureError:
             # the token is expired, return an error string
@@ -77,45 +87,79 @@ class User(BaseModel):
 
 class Admin(User):
     def __init__(self, username, email, password, admin=True):
-        User.__init__(username, email, password)
+        User.__init__(self, username=username, email=email, password=password)
         self.admin = admin
 
 
 class Order(BaseModel):
-    def __init__(self, meals=[], quantity=1):
-        self.meals = meals
+    def __init__(self, order_id, username, meal, quantity=1,):
+        self.meal_id = meal
         self.quantity = quantity
+        self.order_id = order_id
+        self.order_by = username
 
 
 class Menu(BaseModel):
     def __init__(self, meals=[], date=today):
         self.meals = meals
-        date = date
+        self.date = str(date)
         
 
 class Database:
     def __init__(self):
-        self.admins = []
-        self.meals = []
-        self.users = []
-        self.current_menu = []
-        self.orders = []
+        self.admins = {}
+        self.meals = {}
+        self.users = {}
+        self.users_email = {}
+        self.current_menu = {}
+        self.orders = {}
+        self.user_orders = {}
 
     def add(self, item):
         if isinstance(item, User):
-            # add to users
-            self.users.append(item)
-        elif isinstance(item, Meal):
-            # add to meals
-            self.meals.append(item)
-        elif isinstance(item, Menu):
-            # add to current menu
-            self.current_menu.append(item)
-        elif isinstance(item, Order):
-            # add to orders
-            self.orders.append(item)
+            if item.username in self.users.keys() or item.email in self.users_email.keys():
+                raise ItemAlreadyExists('User exists')
+            else:
+                self.users.update({str(item.username): item})
+                self.users_email.update({str(item.email): item})
         elif isinstance(item, Admin):
-            # add to admins
-            self.admins.append(item)
+            if item.username in self.users.keys():
+                raise ItemAlreadyExists('Admin exists')
+            else:
+                self.admins.update({str(item.username): item})
+                self.users.update({str(item.username): item})
+                self.users_email.update({str(item.email): item})
+
+        elif isinstance(item, Meal):
+            if str(item.meal_id) in self.meals.keys():
+                raise ItemAlreadyExists('Meal exists')
+            else:
+                self.meals.update({str(item.meal_id): item})
+
+        elif isinstance(item, Menu):
+            if str(item.date) in self.current_menu.keys():
+                raise ItemAlreadyExists('Menu exists')
+            else:
+                self.current_menu.update({str(item.date): item})
+
+        elif isinstance(item, Order):
+            if str(item.order_id) in self.orders.keys():
+                raise ItemAlreadyExists('Order exists')
+            else:
+                self.orders.update({str(item.order_id): item})
+            if str(item.order_by) in self.user_orders.keys():
+                self.user_orders[str(item.order_by)].append(item)
+            else:
+                self.user_orders.update({str(item.order_by): [item]})
         else:
             return 'Unknown type'
+
+    def get_user_by_username(self, username):
+        return self.users.get(username, '')
+
+    def get_user_by_email(self, email):
+        return self.users_email.get(email, '')
+
+    
+if __name__ == '__main__':
+    database = Database()

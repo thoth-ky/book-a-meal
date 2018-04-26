@@ -1,5 +1,9 @@
 # book-a-meal
-[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=tests)](https://travis-ci.org/jmutuku95/book-a-meal)
+[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=tests)](https://travis-ci.org/jmutuku95/book-a-meal
+
+[![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=master)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=master)
+
+challenge2_features
 
 This is a simple Application to help a restaurant track it's customer's needs and customers make orders easily. The customers
 are supposed to create accounts which they can use later to view menus or place orders for meals

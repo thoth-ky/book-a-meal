@@ -27,8 +27,8 @@ class TestDatabase(BaseTestClass):
 
     def test_can_store_orders(self):
         self.create_meal()
-        meals_list = [self.Database.meals['1']]
-        order = self.Order(meals=meals_list, order_id=1)
+        meal = [self.Database.meals['1']]
+        order = self.Order(meal=meal, order_id=1, username='joe')
         self.Database.add(order)
         self.assertEqual(order, self.Database.orders['1'])
 

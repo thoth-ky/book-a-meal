@@ -4,11 +4,11 @@ from unittest import TestCase
 import json
 # local imports
 try:
-    from app import create_app
-    from app.models import database, Meal, User, Menu, Admin, Order, Database
+    from app import create_app, app_db
+    from app.models import Meal, User, Menu, Admin, Order, Database
 except ModuleNotFoundError:
-    from ..app import create_app
-    from ..app.models import database, Meal, User, Menu, Admin, Order, Database
+    from ..app import create_app, app_db
+    from ..app.models import Meal, User, Menu, Admin, Order, Database
 
 
 class BaseTestClass(TestCase):
@@ -27,7 +27,7 @@ class BaseTestClass(TestCase):
                            'password': 'password', 'admin': True}
         self.test_user = {'username': 'martin', 'email': 'mar@ma.com',
                           'password': 'password'}
-        self.Database = Database()
+        self.Database = app_db
         self.Meal = Meal
         self.Order = Order
         self.Menu = Menu
@@ -56,10 +56,9 @@ class BaseTestClass(TestCase):
     def login_admin(self):
         '''helper function to create an admin user and log them in '''
         self.client.post('/v1/auth/signup', data=json.dumps(self.admin_user))
-        data = {'password': 'password', 'email': 'admin@mail.com', 'username':'admin'}
+        data = {'password': 'password', 'email': 'admin@mail.com', 'username': 'admin'}
         res = self.client.post('v1/auth/signin', data=json.dumps(data))
         return res
-
 
     def create_meal(self):
         '''helper function to populate Meals so tests on menu and orders 
@@ -70,4 +69,10 @@ class BaseTestClass(TestCase):
 
     def tearDown(self):
         # reset all database entries to empty dicts
-        self.Database = Database()
+        app_db.admins = {}
+        app_db.meals = {}
+        app_db.users = {}
+        app_db.users_email = {}
+        app_db.current_menu = {}
+        app_db.orders = {}
+        app_db.user_orders = {}

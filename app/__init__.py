@@ -8,6 +8,10 @@ try:
 except ModuleNotFoundError:
     from ..config.config import config_dict
 
+from .models import Database
+
+app_db = Database()
+
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
@@ -23,9 +27,9 @@ def create_app(config_name):
     app_context = app.app_context()
     app_context.push()
     # import view resources and models here to avoid circular imports
-    from . import models
+    # from . import models
     from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource
-
+    
     # create flask api
     api = Api(app)
 

@@ -44,6 +44,7 @@ class User(BaseModel):
         self.username = username
         self.email = email
         self.password = password
+        self.admin = False
 
     def validate_password(self, password):
         '''check if user password is correct'''
@@ -91,16 +92,17 @@ class Admin(User):
 
 
 class Order(BaseModel):
-    def __init__(self, order_id, meals=[], quantity=1):
-        self.meals = meals
+    def __init__(self, order_id, username, meal, quantity=1,):
+        self.meal_id = meal
         self.quantity = quantity
         self.order_id = order_id
+        self.order_by = username
 
 
 class Menu(BaseModel):
     def __init__(self, meals=[], date=today):
         self.meals = meals
-        self.date = date
+        self.date = str(date)
         
 
 class Database:
@@ -111,6 +113,7 @@ class Database:
         self.users_email = {}
         self.current_menu = {}
         self.orders = {}
+        self.user_orders = {}
 
     def add(self, item):
         if isinstance(item, User):
@@ -127,6 +130,7 @@ class Database:
             self.current_menu.update({str(item.date): item})
         elif isinstance(item, Order):
             self.orders.update({str(item.order_id): item})
+            self.users.update({str(item.order_by): item})
         else:
             return 'Unknown type'
 
@@ -136,7 +140,6 @@ class Database:
     def get_user_by_email(self, email):
         return self.users_email.get(email, '')
 
-    def get_admin_by_username(self, username):
-        return self.admins.get(username, '')
-
-database = Database()
+    
+if __name__ == '__main__':
+    database = Database()

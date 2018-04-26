@@ -14,7 +14,7 @@ class TestUserManagement(BaseTestClass):
         response = self.client.post(
             '/v1/auth/signup', data=json.dumps(new_user))
         # check status code
-        # self.assertEqual(201, response.status_code)
+        self.assertEqual(201, response.status_code)
         expected = {'message': 'User registration succesful, proceed to login'}
         # check returned message
 
@@ -46,6 +46,11 @@ class TestUserManagement(BaseTestClass):
 
     def test_user_login(self):
         '''test user can login'''
+        # register user
+        response = self.client.post(
+            '/v1/auth/signup', data=json.dumps(self.new_user))
+        # check status code
+        self.assertEqual(201, response.status_code)
         # try login with right password
         correct_password = self.new_user['password']
         data = {'password': correct_password, 'email': self.new_user['email']}
@@ -114,7 +119,7 @@ class TestMealsManagement(BaseTestClass):
 
         response = self.client.get('/v1/meals', headers=headers)
         self.assertEqual(401, response.status_code)
-        expected = 'Not authorized for this action'
+        expected = 'Unauthorized'
         self.assertEqual(json.loads(response.data)['message'], expected)
 
     def test_add_a_meal(self):
@@ -198,86 +203,156 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(expected, result)
 
 
+class TestMenuManagement(BaseTestClass):
+    '''tests for menu resource'''
+    def test_setup_menu(self):
+        '''test admin can set up menu'''
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        
+        meal1 = self.Meal(
+            meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
+        meal2 = self.Meal(
+            meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
+        self.Database.add(meal1)
+        self.Database.add(meal2)
 
-# class TestMenuManagement(BaseTestClass):
-#     '''tests for menu resource'''
-#     def test_setup_menu(self):
-#         self.login_admin()
-#         meal1 = self.Meal(
-#             meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-#         meal2 = self.Meal(
-#             meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
-#         self.Database.add(meal1)
-#         self.Database.add(meal2)
-#         menu = [meal1, meal2]
-#         response = self.client.post('/v1/menu', data=json.dumps(menu))
-#         self.assertEqual(200, response.status_code)
-#         expected = {'message': 'Menu created succesfully'}
-#         self.assertEqual(expected, json.loads(response.data))
+        # serialize 
+        meal1 = meal1.make_dict()
+        meal2 = meal2.make_dict()
+        menu = {'meal_list': [meal1, meal2]}
+        
+        response = self.client.post('/v1/menu', data=json.dumps(menu), headers=headers)
+        self.assertEqual(201, response.status_code)
+        expected = {'message': 'Menu created successfully'}
+        self.assertEqual(expected, json.loads(response.data))
 
-#     def test_only_admin_can_setup_menu(self):
-#         '''test normal user can't create menu'''
-#         menu = 'dummy menu data'
-#         response = self.client.post('/v1/menu', data=json.dumps(menu))
-#         self.assertEqual(401, response.status_code)
+    def test_only_admin_can_setup_menu(self):
+        '''test normal user can't create menu'''
+        res = self.login_user()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
 
-#     def test_get_menu(self):
-#         '''Test users can get menu'''
-#         self.login_user()
-#         response = self.client.get('/v1/menu')
-#         menu = self.Database.current_menu
-#         self.assertEqual(200, response.status_code)
-#         expected = {'message': 'Menu request succesful',
-#                     'menu': menu}
-#         self.assertEqual(expected, json.loads(response.data))
+        menu = {'meal_list': ['dummy data']}
+        response = self.client.post('/v1/menu', data=json.dumps(menu), headers=headers)
+        self.assertEqual(401, response.status_code)
+
+    def test_get_menu(self):
+        '''Test users can get menu'''
+        res = self.login_user()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        
+        response = self.client.get('/v1/menu', headers=headers)
+        menu = self.Database.current_menu
+        menu = [menu[item] for item in menu]
+        self.assertEqual(200, response.status_code)
+        expected = {'message': 'Menu request succesful',
+                    'menu': menu}
+        self.assertEqual(expected, json.loads(response.data))
 
 
-# class TestOrdersManagement(BaseTestClass):
-#     '''Tests for OrderResource '''
-#     def test_make_orders(self):
-#         '''tetst authenticated users can make orders'''
-#         self.login_user()
-#         response = self.client.get('/v1/menu')
-#         self.assertEqual(200, response.status_code)
-#         current_menu = json.loads(response.data)['menu']
-#         meal_to_order = current_menu[0]
-#         data = {'order_id': 1, 'meal': meal_to_order, 'quantity': 1}
-#         response = self.client.post('/v1/orders', data=json.dumps(data))
-#         self.assertEqual(201, response.status_code)
-#         expected = {'message': 'Order has been placed', 'order_id': 1}
-#         self.assertEqual(expected, json.loads(response.data))
+class TestOrdersManagement(BaseTestClass):
+    '''Tests for OrderResource '''
+    def setup_menu(self):
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        
+        meal1 = self.Meal(
+            meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
+        meal2 = self.Meal(
+            meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
+        self.Database.add(meal1)
+        self.Database.add(meal2)
 
-#     def test_edit_order(self):
-#         '''test authenticated users can edit orders'''
-#         self.login_user()
-#         response = self.client.get('/v1/menu')
-#         self.assertEqual(200, response.status_code)
-#         current_menu = json.loads(response.data)['menu']
-#         meal_to_order = current_menu[0]
-#         data = {'order_id': 1, 'meal': meal_to_order, 'quantity': 1}
-#         # place order
-#         response = self.client.post('/v1/orders', data=json.dumps(data))
-#         self.assertEqual(201, response.status_code)
-#         order_id = json.loads(response.data)['order_id']
-#         new_order_data = {'quantity': 2}
-#         # put request to edit order
-#         response = self.client.put(
-#             '/v1/orders/{}'.format(order_id), data=json.dumps(new_order_data))
-#         self.assertEqual(200, response.status_code)
-#         expected = {'message': 'Order modified succesfully'}
-#         self.assertEqual(expected, json.loads(response.data))
+        # serialize 
+        meal1 = meal1.make_dict()
+        meal2 = meal2.make_dict()
+        menu = {'meal_list': [meal1, meal2]}
+        
+        response = self.client.post('/v1/menu', data=json.dumps(menu), headers=headers)
+        return response
 
-#     def test_get_all_orders(self):
-#         '''test admin can get all orders'''
-#         self.login_admin()
-#         response = self.client.get('/v1/orders')
-#         self.assertEqual(200, response.status_code)
-#         expected = {'message': 'All Orders',
-#                     'orders': self.Database.orders}
-#         self.assertEqual(expected, json.loads(response.data))
+    def test_make_orders(self):
+        '''tetst authenticated users can make orders'''
+        res = self.setup_menu()
+        self.assertEqual(201, res.status_code)
 
-#     def test_only_admin_can_get_all_orders(self):
-#         '''test only admin can access orders'''
-#         self.login_user()
-#         response = self.client.get('/v1/orders')
-#         self.assertEqual(401, response.status_code)
+        res = self.login_user()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        response = self.client.get('/v1/menu', headers=headers)
+        self.assertEqual(200, response.status_code)
+        current_menu = json.loads(response.data)['menu']
+        meal_to_order = current_menu[0]
+        data = {'order_id': 1, 'meal': meal_to_order, 'quantity': 1}
+        
+        response = self.client.post('/v1/orders', data=json.dumps(data), headers=headers)
+        self.assertEqual(201, response.status_code)
+        expected = 'Order has been placed'
+        self.assertEqual(expected, json.loads(response.data)['message'])
+
+    def test_edit_order(self):
+        '''test authenticated users can edit orders'''
+        res = self.setup_menu()
+        self.assertEqual(201, res.status_code)
+
+        res = self.login_user()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        # get menu
+        response = self.client.get('/v1/menu', headers=headers)
+        self.assertEqual(200, response.status_code)
+        current_menu = json.loads(response.data)['menu']
+        meal_to_order = current_menu[0]
+        data = {'order_id': 2, 'meal': meal_to_order, 'quantity': 1}
+        # place order
+        response = self.client.post('/v1/orders/', data=json.dumps(data), headers=headers)
+        self.assertEqual(201, response.status_code)
+        order = json.loads(response.data)['order']
+        order_id = order.get('order_id')
+        
+        # put request to edit order
+        data = {'new_data': {'quantity': 2}}
+        response = self.client.put('/v1/orders/{}'.format(order_id), data=json.dumps(data), headers=headers)
+        self.assertEqual(200, response.status_code)
+        expected = {'message': 'Order modified succesfully'}
+        self.assertEqual(expected, json.loads(response.data))
+
+    def test_get_all_orders(self):
+        '''test admin can get all orders'''
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        response = self.client.get('/v1/orders', headers=headers)
+        self.assertEqual(200, response.status_code)
+        orders = self.Database.orders
+        orders = [orders[item].make_dict() for item in orders]
+        expected = {'message': 'All Orders',
+                    'orders': orders}
+        self.assertEqual(expected, json.loads(response.data))
+
+    def test_user_only_get_own_orders(self):
+        '''test only admin can access orders'''
+        # res = self.login_user(username='eve', password='eve123')
+        res = self.login_user()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        response = self.client.get('/v1/orders', headers=headers)
+        self.assertEqual(200, response.status_code)
+        orders = self.Database.user_orders
+        orders = [orders[item].make_dict() for item in orders]
+        expected = {'message': 'All Orders',
+                    'orders': orders}
+        self.assertEqual(expected, json.loads(response.data))

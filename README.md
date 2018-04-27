@@ -1,8 +1,8 @@
 # BOOK A MEAL APP
 
-[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=tests)](https://travis-ci.org/jmutuku95/book-a-meal)
+[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=challenge2_features)](https://travis-ci.org/jmutuku95/book-a-meal)
 
-[![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=master)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=challenge2_features)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=challenge2_features)
 
 challenge2_features
 

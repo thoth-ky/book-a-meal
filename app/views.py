@@ -225,8 +225,9 @@ class MenuResource(Resource):
                     if user.admin:
                         json_data = request.get_json(force=True)
                         meals_list = json_data.get('meal_list')
+                        date = json_data.get('date', '')
                         if meals_list:
-                            menu_object = Menu(meals=meals_list)
+                            menu_object = Menu(meals=meals_list, date=date)
                             err = app_db.add(menu_object)
                             if err:
                                 return{'Error': str(err)}, 202

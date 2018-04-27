@@ -67,3 +67,160 @@ Create new user accounts by providing a username, email and password as a JSON o
             "message": "User registration succesful, proceed to login",
             "access_token": 
         }
+
+## Meal Collection ['/v1/meal/1/']
+
+### Add a new meal [POST]
+
++ Request (application/json)
+
+        {
+            "meal_id": 1,
+            "name": "Fish",
+            "description": "Tasty Tilapia",
+            "price": 150
+        }
+
++ Request 201 (application/json)
+
+        {
+            "message": "New meal created"
+        }
+
+### Get all meal [GET]
+
++ Response 200 (application/json)
+        {
+            "message": "Succesful request"
+            "data": [
+                {
+                    "meal_id": 1,
+                    "name": "Fish",
+                    "description": "Tasty Tilapia",
+                    "price": 150
+                },
+                {
+                    "meal_id": 2,
+                    "name": "Sukuma",
+                    "description": "Fresh kales",
+                    "price": 50
+                }
+            ]
+        }
+
+### Edit a meal [PUT]
+
++ Request (application/json)
+        {
+            "new_data": {
+                "price": 50
+            }
+        }
+
++ Response 202 (application/json)
+
+        {
+            "message": "Meal 1 edited"
+        }
+
+### Delete a meal [DELETE]
+
++ Response 200 (application/json)
+        {
+            "message": Meal 1 deleted"
+        }
+
+
+## Menu Colection ['/v1/menu/']
+
+### Set up Menu [POST]
+
++ Request (application/json)
+
+        {
+            "meal_list": [1, 2]
+            "date": "25-4-2018"
+        }
+
++ Response 201 (application/json)
+        {
+            "message": "Menu created successfully"
+        }
+
+### Get menu [GET]
+
++ Response 200 (application/json)
+        {
+            "message": "Menu request succesful",
+            "menu": [
+                {
+                    "message": "Menu request succesful"
+                    "menu": [
+                        {
+                            "date": "25-4-2018",
+                            "meal_list": [1, 2]
+                        },
+                        {
+                            "date": "24-4-2018",
+                            "meal_list": [1, 4]
+                        }
+                    ]
+                }
+            ]
+        }
+
+## Order Resource [ '/v1/orders/1/']
+
+### Place Order [POST]
+
++ Request (application/json)
+        {
+            "order_id": 1,
+            "meal": 1,
+            "quantity": 3
+        }
+
++ Response 201 (application/json)
+
+        {
+            "message": "Order has been placed",
+            "order": {
+                "order_id": 1,
+                "meal": 1,
+                "quantity": 3
+            }
+        }
+
+### Get Orders [GET]
+
++ Response 200 (application/json)
+
+        {
+            "message": "All orders",
+            "order": [
+                {
+                    "order_id": 1,
+                    "meal": 1,
+                    "quantity": 3
+                },
+                {
+                    "order_id": 1,
+                    "meal": 1,
+                    "quantity": 3
+                }
+            ]
+            
+        }
+
+### Edi Order [PUT]
+
++ Request (application/json)
+
+        {
+            "new_data": {"quantity": 1}
+        }
+
++ Response 200 (application/json)
+        {
+            "message": "Order modified succesfully"
+        }

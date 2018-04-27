@@ -5,6 +5,11 @@ from flask import request
 from . import  app_db
 
 
+class HomeResource(Resource):
+    def get(self):
+        return 'Welcome', 200
+
+
 class UserRegistrationResource(Resource):
     '''Manage user registration when method is POST'''
     def post(self):

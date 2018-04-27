@@ -27,12 +27,13 @@ def create_app(config_name):
     app_context = app.app_context()
     app_context.push()
     # import view resources and models here to avoid circular imports
-    from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource
+    from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource, HomeResource
     
     # create flask api
     api = Api(app)
 
     # add api resources
+    api.add_resource(HomeResource, 'api/v1/')
     api.add_resource(UserRegistrationResource, '/v1/auth/signup', '/v1/auth/signup/')
     api.add_resource(LoginResource, '/v1/auth/signin', '/v1/auth/signin')
     api.add_resource(MealResource, '/v1/meals', '/v1/meals/', '/v1/meals/<meal_id>/')

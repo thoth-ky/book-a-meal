@@ -9,7 +9,7 @@ except ModuleNotFoundError:
     from .app import create_app
 
 # get configuration environment
-config = os.environ.get('APP_SETTINGS')
+config = os.environ.get('APP_SETTINGS') or 'development'
 
 app = create_app(config)
 

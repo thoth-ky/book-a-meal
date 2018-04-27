@@ -1,5 +1,5 @@
 # book-a-meal
-[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=tests)](https://travis-ci.org/jmutuku95/book-a-meal)
+[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=master)](https://travis-ci.org/jmutuku95/book-a-meal)
 
 To access the gh-pages use this url https://jmutuku95.github.io/book-a-meal/UI/startpage.html 
 This is a simple UI navigation for a book-a-meal apllication, the pages contains:

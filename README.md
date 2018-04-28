@@ -1,11 +1,7 @@
 # BOOK A MEAL APP
-[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=master)](https://travis-ci.org/jmutuku95/book-a-meal)
+[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=master)](https://travis-ci.org/jmutuku95/book-a-meal)  [![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=challenge2_features)](https://travis-ci.org/jmutuku95/book-a-meal) [![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=challenge2_features)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=challenge2_features)
 
-[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=challenge2_features)](https://travis-ci.org/jmutuku95/book-a-meal)
-
-[![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=challenge2_features)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=challenge2_features)
-
-This is a simple Application to help a restaurant track it's customer's needs and customers make orders easily. The customers
+This is a simple API to help a restaurant track it's customer's needs and customers make orders easily. The customers
 are supposed to create accounts which they can use later to view menus or place orders for meals
 The Restaurant staff/caterers use priviledged user accounts which allow them to modify, delete some resources
 # Technologies
@@ -14,6 +10,8 @@ This application is build using the following technologies
   1. Python 3.6
   2. Flask Microframework
   3. Dependencies specified in _requirements.txt_ file
+  4. The API has been hosted at heroku: https://bookameal0.herokuapp.com/
+
 Ensure you install the above and create a virtual environment with all dependencies. The _.env_ file contains environment variable
 you need to set first before running the app
 You will need a browser too, to be able to view the webpages, i recommend Firefox v. 59
@@ -28,7 +26,7 @@ The app UI  contains:
   4. A page where the users can see the menu for a specific day and select an option from the menu.
   5.  A page where the caterer can see t he summary of the orders for a specific day and the details for all the orders .
 
-Check it out  at gh-pages using this url https://jmutuku95.github.io/book-a-meal/UI/startpage.html , or just clone this repo into your machine: https://github.com/jmutuku95/book-a-meal.git
+Check out the UI at gh-pages using this url https://jmutuku95.github.io/book-a-meal/UI/startpage.html , or just clone this repo into your machine: https://github.com/jmutuku95/book-a-meal.git
 # PREVIEW
   # Home page
 ![hotcornerhome](https://user-images.githubusercontent.com/28805113/39204996-233f0b4a-4802-11e8-8a1b-9283be8653ec.png)

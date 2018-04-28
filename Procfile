@@ -1,1 +1,1 @@
-web: python book_a_meal.py
+worker: python book_a_meal.py

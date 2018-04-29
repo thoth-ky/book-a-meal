@@ -15,7 +15,7 @@ class UnknownClass(Exception):
 
 
 class BaseModel:
-    
+
     def make_dict(self):
         return self.__dict__
 
@@ -40,6 +40,7 @@ class Meal(BaseModel):
 
 class User(BaseModel):
     """General user details"""
+
     def __init__(self, username, email, password):
         self.username = username
         self.email = email
@@ -65,7 +66,7 @@ class User(BaseModel):
                 payload,
                 str(current_app.config.get('SECRET')),
                 algorithm='HS256'
-                )
+            )
             return token
         except Exception as e:
             return str(e)
@@ -103,7 +104,7 @@ class Menu(BaseModel):
     def __init__(self, meals=[], date=today):
         self.meals = meals
         self.date = str(date)
-        
+
 
 class Database:
     def __init__(self):
@@ -160,6 +161,6 @@ class Database:
     def get_user_by_email(self, email):
         return self.users_email.get(email, '')
 
-    
+
 if __name__ == '__main__':
     database = Database()

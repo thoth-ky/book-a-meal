@@ -24,8 +24,6 @@ def create_app(config_name):
     
     # insert configurations
     app.config.from_object(config_dict[config_name])
-    app_context = app.app_context()
-    app_context.push()
     # import view resources and models here to avoid circular imports
     from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource, HomeResource
     

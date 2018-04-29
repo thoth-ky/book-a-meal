@@ -18,8 +18,6 @@ class BaseTestClass(TestCase):
     def setUp(self):
         self.app = create_app('testing')
         self.client = self.app.test_client()
-        self.app_context = self.app.app_context()
-        self.app_context.push()
         self.new_user = {'username': 'john', 'email': 'john@mail.com',
                          'password': 'password'}
         self.admin_user = {'username': 'admin', 'email': 'admin@mail.com',
@@ -68,10 +66,10 @@ class BaseTestClass(TestCase):
 
     def tearDown(self):
         # reset all database entries to empty dicts
-        app_db.admins = {}
-        app_db.meals = {}
-        app_db.users = {}
-        app_db.users_email = {}
-        app_db.current_menu = {}
-        app_db.orders = {}
-        app_db.user_orders = {}
+        self.database.admins = {}
+        self.database.meals = {}
+        self.database.users = {}
+        self.database.users_email = {}
+        self.database.current_menu = {}
+        self.database.orders = {}
+        self.database.user_orders = {}

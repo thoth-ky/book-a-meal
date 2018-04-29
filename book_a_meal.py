@@ -9,11 +9,11 @@ except ModuleNotFoundError:
     from .app import create_app
 
 # get configuration environment
-config = os.environ.get('APP_SETTINGS') or 'development'
+CONFIG = os.environ.get('APP_SETTINGS') or 'development'
 
-app = create_app(config)
+APP = create_app(CONFIG)
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run('', port=port)
+    PORT = int(os.environ.get('PORT', 5000))
+    APP.run('', port=PORT)

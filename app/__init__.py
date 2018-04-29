@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 from .models import Database
 
-app_db = Database()
+DATABASE = Database()
 
 
 def create_app(config_name):
@@ -25,7 +25,8 @@ def create_app(config_name):
     # insert configurations
     app.config.from_object(config_dict[config_name])
     # import view resources and models here to avoid circular imports
-    from .views import UserRegistrationResource, LoginResource, MealResource, MenuResource, OrderResource, HomeResource
+    from .views import (UserRegistrationResource, LoginResource, MealResource,
+                        MenuResource, OrderResource, HomeResource)
     
     # create flask api
     api = Api(app)
@@ -36,6 +37,7 @@ def create_app(config_name):
     api.add_resource(LoginResource, '/v1/auth/signin', '/v1/auth/signin')
     api.add_resource(MealResource, '/v1/meals', '/v1/meals/', '/v1/meals/<meal_id>/')
     api.add_resource(MenuResource, '/v1/menu', '/v1/menu/')
-    api.add_resource(OrderResource, '/v1/orders', '/v1/orders/', '/v1/orders/<order_id>', '/v1/orders/<order_id>/')
+    api.add_resource(OrderResource, '/v1/orders', '/v1/orders/', '/v1/orders/<order_id>',
+                     '/v1/orders/<order_id>/')
 
     return app

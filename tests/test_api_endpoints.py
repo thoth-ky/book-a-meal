@@ -1,6 +1,5 @@
 '''Tests for api endpoints'''
 import json
-from time import time
 
 # local imports
 from . import BaseTestClass
@@ -32,7 +31,8 @@ class TestUserManagement(BaseTestClass):
         # check returned message
         self.assertEqual(expected, json.loads(response.data))
 
-    def test_cant_register_same_user_twice(self):
+    def test_can_not_register_same_user_twice(self):
+        '''test registering same user twice raises error'''
         response = self.client.post(
             '/v1/auth/signup', data=json.dumps(self.new_user))
         # check status code
@@ -102,7 +102,7 @@ class TestMealsManagement(BaseTestClass):
         response = self.client.get('/v1/meals/{}/'.format(meal_id), headers=headers)
         self.assertEqual(200, response.status_code)
 
-    def test_only_admin_can_get_all_meals(self):
+    def test_only_admin_gets_all_meals(self):
         '''GET /v1/meals is reserved for admin only'''
         res = self.login_user()
         self.assertEqual(200, res.status_code)
@@ -151,6 +151,7 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(200, response.status_code)
 
     def test_only_admin_deletes_meals(self):
+        '''test only user with admin rights can delete meals'''
         res = self.login_user()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
@@ -179,6 +180,7 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(expected, result)
 
     def test_only_admin_can_edit_meals(self):
+        '''test editing meals required admin rights'''
         res = self.login_user()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
@@ -315,7 +317,8 @@ class TestOrdersManagement(BaseTestClass):
         
         # put request to edit order
         data = {'new_data': {'quantity': 2}}
-        response = self.client.put('/v1/orders/{}'.format(order_id), data=json.dumps(data), headers=headers)
+        response = self.client.put('/v1/orders/{}'.format(order_id), data=json.dumps(data),
+                                   headers=headers)
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Order modified succesfully'}
         self.assertEqual(expected, json.loads(response.data))

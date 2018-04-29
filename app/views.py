@@ -1,13 +1,16 @@
 '''This is where code for api resources will go'''
 from flask_restful import Resource
-from .models import Menu, Meal, User, Admin, Order, Database
 from flask import request
-from . import  app_db
+# local imports
+from .models import Menu, Meal, User, Admin, Order, ItemAlreadyExists
+from . import  DATABASE
 
 
 class HomeResource(Resource):
+    '''Display ,message at root url'''
     def get(self):
-        return 'Welcome', 200
+        '''handle GET method'''
+        return 'Welcome to BAM API', 200
 
 
 class UserRegistrationResource(Resource):
@@ -26,64 +29,63 @@ class UserRegistrationResource(Resource):
                     username=username, password=password, email=email,
                     admin=admin)
                 try:
-                    app_db.add(item=admin)
-                except ItemAlreadyExists as e:
+                    DATABASE.add(item=admin)
+                except ItemAlreadyExists as error:
                     return {
                         'message': 'User already exists',
-                        'error': str(e)
+                        'error': str(error)
                     }, 202
                 return {
                     'message': 'Admin registration succesful, proceed to login'
                 }, 201
 
-            else:
-                # register normal user
-                user = User(username=username, password=password, email=email)
-                try:
-                    app_db.add(item=user)
-                except Exception as e:
-                    return {
-                        'message': 'User already exists',
-                        'error': str(e)
-                    }, 202
+            # register normal user
+            user = User(username=username, password=password, email=email)
+            try:
+                DATABASE.add(item=user)
+            except Exception as error:
                 return {
-                    'message': 'User registration succesful, proceed to login'
-                    }, 201
+                    'message': 'User already exists',
+                    'error': str(error)
+                }, 202
+            return {
+                'message': 'User registration succesful, proceed to login'
+                }, 201
 
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'Encountered an error during registration',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
 
 class LoginResource(Resource):
     '''Manage user log in'''
     def post(self):
+        '''Handles POST requests'''
         try:
             post_data = request.get_json(force=True)
             username = post_data.get('username', '')
             email = post_data.get('email', '')
             password = post_data.get('password')
             if username:
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
             elif email:
-                user = app_db.get_user_by_email(email)
+                user = DATABASE.get_user_by_email(email)
             else:
                 user = None
             if user and User.validate_password(user, password):
-                access_token = user.generate_token(username).decode()
+                access_token = user.generate_token().decode()
                 return {
                     'message': 'Successfully logged in',
                     'access_token': access_token
                 }, 200
-            else:
-                return {
-                    'message': 'The username/email or password provided is not correct'}, 401
-        except Exception as e:
+            return {
+                'message': 'The username/email or password provided is not correct'}, 401
+        except Exception as error:
             return {
                 'message': 'Encountered an error during log in',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
 
@@ -96,7 +98,7 @@ class MealResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user.admin:
                         post_data = request.get_json(force=True)
@@ -107,7 +109,7 @@ class MealResource(Resource):
                         meal = Meal(
                             meal_id=meal_id, name=name, price=price,
                             description=description)
-                        err = app_db.add(meal)
+                        err = DATABASE.add(meal)
                         if err:
                             return {
                                 'message': 'Meal not added',
@@ -116,13 +118,13 @@ class MealResource(Resource):
                         return {'message': 'New meal created'}, 201
                     else:
                         return {'message': 'Unauthorized'}, 401
-                except AttributeError as e:
+                except AttributeError as error:
                     return {'message': 'Not authorized for this action',
-                            'Error': str(e)}, 401
-        except Exception as e:
+                            'Error': str(error)}, 401
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
     def get(self, meal_id=None):
@@ -132,30 +134,28 @@ class MealResource(Resource):
             access_token = auth_header.split(" ")[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user.admin:
                         if meal_id:
-                            meal = app_db.meals.get(meal_id, '')
+                            meal = DATABASE.meals.get(meal_id, '')
                             return {
                                 'message': 'Meal {}'.format(meal_id),
                                 'meals': meal.make_dict()
                             }, 200
-                        else:
-                            meals = app_db.meals
-                            meals = [meals[meal].make_dict() for meal in meals]
-                            return {
-                                'message': 'Succesful request',
-                                'data': meals
-                            }, 200
-                    else:
-                        return {'message': 'Unauthorized'}, 401
-                except AttributeError as e:
+                        meals = DATABASE.meals
+                        meals = [meals[meal].make_dict() for meal in meals]
+                        return {
+                            'message': 'Succesful request',
+                            'data': meals
+                        }, 200
+                    return {'message': 'Unauthorized'}, 401
+                except AttributeError as error:
                     return {'message': 'Not authorized for this action'}, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
     def delete(self, meal_id):
@@ -165,24 +165,23 @@ class MealResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user.admin:
-                        del app_db.meals[meal_id]
+                        del DATABASE.meals[meal_id]
                         return {
                             'message': 'Meal {} deleted'.format(meal_id),
                         }, 200
-                    else:
-                        return {'message': 'Unauthorized'}, 401
-                except AttributeError as e:
+                    return {'message': 'Unauthorized'}, 401
+                except AttributeError as error:
                     return {
                         'message': 'Not authorized for this action',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
     def put(self, meal_id):
@@ -192,27 +191,26 @@ class MealResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user.admin:
                         json_data = request.get_json(force=True)
                         new_data = json_data['new_data']
-                        meal = app_db.meals.get(meal_id)
+                        meal = DATABASE.meals.get(meal_id)
                         meal.update(new_data)
                         return {
                             'message': 'Meal {} edited'.format(meal_id),
                         }, 202
-                    else:
-                        return {'message': 'Unauthorized'}, 401
-                except AttributeError as e:
+                    return {'message': 'Unauthorized'}, 401
+                except AttributeError as error:
                     return {
                         'message': 'Unauthorized',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
 
@@ -225,7 +223,7 @@ class MenuResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user.admin:
                         json_data = request.get_json(force=True)
@@ -233,49 +231,48 @@ class MenuResource(Resource):
                         date = json_data.get('date', '')
                         if meals_list:
                             menu_object = Menu(meals=meals_list, date=date)
-                            err = app_db.add(menu_object)
+                            err = DATABASE.add(menu_object)
                             if err:
                                 return{'Error': str(err)}, 202
                             return {'message': 'Menu created successfully'}, 201
-                        else:
-                            return {'message': 'menu object can not be empty'}, 202
-                    else:
-                        return {'message': 'Unauthorized'}, 401
-                except Exception as e:
+                        return {'message': 'menu object can not be empty'}, 202
+                    return {'message': 'Unauthorized'}, 401
+                except Exception as error:
                     return {
                         'message': 'Unauthorized',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
     def get(self):
+        '''handle GET requests'''
         try:
             auth_header = request.headers.get('Authorization')
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user:
-                        menu_items = app_db.current_menu
+                        menu_items = DATABASE.current_menu
                         menu = [menu_items[item].make_dict() for item in menu_items]
                         return {
                             'message': 'Menu request succesful',
                             'menu': menu
-                    }, 200
-                except AttributeError as e:
+                        }, 200
+                except AttributeError as error:
                     return {
                         'message': 'Unauthorized',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
 
@@ -288,7 +285,7 @@ class OrderResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user:
                         post_data = request.get_json(force=True)
@@ -296,21 +293,22 @@ class OrderResource(Resource):
                         meal_id = post_data.get('meal')
                         quantity = post_data.get('quantity')
 
-                        order = Order(order_id=order_id, username=username, quantity=quantity, meal=[meal_id])
-                        err = app_db.add(order)
+                        order = Order(order_id=order_id, username=username, quantity=quantity,
+                                      meal=[meal_id])
+                        err = DATABASE.add(order)
                         if err:
                             return {'Error': str(err)}
                         return {'message': 'Order has been placed', 'order': order.make_dict()}, 201
 
-                except AttributeError as e:
+                except AttributeError as error:
                     return {
                         'message': 'Unauthorized',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
     def get(self, order_id=None):
@@ -320,31 +318,31 @@ class OrderResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user:
                         if order_id:
-                            order = app_db.orders.get(str(order_id), '')
+                            order = DATABASE.orders.get(str(order_id), '')
                             if order.order_by == username or user.admin:
                                 return {'message': 'Order {} retrieved'.format(order_id)}, 200
                         else:
                             if not user.admin:
-                                orders = app_db.user_orders.get(username, '')
+                                orders = DATABASE.user_orders.get(username, '')
                             else:
-                                orders = app_db.orders
+                                orders = DATABASE.orders
                             orders = [orders[item].make_dict() for item in orders]
                             return {'message': 'All Orders',
                                     'orders': orders}
-                        return 'got user'
-                except AttributeError as e:
+                    return {'message': 'Unauthorized'}, 401
+                except AttributeError as error:
                     return {
                         'message': 'Unauthorized',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400
 
     def put(self, order_id):
@@ -354,22 +352,22 @@ class OrderResource(Resource):
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
-                user = app_db.get_user_by_username(username)
+                user = DATABASE.get_user_by_username(username)
                 try:
                     if user:
                         post_data = request.get_json(force=True)
                         new_data = post_data['new_data']
-                        order = app_db.orders.get(order_id, '')
+                        order = DATABASE.orders.get(order_id, '')
                         if order.order_by == username:
                             order.update(new_data)
                             return {'message': 'Order modified succesfully'}, 200
-                except AttributeError as e:
+                except AttributeError as error:
                     return {
                         'message': 'Unauthorized',
-                        'Error': str(e)
+                        'Error': str(error)
                     }, 401
-        except Exception as e:
+        except Exception as error:
             return {
                 'message': 'an error occured',
-                'Error': str(e)
+                'Error': str(error)
             }, 400

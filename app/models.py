@@ -3,20 +3,23 @@ from datetime import datetime, timedelta
 import jwt
 from flask import current_app
 
-today = datetime.utcnow().date()
+TODAY = datetime.utcnow().date()
 
 
 class ItemAlreadyExists(Exception):
+    '''Exception when an object already exists'''
     pass
 
 
 class UnknownClass(Exception):
+    '''Exception for unknown or unexpectd datatypes'''
     pass
 
 
 class BaseModel:
-
+    '''Base model to be inherited  by other modells'''
     def make_dict(self):
+        '''serialize class'''
         return self.__dict__
 
     def update(self, new_data):
@@ -31,11 +34,16 @@ class BaseModel:
 
 
 class Meal(BaseModel):
+    '''Class to represent the Meal objects'''
     def __init__(self, meal_id, name, price, description):
         self.meal_id = meal_id
         self.name = name
         self.price = price
         self.description = description
+
+    def __str__(self):
+        '''String representation of objects'''
+        return '<Meal: {}'.format(self.name)
 
 
 class User(BaseModel):
@@ -47,29 +55,29 @@ class User(BaseModel):
         self.password = password
         self.admin = False
 
+    def __str__(self):
+        '''String repr of the user objects'''
+        return '<User: {}'.format(self.username)
+
     def validate_password(self, password):
         '''check if user password is correct'''
-        if password == self.password:
-            return True
-        else:
-            return False
+        return password == self.password
 
-    def generate_token(self, username):
+    def generate_token(self):
         '''generate access_token'''
         try:
             payload = {
                 'exp': datetime.utcnow() + timedelta(minutes=120),
                 'iat': datetime.utcnow(),
-                'username': username,
+                'username': self.username,
             }
-            token = jwt.encode(
-                payload,
-                str(current_app.config.get('SECRET')),
-                algorithm='HS256'
-            )
+            token = jwt.encode(payload,
+                               str(current_app.config.get('SECRET')),
+                               algorithm='HS256'
+                              )
             return token
-        except Exception as e:
-            return str(e)
+        except Exception as err:
+            return str(err)
 
     @staticmethod
     def decode_token(token):
@@ -87,12 +95,14 @@ class User(BaseModel):
 
 
 class Admin(User):
+    '''Class for admin/caterer objects'''
     def __init__(self, username, email, password, admin=True):
         User.__init__(self, username=username, email=email, password=password)
         self.admin = admin
 
 
 class Order(BaseModel):
+    '''class for orders'''
     def __init__(self, order_id, username, meal, quantity=1,):
         self.meal_id = meal
         self.quantity = quantity
@@ -101,12 +111,14 @@ class Order(BaseModel):
 
 
 class Menu(BaseModel):
-    def __init__(self, meals=[], date=today):
+    '''model for Menus'''
+    def __init__(self, meals, date=TODAY):
         self.meals = meals
         self.date = str(date)
 
 
 class Database:
+    '''Database to store records'''
     def __init__(self):
         self.admins = {}
         self.meals = {}
@@ -117,6 +129,7 @@ class Database:
         self.user_orders = {}
 
     def add(self, item):
+        '''add object to respective holder'''
         if isinstance(item, User):
             if item.username in self.users.keys() or item.email in self.users_email.keys():
                 raise ItemAlreadyExists('User exists')
@@ -156,11 +169,13 @@ class Database:
             return 'Unknown type'
 
     def get_user_by_username(self, username):
+        '''search users by username'''
         return self.users.get(username, '')
 
     def get_user_by_email(self, email):
+        '''search users by email'''
         return self.users_email.get(email, '')
 
 
 if __name__ == '__main__':
-    database = Database()
+    DATABASE = Database()

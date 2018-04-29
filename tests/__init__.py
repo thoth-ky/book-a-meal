@@ -4,11 +4,11 @@ from unittest import TestCase
 import json
 # local imports
 try:
-    from app import create_app, app_db
-    from app.models import Meal, User, Menu, Admin, Order, Database
+    from app import create_app, DATABASE
+    from app.models import Meal, User, Menu, Admin, Order
 except ModuleNotFoundError:
-    from ..app import create_app, app_db
-    from ..app.models import Meal, User, Menu, Admin, Order, Database
+    from ..app import create_app, DATABASE
+    from ..app.models import Meal, User, Menu, Admin, Order
 
 
 class BaseTestClass(TestCase):
@@ -24,7 +24,7 @@ class BaseTestClass(TestCase):
                            'password': 'password', 'admin': True}
         self.test_user = {'username': 'martin', 'email': 'mar@ma.com',
                           'password': 'password'}
-        self.database = app_db
+        self.database = DATABASE
         self.meal_model = Meal
         self.order_model = Order
         self.menu_model = Menu
@@ -34,18 +34,22 @@ class BaseTestClass(TestCase):
         self.meal = {'meal_id': 1, 'name': 'Fish', 'price': 100,
                      'description': 'Tasty Tilapia'}
         self.meal2 = {'meal_id': 2, 'name': 'Beef', 'price': 150,
-                     'description': 'Tasty beef'}
+                      'description': 'Tasty beef'}
         self.register_user()
 
     def create_user(self):
-        u = self.user_model(username=self.test_user['username'], email=self.test_user['email'], password=self.test_user['password'])
-        self.database.add(u)
+        '''create test user'''
+        user = self.user_model(username=self.test_user['username'], email=self.test_user['email'],
+                               password=self.test_user['password'])
+        self.database.add(user)
     
     def register_user(self):
+        '''register test user'''
         new_user = {'username': 'joe', 'email': 'jo@h.com', 'password': 'test1234'}
         self.client.post('/v1/auth/signup', data=json.dumps(new_user))
 
     def login_user(self, username='joe', password='test1234'):
+        '''login test user'''
         user_info = dict(username=username, password=password)
         res = self.client.post('/v1/auth/signin', data=json.dumps(user_info))
         return res

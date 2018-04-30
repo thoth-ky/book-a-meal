@@ -2,8 +2,13 @@
 from flask_restful import Resource
 from flask import request
 # local imports
-from .models import Menu, Meal, User, Admin, Order, ItemAlreadyExists
-from . import  DATABASE
+from ..models.menu import Menu
+from ..models.meal import Meal
+from ..models.user import User
+from ..models.admin import Admin
+from ..models.order import Order
+from ..models import ItemAlreadyExists
+from .. import  DATABASE
 
 
 class HomeResource(Resource):

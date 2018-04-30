@@ -5,10 +5,18 @@ import json
 # local imports
 try:
     from app import create_app, DATABASE
-    from app.models import Meal, User, Menu, Admin, Order
+    from app.models.meal import Meal
+    from app.models.user import User
+    from app.models.menu import Menu
+    from app.models.admin import Admin
+    from app.models.order import Order
 except ModuleNotFoundError:
     from ..app import create_app, DATABASE
-    from ..app.models import Meal, User, Menu, Admin, Order
+    from ..app.models import Meal
+    from ..app.models import User
+    from ..app.models import Menu
+    from ..app.models import Admin
+    from ..app.modls import Order
 
 
 class BaseTestClass(TestCase):

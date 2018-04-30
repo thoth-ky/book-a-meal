@@ -1,0 +1,226 @@
+FORMAT: 1A
+HOST: https://bookameal0.herokuapp.com/
+
+# Book A Meal API
+
+**Book A Meal** is a simple API to help in placing of orders and management of a small restaurant.
+The customers are supposed to create accounts which they can use later to view menus or place orders
+for meals The Restaurant staff/caterers use priviledged user accounts which allow them to modify, delete some resources
+
+# Allowed HTTP Method
++ POST    : To create Users, Meals, Menus, Orders and Login
++ PUT     : To edit meals, orders
++ GET     : To get a resources: Meals, Menus, Orders
++ DELETE  : To delete resource: Meals
+
+# Usual Server Responses:
+
+* 200 OK - the request was successful
+
+* 201 Created - the request was successful and a resource was created.
+
+* 202 Accepted - the request 
+
+* 400 Bad Request - the request could not be understood or was missing required parameters.
+
+* 401 Unauthorized - authentication failed or user doesn't have permissions for requested operation.
+
+* 404 Not Found - resource was not found.
+
+    
+
+
+## User Registration  [/v1/auth/signup]
+
+### SIGN UP [POST]
+
+Create new user accounts by providing a username, email and password as a JSON object
+
++ Request (application/json)
+
+        {
+            "username": "joseph",
+            "email": "joseph@bam.com,
+            "password": "test1234"
+        }
+
++ Response 201 (application/json)
+
+        {
+            "message": "User registration succesful, proceed to login"
+        }
+
+
+## Login Resource [/v1/auth/signin/]
+### SIGN IN [POST]
+
++ Request (application/json)
+
+        {
+            "username": "joseph",
+            "password": "test1234"
+        }
+        
++ Response 201 (application/json)
+
+        {
+            "message": "User registration succesful, proceed to login",
+            "access_token": 
+        }
+
+## Meal Collection [/v1/meal/1/]
+
+### Add a new meal [POST]
+
++ Request (application/json)
+
+        {
+            "meal_id": 1,
+            "name": "Fish",
+            "description": "Tasty Tilapia",
+            "price": 150
+        }
+
++ Request 201 (application/json)
+
+        {
+            "message": "New meal created"
+        }
+
+### Get all meal [GET]
+
++ Response 200 (application/json)
+        {
+            "message": "Succesful request"
+            "data": [
+                {
+                    "meal_id": 1,
+                    "name": "Fish",
+                    "description": "Tasty Tilapia",
+                    "price": 150
+                },
+                {
+                    "meal_id": 2,
+                    "name": "Sukuma",
+                    "description": "Fresh kales",
+                    "price": 50
+                }
+            ]
+        }
+
+### Edit a meal [PUT]
+
++ Request (application/json)
+        {
+            "new_data": {
+                "price": 50
+            }
+        }
+
++ Response 202 (application/json)
+
+        {
+            "message": "Meal 1 edited"
+        }
+
+### Delete a meal [DELETE]
+
++ Response 200 (application/json)
+        {
+            "message": Meal 1 deleted"
+        }
+
+
+## Menu Colection [/v1/menu/]
+
+### Set up Menu [POST]
+
++ Request (application/json)
+
+        {
+            "meal_list": [1, 2]
+            "date": "25-4-2018"
+        }
+
++ Response 201 (application/json)
+        {
+            "message": "Menu created successfully"
+        }
+
+### Get menu [GET]
+
++ Response 200 (application/json)
+        {
+            "message": "Menu request succesful",
+            "menu": [
+                {
+                    "message": "Menu request succesful"
+                    "menu": [
+                        {
+                            "date": "25-4-2018",
+                            "meal_list": [1, 2]
+                        },
+                        {
+                            "date": "24-4-2018",
+                            "meal_list": [1, 4]
+                        }
+                    ]
+                }
+            ]
+        }
+
+## Order Resource [ /v1/orders/1/]
+
+### Place Order [POST]
+
++ Request (application/json)
+        {
+            "order_id": 1,
+            "meal": 1,
+            "quantity": 3
+        }
+
++ Response 201 (application/json)
+
+        {
+            "message": "Order has been placed",
+            "order": {
+                "order_id": 1,
+                "meal": 1,
+                "quantity": 3
+            }
+        }
+
+### Get Orders [GET]
+
++ Response 200 (application/json)
+
+        {
+            "message": "All orders",
+            "order": [
+                {
+                    "order_id": 1,
+                    "meal": 1,
+                    "quantity": 3
+                },
+                {
+                    "order_id": 1,
+                    "meal": 1,
+                    "quantity": 3
+                }
+            ]
+            
+        }
+
+### Edi Order [PUT]
+
++ Request (application/json)
+
+        {
+            "new_data": {"quantity": 1}
+        }
+
++ Response 200 (application/json)
+        {
+            "message": "Order modified succesfully"
+        }

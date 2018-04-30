@@ -54,19 +54,20 @@ class BaseTestClass(TestCase):
     def register_user(self):
         '''register test user'''
         new_user = {'username': 'joe', 'email': 'jo@h.com', 'password': 'test1234'}
-        self.client.post('/v1/auth/signup', data=json.dumps(new_user))
+        self.client.post('/v1/auth/signup/', data=json.dumps(new_user))
 
     def login_user(self, username='joe', password='test1234'):
         '''login test user'''
+        self.create_user()
         user_info = dict(username=username, password=password)
-        res = self.client.post('/v1/auth/signin', data=json.dumps(user_info))
+        res = self.client.post('/v1/auth/signin/', data=json.dumps(user_info))
         return res
 
     def login_admin(self):
         '''helper function to create an admin user and log them in '''
         self.client.post('/v1/auth/signup', data=json.dumps(self.admin_user))
         data = {'password': 'password', 'email': 'admin@mail.com', 'username': 'admin'}
-        res = self.client.post('v1/auth/signin', data=json.dumps(data))
+        res = self.client.post('v1/auth/signin/', data=json.dumps(data))
         return res
 
     def create_meal(self):

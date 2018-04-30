@@ -1,5 +1,5 @@
 '''Initialize app'''
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_restful import Api
 
 # local imports
@@ -13,6 +13,7 @@ from .models.database import Database
 
 DATABASE = Database()
 
+from .views.home import HOME_API
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
@@ -23,22 +24,10 @@ def create_app(config_name):
     # create fllask app
     app = Flask(__name__)
     
+    
     # insert configurations
     app.config.from_object(config_dict[config_name])
-    # import view resources and models here to avoid circular imports
-    from .views.views import (UserRegistrationResource, LoginResource, MealResource,
-                              MenuResource, OrderResource, HomeResource)
-    
-    # create flask api
-    api = Api(app)
+    app.url_map.stict_slashes = False
 
-    # add api resources
-    api.add_resource(HomeResource, '/')
-    api.add_resource(UserRegistrationResource, '/v1/auth/signup', '/v1/auth/signup/')
-    api.add_resource(LoginResource, '/v1/auth/signin', '/v1/auth/signin')
-    api.add_resource(MealResource, '/v1/meals', '/v1/meals/', '/v1/meals/<meal_id>/')
-    api.add_resource(MenuResource, '/v1/menu', '/v1/menu/')
-    api.add_resource(OrderResource, '/v1/orders', '/v1/orders/', '/v1/orders/<order_id>',
-                     '/v1/orders/<order_id>/')
-
+    app.register_blueprint(HOME_API, url_prefix='/api/v1')
     return app

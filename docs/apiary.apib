@@ -27,14 +27,14 @@ for meals The Restaurant staff/caterers use priviledged user accounts which allo
 
 * 404 Not Found - resource was not found.
 
-    
-
 
 ## User Registration  [/v1/auth/signup]
 
+Manages creation of user accounts
+
 ### SIGN UP [POST]
 
-Create new user accounts by providing a username, email and password as a JSON object
+Create new user accounts by providing a username, email and password as a JSON object. To create admin, an additional boolean variable for admin, should be provided as True to create an admin/caterer account. If an error happens , status code 202 is returned for User already exists and 400 for an invalid request.
 
 + Request (application/json)
 
@@ -52,7 +52,12 @@ Create new user accounts by providing a username, email and password as a JSON o
 
 
 ## Login Resource [/v1/auth/signin/]
+
+Manages User Logins
+
 ### SIGN IN [POST]
+
+To login a user, user should provide a username or email and password. If password validation is succesful, user is given a Bearer token and a message confirming successful login. If not valid, a HTTP 401 is returned for unauthorized
 
 + Request (application/json)
 
@@ -61,16 +66,20 @@ Create new user accounts by providing a username, email and password as a JSON o
             "password": "test1234"
         }
         
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "message": "User registration succesful, proceed to login",
             "access_token": 
         }
 
-## Meal Collection [/v1/meal/1/]
+## Meal Resource [/v1/meal/1/]
 
-### Add a new meal [POST]
+Manages meals collections, this is an entirely restricted collection accesible to users with only Admin access
+### Add A Meal [POST]
+To add a new meal, an authentcated admin user should provide the following:
+    * meal_id (integer, unique) 
+    * name (String, unique)
 
 + Request (application/json)
 
@@ -212,7 +221,7 @@ Create new user accounts by providing a username, email and password as a JSON o
             
         }
 
-### Edi Order [PUT]
+### Edit Order [PUT]
 
 + Request (application/json)
 

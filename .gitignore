@@ -1,11 +1,12 @@
 *.pyc
 env.bat
 */__pycache__/*
-*.pytest_cache/*
-*.db
+.pytest_cache/*
+*/.pytest_cache/*
+*.db 
 .env
 .cache/*
-.coverage
+.coverage 
 */migrations/*
 migrations/*
 

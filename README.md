@@ -68,7 +68,7 @@ The tests were run on postman and the unittests were run using  **pytest**
 
 # API endpoints
 NB: All endpoints should be prefixed with **_/api/v1_**
-For more detailed explanations, see the at [BOOK A MEAL DOCS](https://bookameal1.docs.apiary.io/)
+For more detailed explanations, see the at [BOOK A MEAL DOCS](https://bookameal0.docs.apiary.io/#)
 
 
 | EndPoint          | Function                    |METHOD       |

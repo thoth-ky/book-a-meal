@@ -7,5 +7,6 @@ env.bat
 .cache/*
 .coverage
 */migrations/*
+migrations/*
 
  

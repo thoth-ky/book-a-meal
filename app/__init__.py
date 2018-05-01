@@ -31,9 +31,9 @@ def create_app(config_name):
     app = Flask(__name__)
     # insert configurations
     app.config.from_object(config_dict[config_name])
-    app.url_map.stict_slashes = False
-    # initialise database
+    app.url_map.strict_slashes = False
     DB.init_app(app)
+    
     # import models here to avoid  circular imports
     from .models  import models
 

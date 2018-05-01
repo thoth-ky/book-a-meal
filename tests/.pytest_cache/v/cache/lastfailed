@@ -1,0 +1,8 @@
+{
+  "test_auth.py::TestUserManagement::test_can_not_register_same_user_twice": true,
+  "test_auth.py::TestUserManagement::test_can_register_admin": true,
+  "test_auth.py::TestUserManagement::test_login_with_wrong_password": true,
+  "test_auth.py::TestUserManagement::test_user_login": true,
+  "test_auth.py::TestUserManagement::test_user_registration": true,
+  "test_database.py::TestDatabase::test_cant_edit_order_after_given_time": true
+}

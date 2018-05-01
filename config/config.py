@@ -10,7 +10,7 @@ class Config:
     DB_USER =  os.getenv('DB_USER')
     DB_NAME = os.getenv('DB_NAME')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
-    SQLALCHEMY_DATABASE_URI = "postgresql://127.0.0.1:5432/{}".format(DB_NAME)
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@127.0.0.1:5432/{}'.format(DB_USER, DB_PASSWORD, DB_NAME)
 
 
 class DevelopmentConfig(Config):
@@ -24,7 +24,7 @@ class TestingConfig(Config):
     DB_USER =  os.getenv('DB_USER')
     TEST_DB_NAME = os.getenv('DB_NAME')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
-    SQLALCHEMY_DATABASE_URI = "postgresql://127.0.0.1:5432/{}".format(TEST_DB_NAME)
+    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@127.0.0.1:5432/{}'.format(DB_USER, DB_PASSWORD, TEST_DB_NAME)
 
 
 class ProductionConfig(Config):

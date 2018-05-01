@@ -1,5 +1,5 @@
 '''This is where code for api resources will go'''
-from flask_restful import Resource
+from flask_restful import Resource, Api
 from flask import request
 
 # local imports
@@ -8,7 +8,6 @@ from ..models.user import User
 from .. import  DATABASE
 from . import Blueprint
 
-ORDER_BLUEPRINT = Blueprint('order', __name__)
 
 class OrderResource(Resource):
     '''Resource for managing Orders'''
@@ -106,8 +105,7 @@ class OrderResource(Resource):
                 'Error': str(error)
             }, 400
 
-# instantiate resource as view
-ORDER_VIEW = OrderResource.as_view('order_view')
-# add url
-ORDER_BLUEPRINT.add_url_rule(
-	   '/v1/auth/signin', view_func=ORDER_VIEW, methods=['POST', 'GET', 'PUT'])
+ORDER_API = Blueprint('app.views.orderresource', __name__)
+API = Api(ORDER_API)
+API.add_resource(OrderResource, '/orders', endpoint='orders')
+API.add_resource(OrderResource, '/orders/<order_id>', endpoint='order')

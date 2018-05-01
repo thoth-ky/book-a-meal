@@ -5,7 +5,6 @@ from flask import request
 # local imports
 from . import Blueprint
 
-HOME_BLUEPRINT = Blueprint('home', __name__)
 
 
 class HomeResource(Resource):
@@ -13,8 +12,10 @@ class HomeResource(Resource):
     def get(self):
         '''handle GET method'''
         return 'Welcome to BAM API', 200
+    def post(self):
+    	return 'Welcome to BAM API', 200
 
 
 HOME_API = Blueprint('app.views.home', __name__)
-api = Api(HOME_API)
-api.add_resource(HomeResource, '/', endpoint='home')
+API = Api(HOME_API)
+API.add_resource(HomeResource, '/', endpoint='home')

@@ -1,5 +1,5 @@
 '''home bueprint'''
-from flask_restful import Resource
+from flask_restful import Resource, Api
 from flask import request
 
 # local imports
@@ -7,8 +7,6 @@ from ..models.meal import Meal
 from ..models.user import User
 from .. import  DATABASE
 from . import Blueprint
-
-MEAL_BLUEPRINT = Blueprint('meal', __name__)
 
 
 class MealResource(Resource):
@@ -135,8 +133,8 @@ class MealResource(Resource):
                 'Error': str(error)
             }, 400
 
-# instantiate resource as view
-MEAL_VIEW = MealResource.as_view('meal_view')
-# add url
-MEAL_BLUEPRINT.add_url_rule(
-	   '/v1/auth/signin', view_func=MEAL_VIEW, methods=['POST', 'GET', 'PUT', 'DELETE'])
+
+MEAL_API = Blueprint('app.views.mealsresource', __name__)
+API = Api(MEAL_API)
+API.add_resource(MealResource, '/meals', endpoint='meals')
+API.add_resource(MealResource, '/meals/<meal_id>', endpoint='meal')

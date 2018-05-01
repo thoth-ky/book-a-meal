@@ -88,6 +88,6 @@ class LoginResource(Resource):
             }, 400
 
 AUTH_API = Blueprint('app.views.authresource', __name__)
-api = Api(AUTH_API)
-api.add_resource(UserRegistrationResource, '/signup', endpoint='signup')
-api.add_resource(LoginResource, '/signin', endpoint='signin')
+API = Api(AUTH_API)
+API.add_resource(UserRegistrationResource, '/auth/signup', endpoint='signup')
+API.add_resource(LoginResource, '/auth/signin', endpoint='signin')

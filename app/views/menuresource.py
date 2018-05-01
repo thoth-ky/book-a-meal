@@ -1,5 +1,5 @@
 '''This is where code for api resources will go'''
-from flask_restful import Resource
+from flask_restful import Resource, Api
 from flask import request
 
 # local imports
@@ -7,8 +7,6 @@ from ..models.menu import Menu
 from ..models.user import User
 from .. import DATABASE
 from . import Blueprint
-
-MENU_BLUEPRINT = Blueprint('menu', __name__)
 
 
 class MenuResource(Resource):
@@ -72,7 +70,6 @@ class MenuResource(Resource):
                 'Error': str(error)
             }, 400
 
-# instantiate resource as view
-MENU_VIEW = MenuResource.as_view('menu_view')
-# add url
-MENU_BLUEPRINT.add_url_rule('/v1/auth/signin', view_func=MENU_VIEW, methods=['POST', 'GET'])
+MENU_API = Blueprint('app.views.menuresource', __name__)
+API = Api(MENU_API)
+API.add_resource(MenuResource, '/menu', endpoint='menu')

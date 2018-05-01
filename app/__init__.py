@@ -12,8 +12,15 @@ from .models.database import Database
 
 
 DATABASE = Database()
+URL_PREFIX = '/api/v1'
 
 from .views.home import HOME_API
+from .views.authresource import AUTH_API
+from .views.mealsresource import MEAL_API
+from .views.menuresource import MENU_API
+from .views.orderresource import ORDER_API
+
+
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
@@ -23,11 +30,13 @@ def create_app(config_name):
 
     # create fllask app
     app = Flask(__name__)
-    
-    
     # insert configurations
     app.config.from_object(config_dict[config_name])
     app.url_map.stict_slashes = False
 
-    app.register_blueprint(HOME_API, url_prefix='/api/v1')
+    app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
     return app

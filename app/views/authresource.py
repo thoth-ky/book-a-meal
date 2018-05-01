@@ -3,8 +3,8 @@ from flask_restful import Resource, Api
 from flask import request
 
 # local imports
-from ..models.user import User
-from ..models.admin import Admin
+from ..models import User
+from ..models.import Admin
 from .. import  DATABASE
 from ..models import ItemAlreadyExists
 from . import Blueprint
@@ -22,24 +22,15 @@ class UserRegistrationResource(Resource):
             password = post_data.get('password')
             email = post_data.get('email')
             admin = post_data.get('admin', '')
+            user = User(username=username, password=password, email=email)
             if admin:
-                # register user using Admin model
-                admin = Admin(
-                    username=username, password=password, email=email,
-                    admin=admin)
-                try:
-                    DATABASE.add(item=admin)
-                except ItemAlreadyExists as error:
-                    return {
-                        'message': 'User already exists',
-                        'error': str(error)
-                    }, 202
+                User.promote_user()
                 return {
                     'message': 'Admin registration succesful, proceed to login'
                 }, 201
 
             # register normal user
-            user = User(username=username, password=password, email=email)
+            
             try:
                 DATABASE.add(item=user)
             except Exception as error:

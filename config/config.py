@@ -22,7 +22,7 @@ class TestingConfig(Config):
     '''Configuration settings specific to testing environment'''
     DEBUG = True
     DB_USER =  os.getenv('DB_USER')
-    TEST_DB_NAME = os.getenv('DB_NAME')
+    TEST_DB_NAME = os.getenv('TEST_DB_NAME')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
     SQLALCHEMY_DATABASE_URI = "postgresql://127.0.0.1:5432/{}".format(TEST_DB_NAME)
 

@@ -32,11 +32,15 @@ def create_app(config_name):
     app = Flask(__name__)
     # insert configurations
     app.config.from_object(config_dict[config_name])
-    app.url_map.stict_slashes = False
+    app.url_map.strict_slashes = False
+    DB.init_app(app)
+    
+    # import models here to avoid  circular imports
+    from .models  import models
 
-    app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
-    app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
-    app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
-    app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
-    app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
+    # app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
+    # app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
+    # app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
+    # app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
+    # app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
     return app

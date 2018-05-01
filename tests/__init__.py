@@ -1,22 +1,14 @@
 '''This contains a a basetest case'''
-
+from datetime import datetime
 from unittest import TestCase
 import json
 # local imports
 try:
-    from app import create_app, DATABASE
-    from app.models.meal import Meal
-    from app.models.user import User
-    from app.models.menu import Menu
-    from app.models.admin import Admin
-    from app.models.order import Order
+    from app import create_app, DB
+    from app.models.models import Meal, User, Order, Menu
 except ModuleNotFoundError:
-    from ..app import create_app, DATABASE
-    from ..app.models import Meal
-    from ..app.models import User
-    from ..app.models import Menu
-    from ..app.models import Admin
-    from ..app.modls import Order
+    from ..app import create_app, DB
+    from ..app.models.models import Meal, User, Order, Menu
 
 SIGNUP_URL = '/api/v1/auth/signup'
 SIGNIN_URL = '/api/v1/auth/signin'
@@ -27,32 +19,40 @@ class BaseTestClass(TestCase):
     all common variables methods'''
 
     def setUp(self):
+        self.maxDiff = None;
         self.app = create_app('testing')
         self.client = self.app.test_client()
-        self.new_user = {'username': 'john', 'email': 'john@mail.com',
-                         'password': 'password'}
-        self.admin_user = {'username': 'admin', 'email': 'admin@mail.com',
-                           'password': 'password', 'admin': True}
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        self.database = DB
+        DB.drop_all()
+        DB.create_all()
         self.test_user = {'username': 'martin', 'email': 'mar@ma.com',
                           'password': 'password'}
-        self.database = DATABASE
+        
         self.meal_model = Meal
         self.order_model = Order
         self.menu_model = Menu
         self.order_model = Order
         self.user_model = User
-        self.admin_model = Admin
-        self.meal = {'meal_id': 1, 'name': 'Fish', 'price': 100,
-                     'description': 'Tasty Tilapia'}
-        self.meal2 = {'meal_id': 2, 'name': 'Beef', 'price': 150,
-                      'description': 'Tasty beef'}
-        self.register_user()
+        self.user1 = User(email='john@m.com', password='password', username='johndoe')
+        self.user2 = User(email='jan@m.com', username='jando',  password='password')
+
+        self.menu = Menu()
+        self.menu1 = Menu(date=datetime(year=2018, month=4, day=18))
+        self.menu2 = Menu(date=datetime(year=2018, month=4, day=19))
+
+        self.meal1 = Meal(name='Rice & Beef', price=100.00, description='Rice with beef. Yummy.')
+        self.meal2 = Meal(name='Ugali Fish', price=150.00, description='Ugali and fish, Nyanza tings!')
+        self.meal3 = Meal(name='Muthokoi', price=100.00, description='Kamba tributes')
+        # self.register_user()
 
     def create_user(self):
         '''create test user'''
         user = self.user_model(username=self.test_user['username'], email=self.test_user['email'],
                                password=self.test_user['password'])
-        self.database.add(user)
+        user.save()
+        return user
     
     def register_user(self):
         '''register test user'''
@@ -76,16 +76,12 @@ class BaseTestClass(TestCase):
     def create_meal(self):
         '''helper function to populate Meals so tests on menu and orders 
         can work'''
-        meal = self.meal_model(
-            meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-        self.database.add(meal)
+        meal = self.meal_model(name='Fish', price=100, description='Tasty Tilapia')
+        meal.save()
+        return meal
 
     def tearDown(self):
         # reset all database entries to empty dicts
-        self.database.admins = {}
-        self.database.meals = {}
-        self.database.users = {}
-        self.database.users_email = {}
-        self.database.current_menu = {}
-        self.database.orders = {}
-        self.database.user_orders = {}
+        DB.session.remove()
+        DB.drop_all()
+        self.app_context.pop()

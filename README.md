@@ -55,7 +55,7 @@ Check out the UI at gh-pages at Book A Meal UI: [Book A Meal](https://jmutuku95.
 # PREVIEW
   # Home page
 Here is a preview of home page
-<img src="![hotcornerhome](https://user-images.githubusercontent.com/28805113/39204996-233f0b4a-4802-11e8-8a1b-9283be8653ec.png)" style="width: 500;">
+![hotcornerhome](https://user-images.githubusercontent.com/28805113/39204996-233f0b4a-4802-11e8-8a1b-9283be8653ec.png)
 
 # Testing
 The tests were run on postman and the unittests were run using  **pytest**
@@ -90,7 +90,7 @@ For more detailed explanations, see the at [BOOK A MEAL DOCS](https://bookameal1
  Tests were run on postman, here is an example of the output
 
   # New User Registration
-  <img src="![user_reg](https://user-images.githubusercontent.com/28805113/39317984-8e728296-4985-11e8-89c7-ca5bb36b6c04.jpg)" style="width: 500;">
+![user_reg](https://user-images.githubusercontent.com/28805113/39317984-8e728296-4985-11e8-89c7-ca5bb36b6c04.jpg)
  
 # Authors
 * **Joseph Mutuku Kyalo** 

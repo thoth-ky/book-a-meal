@@ -97,11 +97,9 @@ For more detailed explanations, see the at [BOOK A MEAL DOCS](https://bookameal1
 
 # Acknowledgements
 Thanks to the following for reviewing the code:
-  * James Kinyua
-  * Clement Wekesa
-Thanks to everyone I consulted, Peers at Andela Kenya, Online bloggers and the entire Python and Flask community
+  * **James Kinyua**
+  * **Clement Wekes**
+  * Everyone I consulted, Peers at Andela Kenya, Online bloggers and the entire Python and Flask community
 
 
 _Feel free to give suggestions on how to improve the site more._
-=======
-# book-a-meal

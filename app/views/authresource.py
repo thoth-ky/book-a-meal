@@ -54,8 +54,15 @@ class LoginResource(Resource):
             password = post_data.get('password')
             if User.has(username=username) or User.has(email=email):
                 # proceed to login user
-                user = User.get(username=username) or User.get(email=email)
-                if User.validate_password(password):
+                if email:
+                    user = User.get(email=email)
+                if username:
+                    user = User.get(username=username)
+                
+                print('--------------------------------------------------------------------------------------', user)
+                if user.validate_password(password):
+                    print('test--------------------------------------------------------------------------------------')
+                    
                     access_token = user.generate_token().decode()
                     return {
                         'message': 'Successfully logged in',

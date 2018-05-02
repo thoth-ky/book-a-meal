@@ -81,8 +81,8 @@ class BaseModel(DB.Model):
         return False
 
     @classmethod
-    def get(cls, *kwargs):
-        return cls.query.filter_by(**kwargs)
+    def get(cls, **kwargs):
+        return cls.query.filter_by(**kwargs).first()
 
 class User(BaseModel):
     """General user details"""

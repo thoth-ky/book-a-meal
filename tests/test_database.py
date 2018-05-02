@@ -1,4 +1,5 @@
 '''Tests for database'''
+import time
 from datetime import datetime
 from . import BaseTestClass
 
@@ -104,4 +105,13 @@ class TestDatabase(BaseTestClass):
         self.assertTrue(isinstance(order2.meal, self.meal_model))
 
     def test_cant_edit_order_after_given_time(self):
-        pass
+        '''This will assume user is given 30 seconds ater creating an order to edit it, deployment this should be set'''
+        self.meal1.save()
+        self.meal2.save()
+        user = self.create_user()
+        order_id = self.order_model.generate_order_id()
+        order = self.order_model(order_id=order_id, meal=self.meal1, user_id=user.user_id)
+        order.save()
+        self.assertTrue(order.editable())
+        time.sleep(100)
+        self.assertFalse(order.editable())

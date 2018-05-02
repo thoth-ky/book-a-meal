@@ -3,10 +3,7 @@ from flask_restful import Resource, Api
 from flask import request
 
 # local imports
-from ..models import User
-from ..models.import Admin
-from .. import  DATABASE
-from ..models import ItemAlreadyExists
+from ..models.models import User
 from . import Blueprint
 
 # Blueprint instance representing authentication blueprint
@@ -21,23 +18,20 @@ class UserRegistrationResource(Resource):
             username = post_data.get('username')
             password = post_data.get('password')
             email = post_data.get('email')
-            admin = post_data.get('admin', '')
+            admin = post_data.get('admin', False)
+            if User.has(username=username) or User.has(email=email):
+                return{
+                    'message': 'Username or Email not available.'
+                }, 202
             user = User(username=username, password=password, email=email)
+            user.save()
             if admin:
-                User.promote_user()
+                User.promote_user(user)
                 return {
                     'message': 'Admin registration succesful, proceed to login'
                 }, 201
 
             # register normal user
-            
-            try:
-                DATABASE.add(item=user)
-            except Exception as error:
-                return {
-                    'message': 'User already exists',
-                    'error': str(error)
-                }, 202
             return {
                 'message': 'User registration succesful, proceed to login'
                 }, 201
@@ -58,18 +52,15 @@ class LoginResource(Resource):
             username = post_data.get('username', '')
             email = post_data.get('email', '')
             password = post_data.get('password')
-            if username:
-                user = DATABASE.get_user_by_username(username)
-            elif email:
-                user = DATABASE.get_user_by_email(email)
-            else:
-                user = None
-            if user and User.validate_password(user, password):
-                access_token = user.generate_token().decode()
-                return {
-                    'message': 'Successfully logged in',
-                    'access_token': access_token
-                }, 200
+            if User.has(username=username) or User.has(email=email):
+                # proceed to login user
+                user = User.get(username=username) or User.get(email=email)
+                if User.validate_password(password):
+                    access_token = user.generate_token().decode()
+                    return {
+                        'message': 'Successfully logged in',
+                        'access_token': access_token
+                    }, 200
             return {
                 'message': 'The username/email or password provided is not correct'}, 401
         except Exception as error:

@@ -27,23 +27,24 @@ class BaseTestClass(TestCase):
         self.database = DB
         DB.drop_all()
         DB.create_all()
-        self.test_user = {'username': 'martin', 'email': 'mar@ma.com',
-                          'password': 'password'}
-        
+        self.test_user = {'username': 'martin', 'email': 'martin@mail.com', 'password': 'password'}
+        self.admin_user = {'username':'admin', 'email':'admin@mail.com', 'password':'admin1234',
+                           'admin':True}
         self.meal_model = Meal
         self.order_model = Order
         self.menu_model = Menu
         self.order_model = Order
         self.user_model = User
-        self.user1 = User(email='john@m.com', password='password', username='johndoe')
-        self.user2 = User(email='jan@m.com', username='jando',  password='password')
+        self.user1 = User(email='mike@mail.com', password='password', username='mail')
+        self.user2 = User(email='bev@mail.com', username='bev',  password='password')
 
         self.menu = Menu()
         self.menu1 = Menu(date=datetime(year=2018, month=4, day=18))
         self.menu2 = Menu(date=datetime(year=2018, month=4, day=19))
 
         self.meal1 = Meal(name='Rice & Beef', price=100.00, description='Rice with beef. Yummy.')
-        self.meal2 = Meal(name='Ugali Fish', price=150.00, description='Ugali and fish, Nyanza tings!')
+        self.meal2 = Meal(name='Ugali Fish', price=150.00,
+                          description='Ugali and fish, Nyanza tings!')
         self.meal3 = Meal(name='Muthokoi', price=100.00, description='Kamba tributes')
         # self.register_user()
 
@@ -56,7 +57,7 @@ class BaseTestClass(TestCase):
     
     def register_user(self):
         '''register test user'''
-        new_user = {'username': 'joe', 'email': 'jo@h.com', 'password': 'test1234'}
+        new_user = {'username': 'joe', 'email': 'joe@mail.com', 'password': 'test1234'}
         self.client.post(SIGNUP_URL, data=json.dumps(new_user))
 
     def login_user(self, username='joe', password='test1234'):

@@ -11,10 +11,10 @@ from sqlalchemy.orm import relationship, backref
 # local imports
 from .. import DB
 
-ORDER_MEALS = DB.Table(
-    'order_meals',
-    DB.Column('order_id', DB.Integer(), DB.ForeignKey('order.id')),
-    DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id')))
+# ORDER_MEALS = DB.Table(
+#     'order_meals',
+#     DB.Column('order_id', DB.Integer(), DB.ForeignKey('order.id')),
+#     DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id')))
 
 MENU_MEALS = DB.Table(
     'menu_meals',
@@ -73,6 +73,16 @@ class BaseModel(DB.Model):
             setattr(self, field, value)
             self.save()
 
+    @classmethod
+    def has(cls,**kwargs):
+        obj = cls.query.filter_by(**kwargs).first()
+        if obj:
+            return True
+        return False
+
+    @classmethod
+    def get(cls, *kwargs):
+        return cls.query.filter_by(**kwargs)
 
 class User(BaseModel):
     """General user details"""
@@ -81,7 +91,8 @@ class User(BaseModel):
     email = DB.Column(DB.String, unique=True, nullable=False)
     username = DB.Column(DB.String, unique=True, nullable=False)
     password_hash = DB.Column(DB.String, nullable=False)
-    caterer = DB.Column(DB.Boolean, default=False)
+    admin = DB.Column(DB.Boolean, default=False)
+    super_user = DB.Column(DB.Boolean, default=False)
     orders = relationship('Order', backref='owner', lazy='dynamic')
 
     def __init__(self, username, email, password):
@@ -215,8 +226,9 @@ class Order(BaseModel):
 
     def editable(self):
         '''checks if it's allowed to edit order'''
+        time_limit = int(current_app.config.get('ORDER_EDITS_UPTO'))
         now = time.time()
-        if time_ordered - now > 300:
+        if self.time_ordered - now >= time_limit:
             return False
         return True
 

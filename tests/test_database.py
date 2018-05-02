@@ -98,14 +98,10 @@ class TestDatabase(BaseTestClass):
         order2 = self.order_model(order_id=order_id, meal=self.meal2, user_id=user.user_id, quantity=4)
         order1.save()
         order2.save()
-
-        orders = self.order_model.query.filter_by(order_id=order_id)
-        self.assertTrue(len(orders), 2)
-        for order in orders:
-            self.assertEqual(order.owner, user)
-
-
-        pass
+        self.assertTrue(isinstance(order1.owner, self.user_model))
+        self.assertTrue(isinstance(order1.meal, self.meal_model))
+        self.assertTrue(isinstance(order2.owner, self.user_model))
+        self.assertTrue(isinstance(order2.meal, self.meal_model))
 
     def test_cant_edit_order_after_given_time(self):
         pass

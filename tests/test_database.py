@@ -9,9 +9,9 @@ class TestDatabase(BaseTestClass):
     def test_can_add_user(self):
         '''test users can be added to db'''
         user = self.user_model(
-            username='joe', email='j@ma.com', password='test1234')
+            username='sagini', email='sagini@ma.com', password='test1234')
         user.save()
-        q_user = self.user_model.query.filter_by(username='joe').first()
+        q_user = self.user_model.query.filter_by(username='sagini').first()
         self.assertEqual(user, q_user)
 
     def test_user_can_be_promoted(self):
@@ -93,7 +93,7 @@ class TestDatabase(BaseTestClass):
     def test_user_can_order_several_meals(self):
         self.meal1.save()
         self.meal2.save()
-        user = self.create_user()
+        user = self.user_model.get(username='joe')
         order_id = self.order_model.generate_order_id()
         order1 = self.order_model(order_id=order_id, meal=self.meal1, user_id=user.user_id)
         order2 = self.order_model(order_id=order_id, meal=self.meal2, user_id=user.user_id, quantity=4)
@@ -108,10 +108,10 @@ class TestDatabase(BaseTestClass):
         '''This will assume user is given 30 seconds ater creating an order to edit it, deployment this should be set'''
         self.meal1.save()
         self.meal2.save()
-        user = self.create_user()
+        user = self.user_model.get(username='joe')
         order_id = self.order_model.generate_order_id()
         order = self.order_model(order_id=order_id, meal=self.meal1, user_id=user.user_id)
         order.save()
         self.assertTrue(order.editable())
-        time.sleep(100)
+        time.sleep(3)
         self.assertFalse(order.editable())

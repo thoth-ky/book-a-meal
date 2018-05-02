@@ -46,7 +46,6 @@ class BaseTestClass(TestCase):
         self.meal2 = Meal(name='Ugali Fish', price=150.00,
                           description='Ugali and fish, Nyanza tings!')
         self.meal3 = Meal(name='Muthokoi', price=100.00, description='Kamba tributes')
-        # self.register_user()
 
     def create_user(self):
         '''create test user'''

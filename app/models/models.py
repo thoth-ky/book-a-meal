@@ -28,14 +28,15 @@ class BaseModel(DB.Model):
 
     def make_dict(self):
         '''serialize class'''
-        # dictionary = {col.name: getattr(self, col.name) for col in self.__table__.Columns}
-        return  self.__dict__
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
+        # return  self.__dict__
 
     def save(self):
         '''save object'''
         try:
             DB.session.add(self)
             DB.session.commit()
+            return None
         except Exception as e:
             raise e
             DB.session.rollback()
@@ -83,6 +84,7 @@ class BaseModel(DB.Model):
     @classmethod
     def get(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first()
+
 
 class User(BaseModel):
     """General user details"""

@@ -18,7 +18,6 @@ from .views.authresource import AUTH_API
 # from .views.orderresource import ORDER_API
 
 
-
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
     the value for config can be either: 'development', 'testing'. 

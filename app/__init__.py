@@ -1,5 +1,5 @@
 '''Initialize app'''
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_restful import Api
 
 # local imports
@@ -8,9 +8,18 @@ try:
 except ModuleNotFoundError:
     from ..config.config import config_dict
 
-from .models import Database
+from .models.database import Database
+
 
 DATABASE = Database()
+URL_PREFIX = '/api/v1'
+
+from .views.home import HOME_API
+from .views.authresource import AUTH_API
+from .views.mealsresource import MEAL_API
+from .views.menuresource import MENU_API
+from .views.orderresource import ORDER_API
+
 
 
 def create_app(config_name):
@@ -21,23 +30,13 @@ def create_app(config_name):
 
     # create fllask app
     app = Flask(__name__)
-    
     # insert configurations
     app.config.from_object(config_dict[config_name])
-    # import view resources and models here to avoid circular imports
-    from .views import (UserRegistrationResource, LoginResource, MealResource,
-                        MenuResource, OrderResource, HomeResource)
-    
-    # create flask api
-    api = Api(app)
+    app.url_map.stict_slashes = False
 
-    # add api resources
-    api.add_resource(HomeResource, '/')
-    api.add_resource(UserRegistrationResource, '/v1/auth/signup', '/v1/auth/signup/')
-    api.add_resource(LoginResource, '/v1/auth/signin', '/v1/auth/signin')
-    api.add_resource(MealResource, '/v1/meals', '/v1/meals/', '/v1/meals/<meal_id>/')
-    api.add_resource(MenuResource, '/v1/menu', '/v1/menu/')
-    api.add_resource(OrderResource, '/v1/orders', '/v1/orders/', '/v1/orders/<order_id>',
-                     '/v1/orders/<order_id>/')
-
+    app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
     return app

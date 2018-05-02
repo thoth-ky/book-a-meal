@@ -5,10 +5,21 @@ import json
 # local imports
 try:
     from app import create_app, DATABASE
-    from app.models import Meal, User, Menu, Admin, Order
+    from app.models.meal import Meal
+    from app.models.user import User
+    from app.models.menu import Menu
+    from app.models.admin import Admin
+    from app.models.order import Order
 except ModuleNotFoundError:
     from ..app import create_app, DATABASE
-    from ..app.models import Meal, User, Menu, Admin, Order
+    from ..app.models import Meal
+    from ..app.models import User
+    from ..app.models import Menu
+    from ..app.models import Admin
+    from ..app.modls import Order
+
+SIGNUP_URL = '/api/v1/auth/signup'
+SIGNIN_URL = '/api/v1/auth/signin'
 
 
 class BaseTestClass(TestCase):
@@ -46,19 +57,20 @@ class BaseTestClass(TestCase):
     def register_user(self):
         '''register test user'''
         new_user = {'username': 'joe', 'email': 'jo@h.com', 'password': 'test1234'}
-        self.client.post('/v1/auth/signup', data=json.dumps(new_user))
+        self.client.post(SIGNUP_URL, data=json.dumps(new_user))
 
     def login_user(self, username='joe', password='test1234'):
         '''login test user'''
+        self.create_user()
         user_info = dict(username=username, password=password)
-        res = self.client.post('/v1/auth/signin', data=json.dumps(user_info))
+        res = self.client.post(SIGNIN_URL, data=json.dumps(user_info))
         return res
 
     def login_admin(self):
         '''helper function to create an admin user and log them in '''
-        self.client.post('/v1/auth/signup', data=json.dumps(self.admin_user))
+        self.client.post(SIGNUP_URL, data=json.dumps(self.admin_user))
         data = {'password': 'password', 'email': 'admin@mail.com', 'username': 'admin'}
-        res = self.client.post('v1/auth/signin', data=json.dumps(data))
+        res = self.client.post(SIGNIN_URL, data=json.dumps(data))
         return res
 
     def create_meal(self):

@@ -234,9 +234,9 @@ class Order(BaseModel):
 
     @staticmethod
     def generate_order_id():
-        cart_id =''
+        order_id =''
         chars = 'ABCDEFGHIJKLMNOPQRQSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
-        cart_id_length = 50
-        for y in range(cart_id_length):
-            cart_id += chars[random.randint(0, len(chars) - 1)]
-        return cart_id
+        order_id_length = 50
+        for y in range(order_id_length):
+            order_id += chars[random.randint(0, len(chars) - 1)]
+        return order_id

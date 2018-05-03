@@ -1,6 +1,7 @@
 import jwt
+from functools import wraps
 from flask import request
-from .models.models import User
+from ..models.models import User, Meal
 
 def token_required(f):
     @wraps(f)

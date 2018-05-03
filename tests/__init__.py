@@ -19,7 +19,7 @@ class BaseTestClass(TestCase):
     all common variables methods'''
 
     def setUp(self):
-        self.maxDiff = None;
+        self.maxDiff = None
         self.app = create_app('testing')
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
@@ -28,8 +28,7 @@ class BaseTestClass(TestCase):
         DB.drop_all()
         DB.create_all()
         self.test_user = {'username': 'martin', 'email': 'martin@mail.com', 'password': 'password'}
-        self.admin_user = {'username':'admin', 'email':'admin@mail.com', 'password':'admin1234',
-                           'admin':True}
+        self.admin_user = dict(username='admin', email='admin@mail.com', password='admin1234', admin=True)
         self.meal_model = Meal
         self.order_model = Order
         self.menu_model = Menu
@@ -54,23 +53,22 @@ class BaseTestClass(TestCase):
         user.save()
         return user
     
-    def register_user(self):
-        '''register test user'''
-        new_user = {'username': 'joe', 'email': 'joe@mail.com', 'password': 'test1234'}
-        self.client.post(SIGNUP_URL, data=json.dumps(new_user))
-
-    def login_user(self, username='joe', password='test1234'):
+    def login_user(self):
         '''login test user'''
         self.create_user()
+        username = self.test_user['username']
+        password = self.test_user['password']
         user_info = dict(username=username, password=password)
         res = self.client.post(SIGNIN_URL, data=json.dumps(user_info))
         return res
 
     def login_admin(self):
         '''helper function to create an admin user and log them in '''
-        self.client.post(SIGNUP_URL, data=json.dumps(self.admin_user))
-        data = {'password': 'password', 'email': 'admin@mail.com', 'username': 'admin'}
+        res = self.client.post(SIGNUP_URL, data=json.dumps(self.admin_user))
+        assert(res.status_code, 201)
+        data = {'password': self.admin_user['password'], 'username': self.admin_user['username']}
         res = self.client.post(SIGNIN_URL, data=json.dumps(data))
+        assert(res.status_code, 200)
         return res
 
     def create_meal(self):

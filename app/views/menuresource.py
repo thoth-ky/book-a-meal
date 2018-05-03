@@ -3,67 +3,42 @@ from flask_restful import Resource, Api
 from flask import request
 
 # local imports
-from ..models.menu import Menu
-from ..models.user import User
-from .. import DATABASE
 from . import Blueprint
+from ..models.models import Menu, Meal
+from ..helpers.decorators import token_required, admin_token_required
 
 
 class MenuResource(Resource):
     '''Resource for managing Menu'''
-    def post(self):
+    @admin_token_required
+    def post(self, user):
         '''handle post request to set up menu'''
         try:
-            auth_header = request.headers.get('Authorization')
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                username = User.decode_token(access_token)
-                user = DATABASE.get_user_by_username(username)
-                try:
-                    if user.admin:
-                        json_data = request.get_json(force=True)
-                        meals_list = json_data.get('meal_list')
-                        date = json_data.get('date', '')
-                        if meals_list:
-                            menu_object = Menu(meals=meals_list, date=date)
-                            err = DATABASE.add(menu_object)
-                            if err:
-                                return{'Error': str(err)}, 202
-                            return {'message': 'Menu created successfully'}, 201
-                        return {'message': 'menu object can not be empty'}, 202
-                    return {'message': 'Unauthorized'}, 401
-                except Exception as error:
-                    return {
-                        'message': 'Unauthorized',
-                        'Error': str(error)
-                    }, 401
+            json_data = request.get_json(force=True)
+            meals_list = json_data.get('meal_list')
+            date = json_data.get('date', '')
+            if meals_list:
+                menu = Menu(meals=meals_list, date=date)
+                menu.save()
+                return {'message': 'Menu created successfully'}, 201
+            return {'message': 'menu object can not be empty'}, 202
         except Exception as error:
             return {
                 'message': 'an error occured',
                 'Error': str(error)
             }, 400
 
-    def get(self):
+    @token_required
+    def get(self, user):
         '''handle GET requests'''
         try:
-            auth_header = request.headers.get('Authorization')
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                username = User.decode_token(access_token)
-                user = DATABASE.get_user_by_username(username)
-                try:
-                    if user:
-                        menu_items = DATABASE.current_menu
-                        menu = [menu_items[item].make_dict() for item in menu_items]
-                        return {
-                            'message': 'Menu request succesful',
-                            'menu': menu
-                        }, 200
-                except AttributeError as error:
-                    return {
-                        'message': 'Unauthorized',
-                        'Error': str(error)
-                    }, 401
+            if user:
+                menu_items = DATABASE.current_menu
+                menu = [menu_items[item].make_dict() for item in menu_items]
+                return {
+                    'message': 'Menu request succesful',
+                    'menu': menu
+                }, 200
         except Exception as error:
             return {
                 'message': 'an error occured',

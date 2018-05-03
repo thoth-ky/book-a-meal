@@ -11,11 +11,6 @@ except ModuleNotFoundError:
 DB = SQLAlchemy()
 URL_PREFIX = '/api/v1'
 
-from .views.home import HOME_API
-from .views.authresource import AUTH_API
-# from .views.mealsresource import MEAL_API
-# from .views.menuresource import MENU_API
-# from .views.orderresource import ORDER_API
 
 
 def create_app(config_name):
@@ -33,10 +28,16 @@ def create_app(config_name):
     
     # import models here to avoid  circular imports
     from .models  import models
+    from .views.home import HOME_API
+    from .views.authresource import AUTH_API
+    from .views.mealsresource import MEAL_API
+    from .views.menuresource import MENU_API
+    from .views.orderresource import ORDER_API
+
 
     app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
     app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
-    # app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
-    # app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
-    # app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
+    app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
     return app

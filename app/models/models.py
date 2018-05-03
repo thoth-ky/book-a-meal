@@ -22,6 +22,13 @@ MENU_MEALS = DB.Table(
     DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id')))
 
 
+class MealAssoc(DB.Model):
+    __tablename__ = 'meals_assoc'
+    meal_id = DB.Column(DB.Integer, DB.ForeignKey('meal.meal_id'), primary_key=True)
+    order_id = DB.Column(DB.Integer, DB.ForeignKey('order.order_id'), primary_key=True)
+    quantity = DB.Column(DB.Integer)
+
+
 class BaseModel(DB.Model):
     '''Base model to be inherited  by other modells'''
     __abstract__ = True
@@ -61,7 +68,7 @@ class BaseModel(DB.Model):
         '''new_data is a dictionary containing the field as key and new value as value'''
         for key in new_data.keys():
             try:
-                self.__dict__[key] = new_data[key]
+                self.put(key, new_data[key])
             except KeyError:
                 return 'Invalid field name: {}'.format(key)
 
@@ -85,6 +92,9 @@ class BaseModel(DB.Model):
     def get(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first()
 
+    @classmethod
+    def get_all(cls):
+        return cls.query.all()
 
 class User(BaseModel):
     """General user details"""
@@ -95,7 +105,7 @@ class User(BaseModel):
     password_hash = DB.Column(DB.String, nullable=False)
     admin = DB.Column(DB.Boolean, default=False)
     super_user = DB.Column(DB.Boolean, default=False)
-    orders = relationship('Order', backref='owner', lazy='dynamic')
+    orders = relationship('Order', backref='owner', lazy=True, uselist=True)
 
     def __init__(self, username, email, password):
         self.username = username
@@ -150,13 +160,12 @@ class User(BaseModel):
 class Meal(BaseModel):
     '''Class to represent the Meal objects'''
     __tablename__ = 'meal'
-
     meal_id = DB.Column(DB.Integer(), primary_key=True)
     name = DB.Column(DB.String(40), unique=True)
     price = DB.Column(DB.Float(), nullable=False, )  # specify d.p
     description = DB.Column(DB.String(250), nullable=False)
     available = DB.Column(DB.Boolean(), default=False)
-    orders = relationship('Order', backref='meal', lazy='dynamic')
+    orders = relationship('MealAssoc', backref='meal', lazy='dynamic')
     
     def __init__(self, name, price, description):
         self.name = name
@@ -173,7 +182,7 @@ class Meal(BaseModel):
 
     def place_order(self, order_id, user_id, quantity=1):
         '''Add meal to order'''
-        Order(meal_id=self.meal_id, order_id=order_id, quantity=quantity, user_id=user_id)
+        Order(order_id=order_id, quantity=quantity, user_id=user_id)
 
     def __repr__(self):
         '''String representation of objects'''
@@ -193,10 +202,11 @@ class Menu(BaseModel):
         '''class instance rep'''
         return '<Menu Date {}>'.format(self.date.ctime())
     
-    def add_meal(self, meal):
+    def add_meal(self, meal, date=None):
         '''Add meal to menu'''
-        today = datetime.utcnow().date()
-        menu = Menu.query.filter_by(date=today).first()
+        if not date:
+            date = datetime.utcnow().date()
+        menu = Menu.query.filter_by(date=date).first()
         if not menu:
             menu = Menu()
         if isinstance(meal, Meal):
@@ -207,21 +217,18 @@ class Menu(BaseModel):
 class Order(BaseModel):
     '''class for orders'''
     __tablename__ = 'order'
-    id = DB.Column(DB.Integer, primary_key=True)
-    order_id = DB.Column(DB.String(50), nullable=False)
+    order_id = DB.Column(DB.Integer, primary_key=True)
     time_ordered = DB.Column(DB.Float, default=time.time())
     quantity = DB.Column(DB.Integer, default=1)
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.user_id'))
-    meal_id = DB.Column(DB.Integer, DB.ForeignKey('meal.meal_id'))
-    # meal = relationship(
-    #     'Meal', secondary='order_meals', backref=backref('meal_orders', lazy=True, uselist=True))
+    meal = relationship('MealAssoc', backref='orders', lazy='dynamic')
 
     def __init__(self, order_id, meal, user_id, quantity=1):
         self.order_id = order_id
         self.user_id = user_id
         self.quantity = quantity
-        # self.meal = [meal]
-        self.meal_id = meal.meal_id
+        self.meal = [meal]
+        # self.meal_id = meal.meal_id
 
     def __repr__(self):
         return '<Order {}>'.format(self.order_id)
@@ -234,11 +241,11 @@ class Order(BaseModel):
             return False
         return True
 
-    @staticmethod
-    def generate_order_id():
-        order_id =''
-        chars = 'ABCDEFGHIJKLMNOPQRQSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
-        order_id_length = 50
-        for y in range(order_id_length):
-            order_id += chars[random.randint(0, len(chars) - 1)]
-        return order_id
+    # @staticmethod
+    # def generate_order_id():
+    #     order_id =''
+    #     chars = 'ABCDEFGHIJKLMNOPQRQSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
+    #     order_id_length = 50
+    #     for y in range(order_id_length):
+    #         order_id += chars[random.randint(0, len(chars) - 1)]
+    #     return order_id

@@ -74,6 +74,7 @@ class TestDatabase(BaseTestClass):
         order = self.order_model(order_id=order_id, meal=meal, user_id=user.user_id, quantity=2)
         order.save()
         self.assertEqual(order.owner.username, user.username)
+        self.assertEqual(user.orders, order)
         self.assertEqual(meal.name, order.meal.name)
         self.assertEqual(order.quantity, 2)
 
@@ -93,7 +94,7 @@ class TestDatabase(BaseTestClass):
     def test_user_can_order_several_meals(self):
         self.meal1.save()
         self.meal2.save()
-        user = self.user_model.get(username='joe')
+        user = self.create_user()
         order_id = self.order_model.generate_order_id()
         order1 = self.order_model(order_id=order_id, meal=self.meal1, user_id=user.user_id)
         order2 = self.order_model(order_id=order_id, meal=self.meal2, user_id=user.user_id, quantity=4)
@@ -108,7 +109,7 @@ class TestDatabase(BaseTestClass):
         '''This will assume user is given 30 seconds ater creating an order to edit it, deployment this should be set'''
         self.meal1.save()
         self.meal2.save()
-        user = self.user_model.get(username='joe')
+        user = self.create_user()
         order_id = self.order_model.generate_order_id()
         order = self.order_model(order_id=order_id, meal=self.meal1, user_id=user.user_id)
         order.save()

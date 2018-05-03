@@ -165,7 +165,7 @@ class Meal(BaseModel):
     price = DB.Column(DB.Float(), nullable=False, )  # specify d.p
     description = DB.Column(DB.String(250), nullable=False)
     available = DB.Column(DB.Boolean(), default=False)
-    orders = relationship('MealAssoc', backref='meal', lazy='dynamic')
+    orders = relationship('MealAssoc', backref='meal', lazy=True, uselist=True)
     
     def __init__(self, name, price, description):
         self.name = name
@@ -186,7 +186,7 @@ class Meal(BaseModel):
 
     def __repr__(self):
         '''String representation of objects'''
-        return '<Meal: {}'.format(self.name)
+        return '<Meal: {}>'.format(self.name)
 
 
 class Menu(BaseModel):
@@ -219,19 +219,19 @@ class Order(BaseModel):
     __tablename__ = 'order'
     order_id = DB.Column(DB.Integer, primary_key=True)
     time_ordered = DB.Column(DB.Float, default=time.time())
-    quantity = DB.Column(DB.Integer, default=1)
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.user_id'))
-    meal = relationship('MealAssoc', backref='orders', lazy='dynamic')
-
-    def __init__(self, order_id, meal, user_id, quantity=1):
-        self.order_id = order_id
-        self.user_id = user_id
-        self.quantity = quantity
-        self.meal = [meal]
-        # self.meal_id = meal.meal_id
+    meal = relationship('MealAssoc', backref='orders', lazy='dynamic', uselist=True)
 
     def __repr__(self):
         return '<Order {}>'.format(self.order_id)
+ 
+    def __init__(self, user_id):
+        self.user_id = user_id
+    
+    def add_meal_to_order(self, quantity, meal):
+        assoc = MealAssoc(quantity=quantity)
+        assoc.meal = meal
+        self.meal.append(assoc)
 
     def editable(self):
         '''checks if it's allowed to edit order'''

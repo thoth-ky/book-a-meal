@@ -73,10 +73,12 @@ class TestDatabase(BaseTestClass):
         order = self.order_model(user_id=user.user_id)
         order.add_meal_to_order(meal=meal, quantity=2)
         order.save()
+        assoc = order.meal.all()[0]
+
         self.assertEqual(order.owner.username, user.username)
         self.assertEqual(user.orders[0], order)
-        self.assertEqual(meal, order.meal)
-        self.assertEqual(order.quantity, 2)
+        self.assertEqual(meal, assoc.meal)
+        self.assertEqual(assoc.quantity, 2)
 
     def test_can_store_menu(self):
         '''test DB can hold menu'''

@@ -93,27 +93,34 @@ class TestDatabase(BaseTestClass):
         self.assertTrue(isinstance(menu.meals, list))
         self.assertTrue(isinstance(menu.meals[0], self.meal_model))
 
-    # def test_user_can_order_several_meals(self):
-    #     self.meal1.save()
-    #     self.meal2.save()
-    #     user = self.create_user()
-    #     order1 = self.order_model(meal=self.meal1, user_id=user.user_id)
-    #     order2 = self.order_model(meal=self.meal2, user_id=user.user_id, quantity=4)
-    #     order1.save()
-    #     order2.save()
-    #     self.assertTrue(isinstance(order1.owner, self.user_model))
-    #     self.assertTrue(isinstance(order1.meal, self.meal_model))
-    #     self.assertTrue(isinstance(order2.owner, self.user_model))
-    #     self.assertTrue(isinstance(order2.meal, self.meal_model))
+    def test_user_can_order_several_meals(self):
+        self.meal1.save()
+        self.meal2.save()
+        user = self.create_user()
+        order1 = self.order_model(user_id=user.user_id)
+        order1.add_meal_to_order(meal=self.meal1, quantity=2)
 
-    # def test_cant_edit_order_after_given_time(self):
-    #     '''This will assume user is given 30 seconds ater creating an order to edit it, deployment this should be set'''
-    #     self.meal1.save()
-    #     self.meal2.save()
-    #     user = self.create_user()
-    #     order_id = self.order_model.generate_order_id()
-    #     order = self.order_model(order_id=order_id, meal=self.meal1, user_id=user.user_id)
-    #     order.save()
-    #     self.assertTrue(order.editable())
-    #     time.sleep(3)
-    #     self.assertFalse(order.editable())
+        order2 = self.order_model(user_id=user.user_id)
+        order2.add_meal_to_order(meal=self.meal2, quantity=3)
+
+        order1.save()
+        order2.save()
+        assoc1 = order1.meal.all()[0]
+        assoc2 = order2.meal.all()[0]
+        self.assertTrue(isinstance(order1.owner, self.user_model))
+        self.assertTrue(isinstance(assoc1.meal, self.meal_model))
+        self.assertTrue(isinstance(order2.owner, self.user_model))
+        self.assertTrue(isinstance(assoc2.meal, self.meal_model))
+
+    def test_cant_edit_order_after_given_time(self):
+        '''This will assume user is given 30 seconds ater creating an order to edit it, deployment this should be set'''
+        self.meal1.save()
+        self.meal2.save()
+        user = self.create_user()
+        order = self.order_model(user_id=user.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.add_meal_to_order(meal=self.meal2)
+        order.save()
+        self.assertTrue(order.editable())
+        time.sleep(3)
+        self.assertFalse(order.editable())

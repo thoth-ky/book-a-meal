@@ -96,6 +96,7 @@ class BaseModel(DB.Model):
     def get_all(cls):
         return cls.query.all()
 
+
 class User(BaseModel):
     """General user details"""
     __tablename__ = 'user'
@@ -228,7 +229,8 @@ class Order(BaseModel):
     def __init__(self, user_id):
         self.user_id = user_id
     
-    def add_meal_to_order(self, quantity, meal):
+
+    def add_meal_to_order(self, meal, quantity=1):
         assoc = MealAssoc(quantity=quantity)
         assoc.meal = meal
         self.meal.append(assoc)
@@ -236,10 +238,13 @@ class Order(BaseModel):
     def editable(self):
         '''checks if it's allowed to edit order'''
         time_limit = int(current_app.config.get('ORDER_EDITS_UPTO'))
-        now = time.time()
-        if self.time_ordered - now >= time_limit:
+        now = int(time.time())
+        time_lapsed = now - self.time_ordered
+        print(time_lapsed)
+        if time_lapsed >= time_limit:
             return False
-        return True
+        else:
+            return True
 
     # @staticmethod
     # def generate_order_id():

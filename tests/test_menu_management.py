@@ -1,6 +1,6 @@
 '''Tests for api endpoints'''
 import json
-
+from datetime import datetime
 # local imports
 from . import BaseTestClass
 
@@ -20,17 +20,9 @@ class TestMenuManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
-        meal1 = self.meal_model(
-            meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-        meal2 = self.meal_model(
-            meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
-        self.database.add(meal1)
-        self.database.add(meal2)
-
-        # serialize 
-        meal1 = meal1.make_dict()
-        meal2 = meal2.make_dict()
-        menu = {'meal_list': [meal1, meal2]}
+        self.meal1.save()
+        self.meal2.save()
+        menu = {'meal_list': [self.meal1.meal_id, self.meal2.meal_id]}
         
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
@@ -43,6 +35,7 @@ class TestMenuManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
+        
 
         menu = {'meal_list': ['dummy data']}
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
@@ -55,9 +48,15 @@ class TestMenuManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
+        self.meal1.now_available()
+        self.meal2.now_available()
+        self.menu.save()
+        self.menu.add_meal(self.meal1)
+        
         response = self.client.get(MENU_URL, headers=headers)
-        menu = self.database.current_menu
-        menu = [menu[item] for item in menu]
+        date = datetime.utcnow().date()
+        menu = self.menu_model.query.filter_by(date=date).first()
+        menu = [item.make_dict() for item in menu.meals]
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Menu request succesful',
                     'menu': menu}

@@ -17,19 +17,12 @@ class MenuResource(Resource):
             json_data = request.get_json(force=True)
             meals_list = json_data.get('meal_list', '')
             date = json_data.get('date', '')
-            if not date:
+            if date == '':
                 date = datetime.utcnow().date()
             if meals_list:
                 meals = [Meal.get(meal_id=id) for id in meals_list]
                 menu = Menu(date=date)
                 menu.add_meal(meals) 
-                # menu = Menu(date=datetime.utcnow().date())
-                # meal1 = Meal(name='Rice & Beef', price=100.00, description='Rice with beef. Yummy.')
-                # meal2 = Meal(name='Ugali Fish', price=150.00, description='Ugali and fish, Nyanza tings!')
-            
-                # menu.add_meal(meal1)
-                # menu.add_meal(meal2)
-                # menu.save()
                 return {'message': 'Menu created successfully'}, 201
             return {'message': 'menu object can not be empty'}, 202
         except Exception as error:

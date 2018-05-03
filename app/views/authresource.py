@@ -4,6 +4,7 @@ from flask import request
 
 # local imports
 from ..models.models import User
+from ..helpers.decorators import admin_token_required
 from . import Blueprint
 
 # Blueprint instance representing authentication blueprint
@@ -42,6 +43,11 @@ class UserRegistrationResource(Resource):
                 'Error': str(error)
             }, 400
 
+    @admin_token_required
+    def get(self, user):
+        users = User.get_all()
+        users = [user.make_dict() for user in users]
+        return {'users':users}, 200
 
 class LoginResource(Resource):
     '''Manage user log in'''

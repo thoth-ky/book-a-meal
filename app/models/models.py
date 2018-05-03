@@ -126,7 +126,7 @@ class User(BaseModel):
         '''generate access_token'''
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=120),
+                'exp': datetime.utcnow() + timedelta(minutes=3600),
                 'iat': datetime.utcnow(),
                 'username': self.username,
             }
@@ -245,12 +245,3 @@ class Order(BaseModel):
             return False
         else:
             return True
-
-    # @staticmethod
-    # def generate_order_id():
-    #     order_id =''
-    #     chars = 'ABCDEFGHIJKLMNOPQRQSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()'
-    #     order_id_length = 50
-    #     for y in range(order_id_length):
-    #         order_id += chars[random.randint(0, len(chars) - 1)]
-    #     return order_id

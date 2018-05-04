@@ -80,8 +80,8 @@ class TestOrdersManagement(BaseTestClass):
         response = self.client.get(ORDERS_URL, headers=headers)
         # self.assertEqual(200, response.status_code)
         user = self.user_model.get(username=self.test_user['username'])
-        orders = self.order_model.get(owner=user)
-        # orders = [orders[item].make_dict() for item in orders]
+        orders = self.order_model.query.filter_by(owner=user).all()
+        orders = [order.make_dict() for order in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
         self.assertEqual(expected, json.loads(response.data))

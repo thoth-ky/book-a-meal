@@ -231,12 +231,12 @@ class Order(BaseModel):
         assoc.meal = meal
         self.meal.append(assoc)
 
-    def editable(self):
+    def editable(self, now=None):
         '''checks if it's allowed to edit order'''
         time_limit = int(current_app.config.get('ORDER_EDITS_UPTO'))
-        now = int(time.time())
+        if now == None:
+            now = int(time.time())
         time_lapsed = now - self.time_ordered
-        print(time_lapsed)
         if time_lapsed >= time_limit:
             return False
         else:

@@ -41,11 +41,10 @@ class OrderResource(Resource):
                                  meals=[[a.meal.meal_id, a.meal.name, a.meal.price, a.quantity] for a in order.meal.all()])
                     return {'message': 'Order {} retrieved'.format(order_id), 'order': order.make_dict()}, 200
             else:
-                if not user.admin:
-                    orders = Order.get(user_id=user.user_id)
-                    
-                else:
+                if user.admin == True:
                     orders = Order.get_all()
+                else:
+                    orders = Order.query.filter_by(owner=user).all()
                 orders = [order.make_dict() for order in orders]
                 return {'message': 'All Orders',
                     'orders': orders}

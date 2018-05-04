@@ -8,7 +8,7 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         try:
-            auth_header = request.headers.get('Authorization')
+            auth_header = request.headers.get('Authorization', None)
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)
@@ -25,7 +25,7 @@ def admin_token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         try:
-            auth_header = request.headers.get('Authorization')
+            auth_header = request.headers.get('Authorization', None)
             access_token = auth_header.split(' ')[1]
             if access_token:
                 username = User.decode_token(access_token)

@@ -122,5 +122,4 @@ class TestDatabase(BaseTestClass):
         order.add_meal_to_order(meal=self.meal2)
         order.save()
         self.assertTrue(order.editable())
-        time.sleep(3)
-        self.assertFalse(order.editable())
+        self.assertFalse(order.editable(now=int(time.time()+60)))

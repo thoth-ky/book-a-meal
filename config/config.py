@@ -22,11 +22,8 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     '''Configuration settings specific to testing environment'''
     DEBUG = True
-    DB_USER =  os.getenv('DB_USER')
-    TEST_DB_NAME = os.getenv('TEST_DB_NAME')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
     ORDER_EDITS_UPTO = 30
-    SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@127.0.0.1:5432/{}'.format(DB_USER, DB_PASSWORD, TEST_DB_NAME)
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///../tests/test.db'
 
 
 class ProductionConfig(Config):

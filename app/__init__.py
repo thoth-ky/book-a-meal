@@ -17,7 +17,7 @@ def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
     the value for config can be either: 'development', 'testing'. 
     These act as deictionary keys and call up the specific
-    con .gitifiguration setting'''
+    configuration setting'''
 
     # create fllask app
     app = Flask(__name__)
@@ -34,10 +34,10 @@ def create_app(config_name):
     from .views.menuresource import MENU_API
     from .views.orderresource import ORDER_API
 
-
     app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
     app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
     app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
     app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
     app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
+
     return app

@@ -10,5 +10,6 @@ env.bat
 */migrations/*
 migrations/*
 .vscode/*
+venv/*
 
  

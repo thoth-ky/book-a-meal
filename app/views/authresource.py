@@ -75,6 +75,7 @@ class LoginResource(Resource):
         except Exception as error:
             return {
                 'message': 'Encountered an error during log in',
+                "help": "Ensure data provided is valid",                
                 'Error': str(error)
             }, 400
 

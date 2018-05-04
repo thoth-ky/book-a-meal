@@ -11,10 +11,6 @@ from sqlalchemy.orm import relationship, backref
 # local imports
 from .. import DB
 
-# ORDER_MEALS = DB.Table(
-#     'order_meals',
-#     DB.Column('order_id', DB.Integer(), DB.ForeignKey('order.id')),
-#     DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id')))
 
 MENU_MEALS = DB.Table(
     'menu_meals',

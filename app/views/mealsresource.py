@@ -37,7 +37,6 @@ class MealResource(Resource):
     def get(self, user, meal_id=None):
         '''Get all meals, if meal_id is specified, get a specific meal'''
         try:
-            print('-----------------------')
             if meal_id:
                 meal = Meal.get(meal_id=meal_id)
                 return {

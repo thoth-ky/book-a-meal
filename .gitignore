@@ -11,5 +11,6 @@ env.bat
 migrations/*
 .vscode/*
 venv/*
+autotestcov.bat
 
  

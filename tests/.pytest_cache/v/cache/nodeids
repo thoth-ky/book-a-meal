@@ -1,7 +1,0 @@
-[
-  "test_auth.py::TestUserManagement::test_can_not_register_same_user_twice",
-  "test_auth.py::TestUserManagement::test_can_register_admin",
-  "test_auth.py::TestUserManagement::test_login_with_wrong_password",
-  "test_auth.py::TestUserManagement::test_user_login",
-  "test_auth.py::TestUserManagement::test_user_registration"
-]

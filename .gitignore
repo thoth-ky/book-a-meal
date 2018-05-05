@@ -2,8 +2,7 @@
 env.bat
 */__pycache__/*
 .pytest_cache/*
-*/.pytest_cache/*
-*.db 
+*/.pytest_cache/* 
 .env
 .cache/*
 .coverage 

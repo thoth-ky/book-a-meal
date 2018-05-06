@@ -74,5 +74,36 @@ class TestUserManagement(BaseTestClass):
         }
         self.assertEqual(expected, json.loads(response.data))
 
+    def test_login_non_existent_user(self):
+        data = {'password':'password', 'username':'beverly'}
+        response = self.client.post(SIGNIN_URL, data=json.dumps(data))
+        self.assertEqual(401, response.status_code)
+        expected = {
+            'message': 'The username/email or password provided is not correct'
+        }
+        self.assertEqual(expected, json.loads(response.data))
+
     def test_signup_with_invalid_details(self):
-        pass
+        invalid_email = {'username': 'jujuju', 'email': 'notemail', 'password': 'password'}
+        res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_email))
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Invalid Email', json.loads(res.data)['ERR'])
+        invalid_password = {'username':'user', 'email':'user@gmail.com', 'password':'qwr'}
+        res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_password))
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Invalid password. Ensure password is a string of not less than 8 characters', json.loads(res.data)['ERR'])
+        invalid_username = {'username':"a", 'email':'user@gmail.com', 'password':'password1'}
+        res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_username))
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Invalid username. Ensure username has more than 3 characters', json.loads(res.data)['ERR'])
+
+    def test_login_with_invalid_details(self):
+        invalid_username = {'username':'ku', 'password':'password'}
+        invalid_email = {'email':'notemail', 'password':'password'}
+        res = self.client.post(SIGNIN_URL, data=json.dumps(invalid_username))
+        self.assertEqual(400, res.status_code)
+        res = self.client.post(SIGNIN_URL, data=json.dumps(invalid_email))
+        self.assertEqual(400, res.status_code)
+        
+
+

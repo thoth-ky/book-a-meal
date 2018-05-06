@@ -119,7 +119,7 @@ class User(BaseModel):
         '''generate access_token'''
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=3600),
+                'exp': datetime.utcnow() + timedelta(minutes=60),
                 'iat': datetime.utcnow(),
                 'username': self.username,
                 'admin': self.admin

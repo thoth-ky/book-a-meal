@@ -1,0 +1,31 @@
+{
+    "username":"clemo",
+    "password":"clemo1234",
+    "email":"clemo@gmail.com",
+    "admin":"true"
+}
+
+{
+    "username":"gloria",
+    "password":"gloria1234",
+    "email":"gloria@gmail.com",
+}
+
+{
+    "name": "Pilau",
+    "price":30,
+    "description":"Pilau tamu"
+}
+{
+    "name": "Ugali",
+    "price": 50,
+    "description":"NyanzaApproved"
+}
+{
+    "name": "Muthokoi",
+    "price": 10,
+    "description":"Kamba manenoz"
+}
+{
+    "meal_list":
+}

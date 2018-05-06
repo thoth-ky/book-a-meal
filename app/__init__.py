@@ -27,7 +27,6 @@ def create_app(config_name):
     DB.init_app(app)
     
     # import models here to avoid  circular imports
-    from .models  import models
     from .views.home import HOME_API
     from .views.authresource import AUTH_API
     from .views.mealsresource import MEAL_API

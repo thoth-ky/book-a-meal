@@ -21,7 +21,7 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        data = {'meal_id': self.meal1.meal_id, 'quantity': 1}
+        data = {'order':[[1,1]]}
         
         response = self.client.post(ORDERS_URL, data=json.dumps(data), headers=headers)
         self.assertEqual(201, response.status_code)
@@ -37,7 +37,7 @@ class TestOrdersManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         # get menu
-        data = {'meal_id': self.meal1.meal_id, 'quantity': 1}
+        data = {'order':[[1,1]]}
         # place order
         response = self.client.post(ORDERS_URL, data=json.dumps(data), headers=headers)
         self.assertEqual(201, response.status_code)
@@ -55,33 +55,49 @@ class TestOrdersManagement(BaseTestClass):
 
     def test_get_all_orders(self):
         '''test admin can get all orders'''
+        # create an order
+        self.meal1.save()
+        self.user1.save()
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
         res = self.login_admin()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
+
         response = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
         orders = self.order_model.get_all()
-        orders = [orders[item].make_dict() for item in orders]
+        orders = [order.view() for order in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
         self.assertEqual(expected, json.loads(response.data))
 
     def test_user_only_get_own_orders(self):
         '''test only admin can access orders'''
-        res = self.login_user() 
+        self.user1.save()
+        self.user2.save()
+        creds = {'username':self.user1.username, 'password': 'password'}
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         self.meal1.save()
-        data = {'meal_id': self.meal1.meal_id, 'quantity': 1}
-        res = self.client.post(ORDERS_URL, headers=headers, data=json.dumps(data))
-        self.assertEqual(201, res.status_code)
+        self.meal2.save()
+        
+        # user1 makes order
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
+        # user2 makes order
+        order = self.order_model(user_id=self.user2.user_id)
+        order.add_meal_to_order(meal=self.meal2)
+        order.save()
         response = self.client.get(ORDERS_URL, headers=headers)
-        # self.assertEqual(200, response.status_code)
-        user = self.user_model.get(username=self.test_user['username'])
-        orders = self.order_model.query.filter_by(owner=user).all()
-        orders = [order.make_dict() for order in orders]
+        self.assertEqual(200, response.status_code)
+        orders = self.order_model.query.filter_by(user_id=self.user1.user_id).all()
+        orders = [order.view() for order in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
         self.assertEqual(expected, json.loads(response.data))

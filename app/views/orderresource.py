@@ -38,7 +38,7 @@ class OrderResource(Resource):
                 if meal:
                     order.add_meal_to_order(quantity=q, meal=meal)
                 else:
-                    return 'Invalid id {} provided'.format(meal_id)
+                    return 'Invalid meal id {} provided'.format(meal_id), 400
             order.save()
             return {'message': 'Order has been placed', 'order': order.view()}, 201
         except Exception as error:
@@ -53,16 +53,17 @@ class OrderResource(Resource):
             if order_id:
                 order = Order.get(order_id=order_id)
                 if not order:
-                    return {'Order does not exist'} , 404
+                    return {'message':'Order does not exist'} , 404
                 if order.owner == user or user.admin:
                     return {'message': 'Order {} retrieved'.format(order_id), 'order': order.view()}, 200
+                return {'message': 'Unauthorized'}, 401
             else:
                 if user.admin == True:
                     orders = Order.get_all()
                 else:
                     orders = Order.query.filter_by(owner=user).all()
                 if not orders:
-                    return 'No order to display', 204
+                    return 'No order to display', 404
                 orders = [order.view() for order in orders]
                 return {'message': 'All Orders',
                     'orders': orders}
@@ -81,8 +82,12 @@ class OrderResource(Resource):
             order = Order.get(owner=user, order_id=order_id)
             if not order:
                 return 'You do not have such a order', 204
-            order.update(new_data)
-            return {'message': 'Order modified succesfully', 'order': order.view()}, 200
+            meal_id = new_data['meal_id']
+            quantity = new_data['quantity']
+            if order.editable:
+                order.update_order(meal_id, quantity)
+                return {'message': 'Order modified succesfully', 'order': order.view()}, 200
+            return {'message': 'Sorry, you can not edit this order.'}, 200
         except Exception as error:
             return {
                 'message': 'an error occured',

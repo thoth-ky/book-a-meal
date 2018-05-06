@@ -206,14 +206,19 @@ class Order(BaseModel):
 
     def view(self):
         assoc_data = self.meal.all()
-        order_meals = [[a.meal.name, a.quantity] for a in assoc_data]
+        order_meals = [[a.meal.meal_id, a.meal.name, a.quantity] for a in assoc_data]
         return {
             'order_id': self.order_id,
             'time_ordered': self.time_ordered,
             'owner_id': self.user_id,
             'meals': order_meals
         }
- 
+    
+    def update_order(self, meal_id, quantity):
+        assoc_data = self.meal.filter_by(meal_id=meal_id).first()
+        assoc_data.quantity = quantity
+        self.save()
+        
     def __init__(self, user_id):
         self.user_id = user_id
     

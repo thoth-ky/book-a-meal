@@ -58,7 +58,7 @@ class UserRegistrationResource(Resource):
 
 class UserManagementResource(Resource):
     # @super_admin_required
-    def get(self, user):
+    def get(self):
         '''Get a list of all users'''
         users = User.get_all()
         users = [user.make_dict() for user in users]
@@ -69,6 +69,11 @@ class UserManagementResource(Resource):
         '''Promote user'''
         User.promote_user(user_to_promote)
         return {'message': 'User has now been made admin', 'user':user_to_promote.make_dict()}
+    # @super_admin_required
+    def delete(self, user_id):
+        user = User.get(user_id=user_id)
+        user.delete()
+        return {'message': 'User {} has been deleted'.format(user_id)}, 200
 
 class LoginResource(Resource):
     '''Manage user log in'''
@@ -111,3 +116,5 @@ AUTH_API = Blueprint('app.views.authresource', __name__)
 API = Api(AUTH_API)
 API.add_resource(UserRegistrationResource, '/auth/signup', endpoint='signup')
 API.add_resource(LoginResource, '/auth/signin', endpoint='signin')
+API.add_resource(UserManagementResource, '/users', endpoint='accounts')
+API.add_resource(UserManagementResource, '/users/<user_id>', endpoint='account')

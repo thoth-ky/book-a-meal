@@ -27,6 +27,7 @@ class BaseTestClass(TestCase):
         self.database = DB
         DB.drop_all()
         DB.create_all()
+        self.today = datetime.utcnow().date()
         self.test_user = {'username': 'martin', 'email': 'martin@mail.com', 'password': 'password'}
         self.admin_user = dict(username='admin', email='admin@mail.com', password='admin1234', admin=True)
         self.meal_model = Meal

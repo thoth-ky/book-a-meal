@@ -26,8 +26,8 @@ class TestMenuManagement(BaseTestClass):
         
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
-        expected = {'message': 'Menu created successfully'}
-        self.assertEqual(expected, json.loads(response.data))
+        expected = 'Menu created successfully'
+        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_only_admin_can_setup_menu(self):
         '''test normal user can't create menu'''
@@ -43,22 +43,31 @@ class TestMenuManagement(BaseTestClass):
 
     def test_get_menu(self):
         '''Test users can get menu'''
+        self.meal1.save()
+        self.meal2.save()
+        self.menu.add_meal(meal=[self.meal1, self.meal2], date=self.today)
+        self.menu.save()
+        menu = self.menu_model.get_all()[-1]
         res = self.login_user()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        
-        self.meal1.now_available()
-        self.meal2.now_available()
-        self.menu.save()
-        self.menu.add_meal(self.meal1)
-        
         response = self.client.get(MENU_URL, headers=headers)
-        date = datetime.utcnow().date()
-        menu = self.menu_model.query.filter_by(date=date).first()
-        menu = [item.make_dict() for item in menu.meals]
+        
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Menu request succesful',
-                    'menu': menu}
+                    'menu': menu.view()}
         self.assertEqual(expected, json.loads(response.data))
+
+    def test_can_not_add_empty_menu(self):
+        pass
+    
+    def test_returns_404_when_no_menu(self):
+        pass
+    
+    def test_can_not_get_invalid_ids(self):
+        pass
+    
+    def test_bad_meal_id_post(self):
+        pass
 

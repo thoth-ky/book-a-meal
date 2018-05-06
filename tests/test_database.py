@@ -28,7 +28,7 @@ class TestDatabase(BaseTestClass):
     def test_token_creation_and_decoding(self):
         user = self.create_user()
         token = user.generate_token()
-        username = self.user_model.decode_token(token)
+        username = self.user_model.decode_token(token)['username']
         self.assertEqual(username, user.username)
 
     def test_can_add_meal(self):
@@ -38,15 +38,6 @@ class TestDatabase(BaseTestClass):
         meal.save()
         q_meal = self.meal_model.query.filter_by(meal_id=meal.meal_id).first()
         self.assertEqual(meal, q_meal)
-
-    def test_can_set_meal_to_available(self):
-        meal = self.create_meal()
-        meal.save()
-        self.assertFalse(meal.available)
-        meal.now_available()
-        meal.save()
-        meal = self.meal_model.query.filter_by(meal_id=meal.meal_id).first()
-        self.assertTrue(meal.available)
 
     def test_can_update_meals(self):
         '''test meals can be updated'''
@@ -84,8 +75,6 @@ class TestDatabase(BaseTestClass):
         '''test DB can hold menu'''
         self.meal1.save()
         self.meal2.save()
-        self.meal1.now_available()
-        self.meal2.now_available()
         self.menu.save()
         self.menu.add_meal(self.meal1)
         self.menu.save()

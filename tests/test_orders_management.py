@@ -69,7 +69,7 @@ class TestOrdersManagement(BaseTestClass):
 
     def test_user_only_get_own_orders(self):
         '''test only admin can access orders'''
-        res = self.login_user()
+        res = self.login_user() 
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))

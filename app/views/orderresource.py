@@ -8,20 +8,39 @@ from ..models.models import Order, User, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
 
+def validate_order_inputs(meal_list=None, quantity=None):
+    if meal_list:
+        if not isinstance(meal_list, list):
+            return 'Put IDs of meals ordered in a python list []', 204
+    if quantity:
+        if not isinstance(quantity, int):
+            return 'Quantity shuld be a whole number e.g 1, 2,4'
+
+
 class OrderResource(Resource):
     '''Resource for managing Orders'''
     @token_required
     def post(self, user):
         '''place orders'''
         try:
+            # data should contain a dictionary with a list of lists specifying meal_id and quantity for each
+            # data = {'order':[[1,2], [4,1]}
             post_data = request.get_json(force=True)
-            meal_id = post_data['meal_id']
-            quantity = post_data.get('quantity')
-            meal = Meal.get(meal_id=meal_id)
+            order_data = post_data['order']
+            meal_list = [i[0] for i in order_data]
+            quantity = [i[1] for i in order_data]
+            
+            validate_order_inputs(meal_list=meal_list, quantity=quantity)
+            # create order first
             order = Order(user_id=user.user_id)
-            order.add_meal_to_order(quantity=quantity, meal=meal)
+            for meal_id, q in zip(meal_list, quantity):
+                meal = Meal.get(meal_id=meal_id)
+                if meal:
+                    order.add_meal_to_order(quantity=q, meal=meal)
+                else:
+                    return 'Invalid id {} provided'.format(meal_id)
             order.save()
-            return {'message': 'Order has been placed', 'order': order.make_dict()}, 201
+            return {'message': 'Order has been placed', 'order': order.view()}, 201
         except Exception as error:
             return {
                 'message': 'an error occured',
@@ -36,16 +55,15 @@ class OrderResource(Resource):
                 if not order:
                     return {'Order does not exist'} , 404
                 if order.owner == user or user.admin:
-                    order = dict(order_id=order.order_id,
-                                 owner=order.owner,
-                                 meals=[[a.meal.meal_id, a.meal.name, a.meal.price, a.quantity] for a in order.meal.all()])
-                    return {'message': 'Order {} retrieved'.format(order_id), 'order': order.make_dict()}, 200
+                    return {'message': 'Order {} retrieved'.format(order_id), 'order': order.view()}, 200
             else:
                 if user.admin == True:
                     orders = Order.get_all()
                 else:
                     orders = Order.query.filter_by(owner=user).all()
-                orders = [order.make_dict() for order in orders]
+                if not orders:
+                    return 'No order to display', 204
+                orders = [order.view() for order in orders]
                 return {'message': 'All Orders',
                     'orders': orders}
         except Exception as error:
@@ -61,8 +79,10 @@ class OrderResource(Resource):
             post_data = request.get_json(force=True)
             new_data = post_data['new_data']
             order = Order.get(owner=user, order_id=order_id)
+            if not order:
+                return 'You do not have such a order', 204
             order.update(new_data)
-            return {'message': 'Order modified succesfully', 'order': order.make_dict()}, 200
+            return {'message': 'Order modified succesfully', 'order': order.view()}, 200
         except Exception as error:
             return {
                 'message': 'an error occured',

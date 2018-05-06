@@ -7,7 +7,17 @@ from ..models.models import User
 from ..helpers.decorators import admin_token_required
 from . import Blueprint
 
-# Blueprint instance representing authentication blueprint
+def validate_user_details(username=None, email=None, password=None, admin=None):
+    # sanitizing input
+    if username:
+        if not isinstance(username, str):
+            return 'Invalid username'
+    if password:
+        if not isinstance(password, str) or len(password)< 8:
+            return'Invalid password. Ensure password is a string of not less than 8 characters'
+    if email:
+        if not isinstance(email, str) or not '@' in email:
+            return 'Invalid Email'
 
 
 class UserRegistrationResource(Resource):
@@ -20,6 +30,9 @@ class UserRegistrationResource(Resource):
             password = post_data.get('password')
             email = post_data.get('email')
             admin = post_data.get('admin', False)
+            err = validate_user_details(username=username, email=email, password=password, admin=admin)
+            if err:
+                return {'ERR':err}, 400
             if User.has(username=username) or User.has(email=email):
                 return{
                     'message': 'Username or Email not available.'
@@ -43,11 +56,19 @@ class UserRegistrationResource(Resource):
                 'Error': str(error)
             }, 400
 
-    @admin_token_required
+class UserManagementResource(Resource):
+    # @super_admin_required
     def get(self, user):
+        '''Get a list of all users'''
         users = User.get_all()
         users = [user.make_dict() for user in users]
         return {'users':users}, 200
+
+    # @super_admin_required
+    def put(self, user_to_promote):
+        '''Promote user'''
+        User.promote_user(user_to_promote)
+        return {'message': 'User has now been made admin', 'user':user_to_promote.make_dict()}
 
 class LoginResource(Resource):
     '''Manage user log in'''
@@ -58,6 +79,12 @@ class LoginResource(Resource):
             username = post_data.get('username', '')
             email = post_data.get('email', '')
             password = post_data.get('password')
+            if email:
+                err = validate_user_details(email=email)
+            if username:
+                err = validate_user_details(username=username)
+            if err:
+                return {'err': err}, 400
             if User.has(username=username) or User.has(email=email):
                 # proceed to login user
                 if email:
@@ -70,6 +97,7 @@ class LoginResource(Resource):
                         'message': 'Successfully logged in',
                         'access_token': access_token
                     }, 200
+                return {'message': 'The username/email or password provided is not correct'}, 401
             return {
                 'message': 'The username/email or password provided is not correct'}, 401
         except Exception as error:

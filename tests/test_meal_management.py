@@ -60,8 +60,8 @@ class TestMealsManagement(BaseTestClass):
         meal = dict(name='Mukimo', price=100, description='Mt Kenya heritage')
         response = self.client.post(MEALS_URL, data=json.dumps(meal), headers=headers)
         self.assertEqual(201, response.status_code)
-        expected = {'message': 'New meal created'}
-        self.assertEqual(expected, json.loads(response.data))
+        expected = 'New meal created'
+        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_only_admin_can_add_meals(self):
         '''POST  to /v1/meals is a route reserverd for admin, normal users
@@ -129,3 +129,8 @@ class TestMealsManagement(BaseTestClass):
         result = json.loads(response.data)['message']
         self.assertEqual(expected, result)
 
+    def test_get_unsaved_meal(self):
+        pass
+    
+    def test_add_meal_with_missing_details(self):
+        pass

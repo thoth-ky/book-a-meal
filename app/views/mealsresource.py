@@ -7,6 +7,16 @@ from . import Blueprint
 from ..models.models import User, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
+def validate_meal_data(name=None, price=None, description=None):
+
+    if not isinstance(name, str) or len(name) <= 0:
+        return 'Invalid meal name provided'
+
+    if not isinstance(price, int) or  price <= 0:
+        return 'Invalid value for price'
+    
+    if not isinstance(description, str) or len(description) <= 0:
+        return 'Invalid description'
 
 class MealResource(Resource):
     '''Resource for managing meals'''
@@ -15,9 +25,15 @@ class MealResource(Resource):
         '''Add a meal'''
         try:
             post_data = request.get_json(force=True)
-            name = post_data.get('name')
-            price = post_data.get('price')
-            description = post_data.get('description')
+            name = post_data.get('name', None)
+            try:
+                price = int(post_data.get('price', None))
+            except TypeError:
+                return 'Invalid value for price'
+            description = post_data.get('description', None)
+            err = validate_meal_data(name=name, price=price, description=description)
+            if err:
+                return {'error': err, 'price':price, 'name':name, 'descr':description}, 400
             meal = Meal(
                 name=name, price=price,
                 description=description)
@@ -26,7 +42,7 @@ class MealResource(Resource):
                 return {
                     'message': 'Meal not added',
                     'error': err}, 202
-            return {'message': 'New meal created'}, 201
+            return {'message': 'New meal created', 'meal': meal.make_dict()}, 201
         except Exception as error:
             return {
                 'message': 'an error occured',
@@ -39,6 +55,8 @@ class MealResource(Resource):
         try:
             if meal_id:
                 meal = Meal.get(meal_id=meal_id)
+                if not isinstance(meal, Meal):
+                    return 'Meal {} not found'.format(meal_id), 404
                 return {
                     'message': 'Meal {}'.format(meal_id),
                     'meals': meal.make_dict()
@@ -60,6 +78,8 @@ class MealResource(Resource):
         '''delete a specified meal'''
         try:
             meal = Meal.get(meal_id=meal_id)
+            if not meal:
+                return {'Meal {} not found'.format(meal_id)}, 404
             meal.delete()
             return {
                 'message': 'Meal {} deleted'.format(meal_id),
@@ -77,11 +97,14 @@ class MealResource(Resource):
             json_data = request.get_json(force=True)
             new_data = json_data['new_data']
             meal = Meal.get(meal_id=meal_id)
+            if not meal:
+                return {'Meal {} not found'.format(meal_id)}, 404
             err = meal.update(new_data)
             if err:
                 return {'Error': err}
             return {
                 'message': 'Meal {} edited'.format(meal_id),
+                'new': meal.make_dict()
             }, 202
         except Exception as error:
             return {

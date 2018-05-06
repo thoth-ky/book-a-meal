@@ -25,6 +25,6 @@ def  make_shell_context():
 
 
 if __name__ == '__main__':
-    # PORT = int(os.environ.get('PORT', 5000))
-    # APP.run('', port=PORT, debug=True)
-    APP.run(debug=True)
+    PORT = int(os.environ.get('PORT', 5000))
+    APP.run('', port=PORT, debug=True)
+    # APP.run(debug=True)

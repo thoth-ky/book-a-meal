@@ -12,7 +12,6 @@ DB = SQLAlchemy()
 URL_PREFIX = '/api/v1'
 
 
-
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
     the value for config can be either: 'development', 'testing'. 

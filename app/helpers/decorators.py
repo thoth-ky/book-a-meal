@@ -39,3 +39,23 @@ def admin_token_required(f):
         except Exception as e:
             return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)},400
     return decorated
+
+def super_admin_required(f):
+    '''check users have valid tokens and they have admin property'''
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        try:
+            auth_header = request.headers.get('Authorization', '')
+
+            access_token = auth_header.split(' ')[1]
+            if access_token:
+                payload = User.decode_token(access_token)
+                user_name, superuser = payload['username'], payload['superuser']
+                user = User.get(username=user_name)
+                if superuser == True:
+                    return f(*args, **kwargs)
+                return {'message': 'Unauthorized'}, 401
+            return {'message':"Please login first, your session might have expired"}, 401
+        except Exception as e:
+            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)},400
+    return decorated

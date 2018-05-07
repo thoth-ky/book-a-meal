@@ -4,13 +4,13 @@ from flask import request
 
 # local imports
 from ..models.models import User
-from ..helpers.decorators import admin_token_required
+from ..helpers.decorators import admin_token_required, super_admin_required
 from . import Blueprint
 
 def validate_user_details(username=None, email=None, password=None, admin=None):
     # sanitizing input
     if username:
-        if not isinstance(username, str) or len(username) < 3:
+        if not isinstance(username, str) or len(username) <= 3:
             return 'Invalid username. Ensure username has more than 3 characters'
     if password:
         if not isinstance(password, str) or len(password)< 8:
@@ -30,6 +30,8 @@ class UserRegistrationResource(Resource):
         email = post_data.get('email')
         admin = post_data.get('admin', False)
         err = validate_user_details(username=username, email=email, password=password, admin=admin)
+        if username is None or password is None or email is None:
+            return 'Incomplete details', 400
         if err:
             return {'ERR':err}, 400
         if User.has(username=username) or User.has(email=email):
@@ -51,19 +53,24 @@ class UserRegistrationResource(Resource):
 
 
 class UserManagementResource(Resource):
-    # @super_admin_required
-    def get(self):
+    @super_admin_required
+    def get(self, user_id=None):
         '''Get a list of all users'''
+        if user_id:
+            users =[User.get(user_id=user_id)]
+            users = [user.make_dict() for user in users]
+            return {'users':users}, 200
         users = User.get_all()
         users = [user.make_dict() for user in users]
         return {'users':users}, 200
 
-    # @super_admin_required
-    def put(self, user_to_promote):
+    @super_admin_required
+    def put(self, user_id):
         '''Promote user'''
+        user_to_promote = User.get(user_id=user_id)
         User.promote_user(user_to_promote)
         return {'message': 'User has now been made admin', 'user':user_to_promote.make_dict()}
-    # @super_admin_required
+    @super_admin_required
     def delete(self, user_id):
         user = User.get(user_id=user_id)
         user.delete()
@@ -106,3 +113,4 @@ API.add_resource(UserRegistrationResource, '/auth/signup', endpoint='signup')
 API.add_resource(LoginResource, '/auth/signin', endpoint='signin')
 API.add_resource(UserManagementResource, '/users', endpoint='accounts')
 API.add_resource(UserManagementResource, '/users/<user_id>', endpoint='account')
+API.add_resource(UserManagementResource, '/users/promote/<user_id>', endpoint='promote')

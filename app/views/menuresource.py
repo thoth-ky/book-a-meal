@@ -11,11 +11,11 @@ def validate_menu_inputs(meals_list=[], date=None):
     if not isinstance(meals_list, list):
         return 'Make meal_list a list of Meal object IDs'
     if date:
-        day, month, year = date.split(' ')
+        day, month, year = date.split('-')
         try:
             date = datetime(year=int(year), month=int(month), day=int(day))
         except Exception as e:
-            return ['Ensure date is provided using format DDMMYYYY', str(e)]
+            return ['Ensure date is provided using format DD-MM-YYYY', str(e)]
 
 class MenuResource(Resource):
     '''Resource for managing Menu'''

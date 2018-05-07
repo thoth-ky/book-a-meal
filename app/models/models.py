@@ -122,7 +122,8 @@ class User(BaseModel):
                 'exp': datetime.utcnow() + timedelta(minutes=60),
                 'iat': datetime.utcnow(),
                 'username': self.username,
-                'admin': self.admin
+                'admin': self.admin,
+                'superuser': self.super_user
             }
             token = jwt.encode(payload,
                                str(current_app.config.get('SECRET')),

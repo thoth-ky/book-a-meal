@@ -105,5 +105,3 @@ class TestUserManagement(BaseTestClass):
         res = self.client.post(SIGNIN_URL, data=json.dumps(invalid_email))
         self.assertEqual(400, res.status_code)
         
-
-

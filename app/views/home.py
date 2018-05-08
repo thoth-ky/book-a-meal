@@ -12,8 +12,6 @@ class HomeResource(Resource):
     def get(self):
         '''handle GET method'''
         return 'Welcome to BAM API', 200
-    def post(self):
-    	return 'Welcome to BAM API', 200
 
 
 HOME_API = Blueprint('app.views.home', __name__)

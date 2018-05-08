@@ -1,6 +1,6 @@
 '''Tests for api endpoints'''
 import json
-
+from datetime import datetime
 # local imports
 from . import BaseTestClass
 
@@ -20,22 +20,14 @@ class TestMenuManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
-        meal1 = self.meal_model(
-            meal_id=1, name='Fish', price=100, description='Tasty Tilapia')
-        meal2 = self.meal_model(
-            meal_id=2, name='Ugali', price=50, description='Tasty Ugali')
-        self.database.add(meal1)
-        self.database.add(meal2)
-
-        # serialize 
-        meal1 = meal1.make_dict()
-        meal2 = meal2.make_dict()
-        menu = {'meal_list': [meal1, meal2]}
+        self.meal1.save()
+        self.meal2.save()
+        menu = {'meal_list': [self.meal1.meal_id, self.meal2.meal_id]}
         
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
-        expected = {'message': 'Menu created successfully'}
-        self.assertEqual(expected, json.loads(response.data))
+        expected = 'Menu created successfully'
+        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_only_admin_can_setup_menu(self):
         '''test normal user can't create menu'''
@@ -43,6 +35,7 @@ class TestMenuManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
+        
 
         menu = {'meal_list': ['dummy data']}
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
@@ -50,16 +43,31 @@ class TestMenuManagement(BaseTestClass):
 
     def test_get_menu(self):
         '''Test users can get menu'''
+        self.meal1.save()
+        self.meal2.save()
+        self.menu.add_meal(meal=[self.meal1, self.meal2], date=self.today)
+        self.menu.save()
+        menu = self.menu_model.get_all()[-1]
         res = self.login_user()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        
         response = self.client.get(MENU_URL, headers=headers)
-        menu = self.database.current_menu
-        menu = [menu[item] for item in menu]
+        
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Menu request succesful',
-                    'menu': menu}
+                    'menu': menu.view()}
         self.assertEqual(expected, json.loads(response.data))
+
+    def test_can_not_add_empty_menu(self):
+        pass
+    
+    def test_returns_404_when_no_menu(self):
+        pass
+    
+    def test_can_not_get_invalid_ids(self):
+        pass
+    
+    def test_bad_meal_id_post(self):
+        pass
 

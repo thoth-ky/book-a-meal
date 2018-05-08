@@ -1,0 +1,52 @@
+{
+    "username":"kyalo",
+    "password":"kyalo2018",
+    "email": "kyalo@bam.com",
+    "admin":"true"
+}
+{
+    "username":"clemo",
+    "password":"clemo1234",
+    "email":"clemo@gmail.com",
+    "admin":"true"
+}
+
+{
+    "username":"gloria",
+    "password":"gloria1234",
+    "email":"gloria@gmail.com",
+}
+{
+    "username":"martin",
+    "email":"martin@gmail.com",
+    "password":"password"
+}
+
+{
+    "name": "Pilau",
+    "price":30,
+    "description":"Pilau tamu"
+}
+{
+    "name": "Ugali",
+    "price": 50,
+    "description":"NyanzaApproved"
+}
+{
+    "name": "Muthokoi",
+    "price": 10,
+    "description":"Kamba manenoz"
+}
+{
+    "meal_list":[],
+    "date":"12-04-2017"
+}
+{
+    "order":[[],[]]
+}
+{
+    "new_data":{"price":100}
+}
+{
+    "new_data":{"meal_id":1, "quantity":1}
+}

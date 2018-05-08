@@ -5,8 +5,10 @@ import os
 # local imports
 try:
     from app import create_app, DB
+    from app.models.models import Meal, User, Order, Menu
 except ModuleNotFoundError:
     from .app import create_app, DB
+    from .app.models.models import Meal, User, Order, Menu
 
 # get configuration environment
 CONFIG = os.environ.get('APP_SETTINGS') or 'development'
@@ -18,11 +20,11 @@ def  make_shell_context():
     '''
     context when flask shell runs to avoid cumbersome imports'''
     return {
-        'db': DB
+        'db': DB, 'Meal': Meal, 'Order': Order, 'User': User, 'Menu':Menu
     }
 
 
 if __name__ == '__main__':
-    # PORT = int(os.environ.get('PORT', 5000))
-    # APP.run('', port=PORT, debug=True)
-    APP.run()
+    PORT = int(os.environ.get('PORT', 5000))
+    APP.run('', port=PORT, debug=True)
+    # APP.run(debug=True)

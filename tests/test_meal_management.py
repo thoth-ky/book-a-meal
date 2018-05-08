@@ -34,9 +34,8 @@ class TestMealsManagement(BaseTestClass):
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
         # populate meals table
-        self.create_meal()
-        meal_id = 1
-        url = MEALS_URL + '/{}'.format(meal_id)
+        meal =self.create_meal()
+        url = MEALS_URL + '/{}'.format(meal.meal_id)
         response = self.client.get(url, headers=headers)
         self.assertEqual(200, response.status_code)
 
@@ -58,11 +57,11 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
-        response = self.client.post(MEALS_URL, data=json.dumps(self.meal), headers=headers)
+        meal = dict(name='Mukimo', price=100, description='Mt Kenya heritage')
+        response = self.client.post(MEALS_URL, data=json.dumps(meal), headers=headers)
         self.assertEqual(201, response.status_code)
-        expected = {'message': 'New meal created'}
-        self.assertEqual(expected, json.loads(response.data))
+        expected = 'New meal created'
+        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_only_admin_can_add_meals(self):
         '''POST  to /v1/meals is a route reserverd for admin, normal users
@@ -71,9 +70,8 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
-        response = self.client.post(MEALS_URL, data=json.dumps(
-            self.meal), headers=headers)
+        meal_data = {'name': 'Muthokoi', 'price': 90, 'description': 'Kamba manenos'}
+        response = self.client.post(MEALS_URL, data=json.dumps(meal_data), headers=headers)
         self.assertEqual(401, response.status_code)
 
     def test_delete_a_meal(self):
@@ -84,7 +82,6 @@ class TestMealsManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         self.create_meal()
-        meal_id = 1  # meal_id for meal to delete
         url = MEALS_URL + '/1'
         response = self.client.delete(url, headers=headers)
         self.assertEqual(200, response.status_code)
@@ -96,7 +93,6 @@ class TestMealsManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         self.create_meal()
-        meal_id = 1  # meal_id for meal to delete
         url = MEALS_URL + '/1'
         response = self.client.delete(url, headers=headers)
         self.assertEqual(401, response.status_code)
@@ -108,14 +104,12 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        
-        response = self.client.post(MEALS_URL, data=json.dumps(self.meal2), headers=headers)
-        meal_id = self.meal2['meal_id']  # meal_id for meal to edit
+        meal =self.create_meal()
         data = {'new_data': {'price': 200}}
-        url = MEALS_URL + '/{}'.format(meal_id)
+        url = MEALS_URL + '/{}'.format(meal.meal_id)
         response = self.client.put(url, data=json.dumps(data), headers=headers)
         self.assertEqual(202, response.status_code)
-        expected = 'Meal {} edited'.format(meal_id)
+        expected = 'Meal {} edited'.format(meal.meal_id)
         result = json.loads(response.data)['message']
         self.assertEqual(expected, result)
 
@@ -135,3 +129,8 @@ class TestMealsManagement(BaseTestClass):
         result = json.loads(response.data)['message']
         self.assertEqual(expected, result)
 
+    def test_get_unsaved_meal(self):
+        pass
+    
+    def test_add_meal_with_missing_details(self):
+        pass

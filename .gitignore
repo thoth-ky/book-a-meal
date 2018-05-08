@@ -1,10 +1,15 @@
 *.pyc
 env.bat
 */__pycache__/*
-*.pytest_cache/*
-*.db
+.pytest_cache/*
+*/.pytest_cache/* 
 .env
 .cache/*
-.coverage
+.coverage 
+*/migrations/*
+migrations/*
+.vscode/*
+venv/*
+autotestcov.bat
 
  

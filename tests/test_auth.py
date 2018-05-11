@@ -7,8 +7,10 @@ from . import BaseTestClass
 SIGNUP_URL = '/api/v1/auth/signup'
 SIGNIN_URL = '/api/v1/auth/signin'
 MEALS_URL = '/api/v1/meals'
-MENU_URL = 'api/v1/menu'
-ORDERS_URL = 'api/v1/orders'
+MENU_URL = '/api/v1/menu'
+ORDERS_URL = '/api/v1/orders'
+USERS_URL = '/api/v1/users'
+ACC_URL = '/api/v1/users/1'
 
 
 class TestUserManagement(BaseTestClass):
@@ -20,20 +22,11 @@ class TestUserManagement(BaseTestClass):
         response = self.client.post(SIGNUP_URL, data=json.dumps(self.test_user))
         # check status code
         self.assertEqual(201, response.status_code)
-        expected = {'message': 'User registration succesful, proceed to login'}
+        expected = 'User registration succesful, and logged in. Your access token is'
         # check returned message
-        self.assertEqual(expected, json.loads(response.data))
-
-    def test_can_register_admin(self):
-        '''tests ana dmin can be registered'''
-        response = self.client.post(SIGNUP_URL, data=json.dumps(self.admin_user))
-        # check status code
-        # self.assertEqual(201, response.status_code)
-        expected = {
-            'message': 'Admin registration succesful, proceed to login'
-        }
-        # check returned message
-        self.assertEqual(expected, json.loads(response.data))
+        result = json.loads(response.data)
+        self.assertEqual(expected, result['message'])
+        self.assertTrue(result['access_token'])
 
     def test_can_not_register_same_user_twice(self):
         '''test registering same user twice raises error'''
@@ -96,6 +89,11 @@ class TestUserManagement(BaseTestClass):
         res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_username))
         self.assertEqual(400, res.status_code)
         self.assertEqual('Invalid username. Ensure username has more than 3 characters', json.loads(res.data)['ERR'])
+        incomplete_details = {'username': None, 'email': '', 'password': None}
+        res = self.client.post(SIGNUP_URL, data=json.dumps(incomplete_details))
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Incomplete details', json.loads(res.data)['ERR'])
+        
 
     def test_login_with_invalid_details(self):
         invalid_username = {'username':'ku', 'password':'password'}
@@ -104,4 +102,37 @@ class TestUserManagement(BaseTestClass):
         self.assertEqual(400, res.status_code)
         res = self.client.post(SIGNIN_URL, data=json.dumps(invalid_email))
         self.assertEqual(400, res.status_code)
-        
+    
+    def test_super_admin_can_create_admin(self):
+        res = self.login_super_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        # create user
+        self.create_user()
+        # get a list of all users
+        res = self.client.get(USERS_URL, headers=headers)
+        users = self.user_model.get_all()
+        users = [user.view() for user in users]
+        self.assertEqual(users, json.loads(res.data)['users'])
+        # get specific user
+        res = self.client.get(ACC_URL, headers=headers)
+        user = [self.user_model.get(user_id=1).view()]
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(user, json.loads(res.data)['users'])
+        # promote user to admin
+        res = self.client.put('/api/v1/users/promote/1', headers=headers)
+        self.assertEqual(200, res.status_code)
+        user = self.user_model.get(user_id=1)
+        result = json.loads(res.data)
+        self.assertEqual(user.view(), result['user'])
+        self.assertEqual('User has now been made admin', result['message'])
+        # delete user
+        res = self.client.delete(ACC_URL, headers=headers)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual('User 1 has been deleted', json.loads(res.data)['message'])
+        # delete non existent user
+        res = self.client.delete(ACC_URL, headers=headers)
+        self.assertEqual(404, res.status_code)
+        self.assertEqual('User 1 does not exist', json.loads(res.data)['message'])
+

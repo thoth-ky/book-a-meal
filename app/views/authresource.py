@@ -5,6 +5,7 @@ from flask import request
 # local imports
 from ..models.models import User
 from ..helpers.decorators import admin_token_required, super_admin_required
+from .. import AUTH
 from . import Blueprint
 
 def validate_user_details(username=None, email=None, password=None, admin=None):
@@ -31,7 +32,7 @@ class UserRegistrationResource(Resource):
         admin = post_data.get('admin', False)
         err = validate_user_details(username=username, email=email, password=password, admin=admin)
         if username is None or password is None or email is None:
-            return 'Incomplete details', 400
+            return {'ERR': 'Incomplete details'}, 400
         if err:
             return {'ERR':err}, 400
         if User.has(username=username) or User.has(email=email):
@@ -40,15 +41,11 @@ class UserRegistrationResource(Resource):
             }, 202
         user = User(username=username, password=password, email=email)
         user.save()
-        if admin:
-            User.promote_user(user)
-            return {
-                'message': 'Admin registration succesful, proceed to login'
-            }, 201
-
+        access_token = user.generate_token().decode()
         # register normal user
         return {
-            'message': 'User registration succesful, proceed to login'
+            'message': 'User registration succesful, and logged in. Your access token is',
+            'access_token': access_token
             }, 201
 
 
@@ -58,23 +55,25 @@ class UserManagementResource(Resource):
         '''Get a list of all users'''
         if user_id:
             users =[User.get(user_id=user_id)]
-            users = [user.make_dict() for user in users]
-            return {'users':users}, 200
-        users = User.get_all()
-        users = [user.make_dict() for user in users]
-        return {'users':users}, 200
+        else:
+            users = User.get_all()
+        users = [user.view() for user in users]
+        return {'users': users}, 200
 
     @super_admin_required
     def put(self, user_id):
         '''Promote user'''
         user_to_promote = User.get(user_id=user_id)
         User.promote_user(user_to_promote)
-        return {'message': 'User has now been made admin', 'user':user_to_promote.make_dict()}
+        return {'message': 'User has now been made admin', 'user':user_to_promote.view()}
+
     @super_admin_required
     def delete(self, user_id):
         user = User.get(user_id=user_id)
-        user.delete()
-        return {'message': 'User {} has been deleted'.format(user_id)}, 200
+        if user:
+            user.delete()
+            return {'message': 'User {} has been deleted'.format(user_id)}, 200
+        return {'message': 'User {} does not exist'.format(user_id)}, 404
 
 class LoginResource(Resource):
     '''Manage user log in'''
@@ -102,15 +101,16 @@ class LoginResource(Resource):
                     'message': 'Successfully logged in',
                     'access_token': access_token
                 }, 200
-            return {'message': 'The username/email or password provided is not correct'}, 401
+            # return {'message': 'The username/email or password provided is not correct'}, 401
         return {
             'message': 'The username/email or password provided is not correct'}, 401
 
 
 AUTH_API = Blueprint('app.views.authresource', __name__)
 API = Api(AUTH_API)
-API.add_resource(UserRegistrationResource, '/auth/signup', endpoint='signup')
-API.add_resource(LoginResource, '/auth/signin', endpoint='signin')
+API.add_resource(UserRegistrationResource, '/auth/signup', '/signup', '/register', '/auth/register', endpoint='signup')
+API.add_resource(LoginResource, '/auth/signin', '/auth/login', '/login', '/signin', endpoint='signin')
 API.add_resource(UserManagementResource, '/users', endpoint='accounts')
-API.add_resource(UserManagementResource, '/users/<user_id>', endpoint='account')
-API.add_resource(UserManagementResource, '/users/promote/<user_id>', endpoint='promote')
+API.add_resource(UserManagementResource, '/users/<user_id>', '/user/<user_id>', endpoint='account')
+API.add_resource(UserManagementResource, '/users/promote/<user_id>','/user/promote/<user_id>', endpoint='promote')
+# API.add_resource(LogoutResource, '/auth/signout', endpoint='logout')

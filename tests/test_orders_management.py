@@ -163,7 +163,6 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(expected, json.loads(response.data))
 
     def test_access_order_by_id(self):
-        # 
         self.meal1.save()
         self.user1.save()
         order = self.order_model(user_id=self.user1.user_id)

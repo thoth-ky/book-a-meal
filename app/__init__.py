@@ -2,6 +2,7 @@
 from flask import Flask, Blueprint
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
+from flask_httpauth import HTTPBasicAuth
 # local imports
 try:
     from config.config import config_dict
@@ -10,7 +11,7 @@ except ModuleNotFoundError:
 
 DB = SQLAlchemy()
 URL_PREFIX = '/api/v1'
-
+AUTH = HTTPBasicAuth()
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed

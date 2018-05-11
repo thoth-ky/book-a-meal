@@ -36,7 +36,7 @@ class BaseTestClass(TestCase):
         self.order_model = Order
         self.user_model = User
         self.user1 = User(email='mike@mail.com', password='password', username='mail')
-        self.user2 = User(email='bev@mail.com', username='bev',  password='password')
+        self.user2 = User(email='bev@mail.com', username='bevah',  password='password')
 
         self.menu = Menu()
         self.menu1 = Menu(date=datetime(year=2018, month=4, day=18))

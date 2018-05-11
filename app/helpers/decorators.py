@@ -13,10 +13,13 @@ def token_required(f):
             if access_token:
                 username = User.decode_token(access_token)['username']
                 user = User.get(username=username)
+                # pragma: no cover
                 return f(user=user, *args, **kwargs)
+            # pragma: no cover
             return {'message':"Please login first, your session might have expired"}, 401
         except Exception as e:
-            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)},400
+            # pragma: no cover
+            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)}, 401
     return decorated
 
 
@@ -26,18 +29,21 @@ def admin_token_required(f):
     def decorated(*args, **kwargs):
         try:
             auth_header = request.headers.get('Authorization', '')
-
             access_token = auth_header.split(' ')[1]
             if access_token:
                 payload = User.decode_token(access_token)
                 user_name, admin = payload['username'], payload['admin']
                 user = User.get(username=user_name)
                 if admin == True:
+                    # pragma: no cover
                     return f(user=user, *args, **kwargs)
+                # pragma: no cover
                 return {'message': 'Unauthorized'}, 401
+            # pragma: no cover
             return {'message':"Please login first, your session might have expired"}, 401
         except Exception as e:
-            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)},400
+            # pragma: no cover
+            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)}, 401
     return decorated
 
 def super_admin_required(f):
@@ -46,15 +52,17 @@ def super_admin_required(f):
     def decorated(*args, **kwargs):
         try:
             auth_header = request.headers.get('Authorization', '')
-
             access_token = auth_header.split(' ')[1]
             if access_token:
                 payload = User.decode_token(access_token)
                 user_name, superuser = payload['username'], payload['superuser']
                 if superuser == True:
                     return f(*args, **kwargs)
+                # pragma: no cover
                 return {'message': 'Unauthorized'}, 401
+            # pragma: no cover
             return {'message':"Please login first, your session might have expired"}, 401
         except Exception as e:
-            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)},400
+            # pragma: no cover
+            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)}, 401
     return decorated

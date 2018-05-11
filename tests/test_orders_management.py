@@ -1,5 +1,5 @@
 '''Tests for api endpoints'''
-import json
+import json, time
 
 # local imports
 from . import BaseTestClass
@@ -183,3 +183,21 @@ class TestOrdersManagement(BaseTestClass):
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.get(ORDERS_URL+'/1', headers=headers)
         self.assertEqual(res._status_code, 401)
+
+    # def test_cant_edit_order_after_settime(self):
+    #     # create order in the past
+    #     self.user2.save()
+
+    #     then = time.time() - 120
+    #     order = self.order_model(user_id=self.user2.user_id, time_ordered=then)
+    #     order.save()
+    #     creds = dict(username=self.user2.username, password='password')
+    #     res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
+    #     self.assertEqual(200, res.status_code)
+    #     access_token = json.loads(res.data)['access_token']
+    #     headers = dict(Authorization='Bearer {}'.format(access_token))
+    #     url = '{}/1'.format(ORDERS_URL)
+    #     new_data = {'new_data':{'meal_id': 1, 'quantity': 1}}
+    #     res = self.client.put(url, data =json.dumps(new_data), headers=headers)
+    #     self.assertEqual('Sorry, you can not edit this order.', json.loads(res.data))
+    #     self.assertEqual(403, res.status_code)

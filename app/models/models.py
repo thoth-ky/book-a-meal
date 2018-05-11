@@ -63,10 +63,7 @@ class BaseModel(DB.Model):
     def update(self, new_data):
         '''new_data is a dictionary containing the field as key and new value as value'''
         for key in new_data.keys():
-            try:
-                self.put(key, new_data[key])
-            except KeyError:
-                return 'Invalid field name: {}'.format(key)
+            self.put(key, new_data[key])
 
     def put(self, field, value):
         if isinstance(value, list):
@@ -123,21 +120,18 @@ class User(BaseModel):
         
     def generate_token(self):
         '''generate access_token'''
-        try:
-            payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=60),
-                'iat': datetime.utcnow(),
-                'username': self.username,
-                'admin': self.admin,
-                'superuser': self.super_user
-            }
-            token = jwt.encode(payload,
-                               str(current_app.config.get('SECRET')),
-                               algorithm='HS256'
-                              )
-            return token
-        except Exception as err:
-            return str(err)
+        payload = {
+            'exp': datetime.utcnow() + timedelta(minutes=60),
+            'iat': datetime.utcnow(),
+            'username': self.username,
+            'admin': self.admin,
+            'superuser': self.super_user
+        }
+        token = jwt.encode(payload,
+                            str(current_app.config.get('SECRET')),
+                            algorithm='HS256'
+                            )
+        return token
 
     @staticmethod
     def decode_token(token):
@@ -226,8 +220,10 @@ class Order(BaseModel):
         assoc_data.quantity = quantity
         self.save()
         
-    def __init__(self, user_id):
+    def __init__(self, user_id, time_ordered=None):
         self.user_id = user_id
+        if time_ordered:
+            self.time_ordered = time_ordered
     
 
     def add_meal_to_order(self, meal, quantity=1):

@@ -80,7 +80,7 @@ class OrderResource(Resource):
         if order.editable:
             order.update_order(meal_id, quantity)
             return {'message': 'Order modified succesfully', 'order': order.view()}, 200
-        return {'message': 'Sorry, you can not edit this order.'}, 200
+        return {'message': 'Sorry, you can not edit this order.'}, 403
 
 ORDER_API = Blueprint('app.views.orderresource', __name__)
 API = Api(ORDER_API)

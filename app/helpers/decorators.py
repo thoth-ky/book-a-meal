@@ -51,7 +51,6 @@ def super_admin_required(f):
             if access_token:
                 payload = User.decode_token(access_token)
                 user_name, superuser = payload['username'], payload['superuser']
-                user = User.get(username=user_name)
                 if superuser == True:
                     return f(*args, **kwargs)
                 return {'message': 'Unauthorized'}, 401

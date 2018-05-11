@@ -16,4 +16,4 @@ class HomeResource(Resource):
 
 HOME_API = Blueprint('app.views.home', __name__)
 API = Api(HOME_API)
-API.add_resource(HomeResource, '/', endpoint='home')
+API.add_resource(HomeResource, '/', '/home', endpoint='home')

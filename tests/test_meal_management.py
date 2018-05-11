@@ -130,7 +130,48 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(expected, result)
 
     def test_get_unsaved_meal(self):
-        pass
+        '''test client can get a specific meal using meal id only'''
+        # login an admin user
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        # populate meals table
+        url = MEALS_URL + '/{}'.format(1)
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual('Meal 1 not found', json.loads(response.data))
+    
+    def test_delete_unavailable_meal(self):
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        # populate meals table
+        url = MEALS_URL + '/{}'.format(1)
+        response = self.client.delete(url, headers=headers)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual('Meal 1 not found', json.loads(response.data))
     
     def test_add_meal_with_missing_details(self):
-        pass
+        invalid_name = {'name':'', 'price':10, 'description':'blah blah'}
+        invalid_price = {'name':'Fish', 'price':'l10', 'description':'blah blah'}
+        invalid_descr = {'name':'Fish', 'price':10, 'description':''}
+        res = self.login_admin()
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        # invalid name
+        response = self.client.post(MEALS_URL, data=json.dumps(invalid_name), headers=headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual('Invalid meal name provided', json.loads(response.data)['error'])
+        # invalid price
+        response = self.client.post(MEALS_URL, data=json.dumps(invalid_price), headers=headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual('Invalid value for price', json.loads(response.data)['error'])
+        # invalid description
+        response = self.client.post(MEALS_URL, data=json.dumps(invalid_descr), headers=headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual('Invalid description', json.loads(response.data)['error'])

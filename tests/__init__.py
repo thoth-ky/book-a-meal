@@ -65,11 +65,23 @@ class BaseTestClass(TestCase):
 
     def login_admin(self):
         '''helper function to create an admin user and log them in '''
-        res = self.client.post(SIGNUP_URL, data=json.dumps(self.admin_user))
-        assert(res.status_code, 201)
+        admin = self.user_model(password=self.admin_user['password'],
+                                username=self.admin_user['username'],
+                                email=self.admin_user['email'])
+        admin.admin = True
+        admin.save()
         data = {'password': self.admin_user['password'], 'username': self.admin_user['username']}
         res = self.client.post(SIGNIN_URL, data=json.dumps(data))
         assert(res.status_code, 200)
+        return res
+    def login_super_admin(self):
+        '''helper function to create and login super admin'''
+        super_admin = self.user_model(username='super', email='super@bam.com', password='super1234')
+        super_admin.admin = True
+        super_admin.super_user = True
+        super_admin.save()
+        data = dict(username='super', password='super1234')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(data))
         return res
 
     def create_meal(self):

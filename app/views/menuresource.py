@@ -8,14 +8,15 @@ from ..models.models import Menu, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
 def validate_menu_inputs(meals_list=[], date=None):
-    if not isinstance(meals_list, list):
-        return 'Make meal_list a list of Meal object IDs'
+    if meals_list:
+        if not isinstance(meals_list, list):
+            return 'Make meal_list a list of Meal object IDs'
     if date:
         day, month, year = date.split('-')
         try:
             date = datetime(year=int(year), month=int(month), day=int(day))
         except Exception as e:
-            return ['Ensure date is provided using format DD-MM-YYYY', str(e)]
+            return 'Ensure date is provided using format DD-MM-YYYY'
 
 class MenuResource(Resource):
     '''Resource for managing Menu'''
@@ -27,9 +28,13 @@ class MenuResource(Resource):
         date = json_data.get('date', '')
         err = validate_menu_inputs(meals_list=meals_list, date=date)
         if err:
-            return {'error': err}
+            return {'error': err}, 400
         if date == '':
             date = datetime.utcnow().date()
+        else:
+            day, month, year = date.split('-')
+            date = datetime(year=int(year), month=int(month), day=int(day))
+        
         if meals_list:
             meals = []
             for id in meals_list:
@@ -41,17 +46,17 @@ class MenuResource(Resource):
             menu = Menu(date=date)
             menu.add_meal(meals) 
             return {'message': 'Menu created successfully', 'menu': menu.view()}, 201
-        return {'message': 'menu object can not be empty'}, 202
+        return {'message': 'Menu object can not be empty'}, 202
 
     @token_required
     def get(self, user):
         '''handle GET requests'''
-        
         today = datetime.utcnow().date()
-        menu = Menu.get_all()[-1]
+        today = datetime(year=today.year, month=today.month, day=today.day)
+        menu = Menu.get(date=today)
         if not menu:
             return 'No menu found for {}'.format(today.ctime()), 404
-        # menu_items = [item.make_dict() for item in menu_items.meals]
+
         return {
             'message': 'Menu request succesful',
             'menu': menu.view()

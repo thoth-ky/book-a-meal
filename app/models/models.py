@@ -10,7 +10,7 @@ from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean, Floa
 
 
 # local imports
-from .. import DB
+from .. import DB, AUTH
 
 
 MENU_MEALS = DB.Table(
@@ -111,10 +111,16 @@ class User(BaseModel):
         self.password_hash = generate_password_hash(password)
         self.admin = False
 
+    @AUTH.verify_password
     def validate_password(self, password):
         '''check if user password is correct'''
         return check_password_hash(self.password_hash, password)
 
+    def view(self):
+        user = self.make_dict()
+        user['password_hash'] = '*'*50
+        return user
+        
     def generate_token(self):
         '''generate access_token'''
         try:

@@ -22,8 +22,6 @@ class TestOrdersManagement(BaseTestClass):
         self.meal1.save()
         self.meal2.save()
 
-
-
     def test_make_orders(self):
         '''tetst authenticated users can make orders'''
         self.create_meals()

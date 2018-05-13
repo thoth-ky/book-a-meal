@@ -25,22 +25,22 @@ class OrderResource(Resource):
     @token_required
     def post(self, user):
         '''place orders'''
-        # data should contain a dictionary with a list of lists specifying meal_id and quantity for each
-        # data = {'order':[[1,2], [4,1]}
+        # order_data = {'order':[{'meal_id':1, 'quantity':2}, {},{}]}
+        # data should contain a dictionary with a list of dictionaries specifying meal_id and quantity for each as keys
         post_data = request.get_json(force=True)
-        order_data = post_data['order']
-        meal_list = [i[0] for i in order_data]
-        quantity = [i[1] for i in order_data]
+        order_data = post_data['order'] # get a list of dictionaries
+        meal_list = [dictionary['meal_id'] for dictionary in order_data]
+        quantity = [dictionary['quantity'] for dictionary in order_data]
         
         err = validate_order_inputs(meal_list=meal_list, quantity=quantity)
         if err:
             return {'Error': str(err)}, 400
         # create order first
         order = Order(user_id=user.user_id)
-        for meal_id, q in zip(meal_list, quantity):
+        for meal_id, quant in zip(meal_list, quantity):
             meal = Meal.get(meal_id=meal_id)
             if meal:
-                order.add_meal_to_order(quantity=q, meal=meal)
+                order.add_meal_to_order(quantity=quant, meal=meal)
             else:
                 return 'Invalid meal id {} provided'.format(meal_id), 400
         order.save()
@@ -51,21 +51,27 @@ class OrderResource(Resource):
         '''get orders'''
         if order_id:
             order = Order.get(order_id=order_id)
+
             if not order:
-                return {'message':'Order does not exist'} , 404
+                return {'message': 'Order does not exist'}, 404
+
             if order.owner.user_id == user.user_id or user.admin:
-                return {'message': 'Order {} retrieved'.format(order_id), 'order': order.view()}, 200
+                return {
+                    'message': 'Order {} retrieved'.format(order_id),
+                    'order': order.view()}, 200
             return {'message': 'Unauthorized'}, 401
         else:
-            if user.admin == True:
-                orders = Order.get_all()
-            else:
+            if user.admin is True:
+                orders =  {str(meal.name):meal.order_view() for meal in user.meals}
+            else:            
                 orders = Order.query.filter_by(owner=user).all()
+                orders = [order.view() for order in orders]
             if not orders:
                 return 'No order to display', 404
-            orders = [order.view() for order in orders]
-            return {'message': 'All Orders',
-                'orders': orders}
+            return {
+                'message': 'All Orders',
+                'orders': orders
+            }, 200
 
     @token_required
     def put(self, user, order_id):
@@ -80,7 +86,7 @@ class OrderResource(Resource):
         if order.editable:
             order.update_order(meal_id, quantity)
             return {'message': 'Order modified succesfully', 'order': order.view()}, 200
-        return {'message': 'Sorry, you can not edit this order.'}, 200
+        return {'message': 'Sorry, you can not edit this order.'}, 403
 
 ORDER_API = Blueprint('app.views.orderresource', __name__)
 API = Api(ORDER_API)

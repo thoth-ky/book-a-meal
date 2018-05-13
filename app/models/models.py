@@ -10,7 +10,7 @@ from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean, Floa
 
 
 # local imports
-from .. import DB
+from .. import DB, AUTH
 
 
 MENU_MEALS = DB.Table(
@@ -63,10 +63,7 @@ class BaseModel(DB.Model):
     def update(self, new_data):
         '''new_data is a dictionary containing the field as key and new value as value'''
         for key in new_data.keys():
-            try:
-                self.put(key, new_data[key])
-            except KeyError:
-                return 'Invalid field name: {}'.format(key)
+            self.put(key, new_data[key])
 
     def put(self, field, value):
         if isinstance(value, list):
@@ -103,6 +100,7 @@ class User(BaseModel):
     admin = Column(Boolean, default=False)
     super_user = Column(Boolean, default=False)
     orders = relationship('Order', backref='owner', lazy=True, uselist=True)
+    meals = relationship('Meal', backref='caterer', lazy=True, uselist=True)
 
     def __init__(self, username, email, password):
         '''necessary to avoid setting admins directly'''
@@ -111,27 +109,30 @@ class User(BaseModel):
         self.password_hash = generate_password_hash(password)
         self.admin = False
 
+    @AUTH.verify_password
     def validate_password(self, password):
         '''check if user password is correct'''
         return check_password_hash(self.password_hash, password)
 
+    def view(self):
+        user = self.make_dict()
+        user['password_hash'] = '*'*10
+        return user
+        
     def generate_token(self):
         '''generate access_token'''
-        try:
-            payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=60),
-                'iat': datetime.utcnow(),
-                'username': self.username,
-                'admin': self.admin,
-                'superuser': self.super_user
-            }
-            token = jwt.encode(payload,
-                               str(current_app.config.get('SECRET')),
-                               algorithm='HS256'
-                              )
-            return token
-        except Exception as err:
-            return str(err)
+        payload = {
+            'exp': datetime.utcnow() + timedelta(minutes=600),
+            'iat': datetime.utcnow(),
+            'username': self.username,
+            'admin': self.admin,
+            'superuser': self.super_user
+        }
+        token = jwt.encode(payload,
+                            str(current_app.config.get('SECRET')),
+                            algorithm='HS256'
+                            )
+        return token
 
     @staticmethod
     def decode_token(token):
@@ -155,12 +156,32 @@ class User(BaseModel):
 
 class Meal(BaseModel):
     '''Class to represent the Meal objects'''
+
     __tablename__ = 'meal'
+
     meal_id = Column(Integer(), primary_key=True)
     name = Column(String(40), nullable=False)
     price = Column(Float(), nullable=False, )  # specify d.p
     description = Column(String(250), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.user_id'))
     orders = relationship('MealAssoc', backref='meal', lazy=True, uselist=True)
+
+    def view(self):
+        return {
+            'meal_id': self.meal_id,
+            'name': self.name,
+            'price': self.price,
+            'description': self.description,
+            'caterer': self.caterer.username,
+        }
+
+    def order_view(self):
+        return [
+            {"order_id": a.order_id,
+             "time_ordered": a.orders.time_ordered,
+             "quantity": a.quantity,
+             "order_by": a.orders.owner.username
+            } for a in self.orders]
 
 
 class Menu(BaseModel):
@@ -207,11 +228,16 @@ class Order(BaseModel):
 
     def view(self):
         assoc_data = self.meal.all()
-        order_meals = [[a.meal.meal_id, a.meal.name, a.quantity] for a in assoc_data]
+        order_meals = [{'meal_id': a.meal.meal_id,
+                        'name': a.meal.name,
+                        'quantity': a.quantity,
+                        'unit_price': a.meal.price,
+                        'caterer': a.meal.caterer.username
+                       } for a in assoc_data]
         return {
             'order_id': self.order_id,
             'time_ordered': self.time_ordered,
-            'owner_id': self.user_id,
+            'owner': self.owner.username,
             'meals': order_meals
         }
     
@@ -220,8 +246,10 @@ class Order(BaseModel):
         assoc_data.quantity = quantity
         self.save()
         
-    def __init__(self, user_id):
+    def __init__(self, user_id, time_ordered=None):
         self.user_id = user_id
+        if time_ordered:
+            self.time_ordered = time_ordered
     
 
     def add_meal_to_order(self, meal, quantity=1):

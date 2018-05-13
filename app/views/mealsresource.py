@@ -8,13 +8,12 @@ from ..models.models import User, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
 def validate_meal_data(name=None, price=None, description=None):
-
     if not isinstance(name, str) or len(name) <= 0:
         return 'Invalid meal name provided'
-
-    if not isinstance(price, int) or  price <= 0:
+    try:
+        price = float(price)
+    except:
         return 'Invalid value for price'
-    
     if not isinstance(description, str) or len(description) <= 0:
         return 'Invalid description'
 
@@ -25,37 +24,33 @@ class MealResource(Resource):
         '''Add a meal'''
         post_data = request.get_json(force=True)
         name = post_data.get('name', None)
-        try:
-            price = int(post_data.get('price', None))
-        except TypeError:
-            return 'Invalid value for price'
+        price = post_data.get('price', None)
         description = post_data.get('description', None)
-        err = validate_meal_data(name=name, price=price, description=description)
+        err = validate_meal_data(
+            name=name, price=price, description=description)
         if err:
-            return {'error': err, 'price':price, 'name':name, 'descr':description}, 400
+            return {'error': err}, 400
         meal = Meal(
-            name=name, price=price,
+            name=name, price=float(price), user_id=user.user_id,
             description=description)
-        err = meal.save()
-        if err:
-            return {
-                'message': 'Meal not added',
-                'error': err}, 202
-        return {'message': 'New meal created', 'meal': meal.make_dict()}, 201
+        meal.save()
+        return {
+            'message': 'New meal created',
+            'meal': meal.view()
+        }, 201
 
     @admin_token_required
     def get(self, user, meal_id=None):
         '''Get all meals, if meal_id is specified, get a specific meal'''
         if meal_id:
-            meal = Meal.get(meal_id=meal_id)
+            meal = Meal.get(meal_id=meal_id, caterer=user)
             if not isinstance(meal, Meal):
                 return 'Meal {} not found'.format(meal_id), 404
             return {
                 'message': 'Meal {}'.format(meal_id),
-                'meals': meal.make_dict()
+                'meals': meal.view()
             }, 200
-        meals = Meal.get_all()
-        meals = [meal.make_dict() for meal in meals]
+        meals = [meal.view() for meal in user.meals]
         return {
             'message': 'Succesful request',
             'data': meals
@@ -64,9 +59,9 @@ class MealResource(Resource):
     @admin_token_required
     def delete(self,user, meal_id):
         '''delete a specified meal'''
-        meal = Meal.get(meal_id=meal_id)
+        meal = Meal.get(meal_id=meal_id, caterer=user)
         if not meal:
-            return {'Meal {} not found'.format(meal_id)}, 404
+            return 'Meal {} not found'.format(meal_id), 404
         meal.delete()
         return {
             'message': 'Meal {} deleted'.format(meal_id),
@@ -77,15 +72,11 @@ class MealResource(Resource):
         '''edit a specified meal id'''
         json_data = request.get_json(force=True)
         new_data = json_data['new_data']
-        meal = Meal.get(meal_id=meal_id)
-        if not meal:
-            return {'Meal {} not found'.format(meal_id)}, 404
-        err = meal.update(new_data)
-        if err:
-            return {'Error': err}
+        meal = Meal.get(meal_id=meal_id, caterer=user)
+        meal.update(new_data)
         return {
             'message': 'Meal {} edited'.format(meal_id),
-            'new': meal.make_dict()
+            'new': meal.view()
         }, 202
 
 

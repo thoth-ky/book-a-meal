@@ -35,14 +35,13 @@ class MenuResource(Resource):
             day, month, year = date.split('-')
             date = datetime(year=int(year), month=int(month), day=int(day))
         
+        meals_list = [id_ for id_ in meals_list if id_ in [meal.meal_id for meal in user.meals]]
+
         if meals_list:
             meals = []
             for id in meals_list:
-                meal = Meal.get(meal_id=id)  # add owner=user so that caterer can only add their meals to menu
-                if isinstance(meal, Meal):
-                    meals.append(meal)
-                else:
-                    return 'Invalid meal_id {}'.format(id), 202
+                meal = Meal.get(meal_id=id, caterer=user)
+                meals.append(meal)
             menu = Menu(date=date)
             menu.add_meal(meals) 
             return {'message': 'Menu created successfully', 'menu': menu.view()}, 201

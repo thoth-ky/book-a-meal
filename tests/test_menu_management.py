@@ -5,19 +5,29 @@ from datetime import datetime
 from . import BaseTestClass
 
 MENU_URL = '/api/v1/menu'
+SIGNIN_URL = '/api/v1/auth/signin'
 
 
 class TestMenuManagement(BaseTestClass):
     '''tests for menu resource'''
+    def create_meals(self):
+        admin = self.user_model(username='admin1', email='admin1@bam.com', password='admin1234')
+        admin.admin = True
+        admin.save()
+        self.meal1.user_id = admin.user_id
+        self.meal2.user_id = admin.user_id
+        self.meal1.save()
+        self.meal2.save()
+
     def test_setup_menu(self):
         '''test admin can set up menu'''
-        res = self.login_admin()
+        self.create_meals()
+        creds = dict(username='admin1', password='admin1234')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
-        self.meal1.save()
-        self.meal2.save()
         menu = {'meal_list': [self.meal1.meal_id, self.meal2.meal_id]}
         
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
@@ -26,12 +36,14 @@ class TestMenuManagement(BaseTestClass):
         self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_setup_menu_for_a_date(self):
-        res = self.login_admin()
+        '''test admin can create menu for specific dates'''
+        self.create_meals()
+        creds = dict(username='admin1', password='admin1234')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         
-        self.meal1.save()
         menu = {'meal_list': [self.meal1.meal_id], 'date': '12-4-2018'}
         
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
@@ -119,4 +131,4 @@ class TestMenuManagement(BaseTestClass):
         menu = {'meal_list': [1]}
         response = self.client.post(MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(202, response.status_code)
-        self.assertEqual(json.loads(response.data), 'Invalid meal_id 1')
+        self.assertEqual(json.loads(response.data)['message'], 'Menu object can not be empty')

@@ -26,28 +26,31 @@ class MealResource(Resource):
         name = post_data.get('name', None)
         price = post_data.get('price', None)
         description = post_data.get('description', None)
-        err = validate_meal_data(name=name, price=price, description=description)
+        err = validate_meal_data(
+            name=name, price=price, description=description)
         if err:
             return {'error': err}, 400
         meal = Meal(
-            name=name, price=float(price),
+            name=name, price=float(price), user_id=user.user_id,
             description=description)
         meal.save()
-        return {'message': 'New meal created', 'meal': meal.make_dict()}, 201
+        return {
+            'message': 'New meal created',
+            'meal': meal.view()
+        }, 201
 
     @admin_token_required
     def get(self, user, meal_id=None):
         '''Get all meals, if meal_id is specified, get a specific meal'''
         if meal_id:
-            meal = Meal.get(meal_id=meal_id)
+            meal = Meal.get(meal_id=meal_id, caterer=user)
             if not isinstance(meal, Meal):
                 return 'Meal {} not found'.format(meal_id), 404
             return {
                 'message': 'Meal {}'.format(meal_id),
-                'meals': meal.make_dict()
+                'meals': meal.view()
             }, 200
-        meals = Meal.get_all()
-        meals = [meal.make_dict() for meal in meals]
+        meals = [meal.view() for meal in user.meals]
         return {
             'message': 'Succesful request',
             'data': meals
@@ -56,7 +59,7 @@ class MealResource(Resource):
     @admin_token_required
     def delete(self,user, meal_id):
         '''delete a specified meal'''
-        meal = Meal.get(meal_id=meal_id)
+        meal = Meal.get(meal_id=meal_id, caterer=user)
         if not meal:
             return 'Meal {} not found'.format(meal_id), 404
         meal.delete()
@@ -69,11 +72,11 @@ class MealResource(Resource):
         '''edit a specified meal id'''
         json_data = request.get_json(force=True)
         new_data = json_data['new_data']
-        meal = Meal.get(meal_id=meal_id)
+        meal = Meal.get(meal_id=meal_id, caterer=user)
         meal.update(new_data)
         return {
             'message': 'Meal {} edited'.format(meal_id),
-            'new': meal.make_dict()
+            'new': meal.view()
         }, 202
 
 

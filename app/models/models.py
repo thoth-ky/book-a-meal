@@ -119,10 +119,10 @@ class User(BaseModel):
         user['password_hash'] = '*'*10
         return user
         
-    def generate_token(self):
-        '''generate access_token'''
+    def generate_token(self, validity=1000):
+        '''generate access_token, validity is period of time before it becomes invalid'''
         payload = {
-            'exp': datetime.utcnow() + timedelta(minutes=600),
+            'exp': datetime.utcnow() + timedelta(seconds=validity),
             'iat': datetime.utcnow(),
             'username': self.username,
             'admin': self.admin,
@@ -141,10 +141,7 @@ class User(BaseModel):
             payload = jwt.decode(
                 token, str(current_app.config.get('SECRET')), algorithms=['HS256'])
             return payload
-        except jwt.ExpiredSignatureError:
-            # the token is expired, return an error string
-            raise jwt.ExpiredSignatureError("Expired token. Please login to get a new token")
-        except jwt.InvalidTokenError:
+        except Exception:
             # the token is invalid, return an error string
             raise jwt.InvalidTokenError("Invalid token. Please register or login")
 

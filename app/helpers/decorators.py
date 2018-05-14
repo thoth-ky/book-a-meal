@@ -1,68 +1,61 @@
+'''Authentication decorators'''
 from functools import wraps
 from flask import request
 # local imports
 from ..models.models import User
 
-def token_required(f):
+def get_payload():
+    '''get access token and decode it to get payload'''
+    try:
+        auth_header = request.headers.get('Authorization')
+        access_token = auth_header.split(' ')[1]
+        if access_token:
+            return User.decode_token(access_token)
+    except Exception as err:
+        return str(err)
+
+def token_required(func):
     '''checks user have valid tokens'''
-    @wraps(f)
+    @wraps(func)
     def decorated(*args, **kwargs):
-        try:
-            auth_header = request.headers.get('Authorization', None)
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                username = User.decode_token(access_token)['username']
-                user = User.get(username=username)
-                # pragma: no cover
-                return f(user=user, *args, **kwargs)
-            # pragma: no cover
-            return {'message':"Please login first, your session might have expired"}, 401
-        except Exception as e:
-            # pragma: no cover
-            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)}, 401
+        '''decorator'''
+        payload = get_payload()
+        if isinstance(payload, str):
+            return {'error': payload, 'message': 'Unauthorized'}, 401
+        username = payload['username']
+        user = User.get(username=username)
+        # pragma: no cover
+        return func(user=user, *args, **kwargs)
     return decorated
 
-
-def admin_token_required(f):
+def admin_token_required(func):
     '''check users have valid tokens and they have admin property'''
-    @wraps(f)
+    @wraps(func)
     def decorated(*args, **kwargs):
-        try:
-            auth_header = request.headers.get('Authorization', '')
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                payload = User.decode_token(access_token)
-                user_name, admin = payload['username'], payload['admin']
-                user = User.get(username=user_name)
-                if admin == True:
-                    # pragma: no cover
-                    return f(user=user, *args, **kwargs)
-                # pragma: no cover
-                return {'message': 'Unauthorized'}, 401
+        '''decorator'''
+        payload = get_payload()
+        if isinstance(payload, str):
+            return {'error': payload, 'message': 'Unauthorized'}, 401
+        user_name, admin = payload['username'], payload['admin']
+        user = User.get(username=user_name)
+        if admin is True:
             # pragma: no cover
-            return {'message':"Please login first, your session might have expired"}, 401
-        except Exception as e:
-            # pragma: no cover
-            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)}, 401
+            return func(user=user, *args, **kwargs)
+        # pragma: no cover
+        return {'message': 'Unauthorized'}, 401
     return decorated
 
-def super_admin_required(f):
+def super_admin_required(func):
     '''check users have valid tokens and they have admin property'''
-    @wraps(f)
+    @wraps(func)
     def decorated(*args, **kwargs):
-        try:
-            auth_header = request.headers.get('Authorization', '')
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                payload = User.decode_token(access_token)
-                user_name, superuser = payload['username'], payload['superuser']
-                if superuser == True:
-                    return f(*args, **kwargs)
-                # pragma: no cover
-                return {'message': 'Unauthorized'}, 401
+        '''decorator'''
+        payload = get_payload()
+        if isinstance(payload, str):
+            return {'error': payload, 'message': 'Unauthorized'}, 401
+        superuser = payload['superuser']
+        if superuser is True:
             # pragma: no cover
-            return {'message':"Please login first, your session might have expired"}, 401
-        except Exception as e:
+            return func(*args, **kwargs)
             # pragma: no cover
-            return {'message': 'Ensure you have logged in and received a valid token', 'error':str(e)}, 401
     return decorated

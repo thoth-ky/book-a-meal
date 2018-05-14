@@ -1,7 +1,7 @@
 '''This is where code for api resources will go'''
 from flask_restful import Resource, Api
 from flask import request
-
+import time
 # local imports
 from . import Blueprint
 from ..models.models import Order, User, Meal
@@ -83,10 +83,14 @@ class OrderResource(Resource):
             return 'You do not have such a order', 404
         meal_id = new_data['meal_id']
         quantity = new_data['quantity']
-        if order.editable:
+
+        if order.editable() is True:
             order.update_order(meal_id, quantity)
             return {'message': 'Order modified succesfully', 'order': order.view()}, 200
-        return {'message': 'Sorry, you can not edit this order.'}, 403
+        return {
+            'message': 'Sorry, you can not edit this order.',
+            'delta': time.time()-order.time_ordered
+        }, 403
 
 ORDER_API = Blueprint('app.views.orderresource', __name__)
 API = Api(ORDER_API)

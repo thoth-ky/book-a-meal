@@ -39,7 +39,6 @@ class TestDatabase(BaseTestClass):
         q_meal = self.meal_model.query.filter_by(meal_id=meal.meal_id).first()
         self.assertEqual(meal, q_meal)
 
-
     def test_can_update_meals(self):
         '''test meals can be updated'''
         meal = self.create_meal()
@@ -112,7 +111,7 @@ class TestDatabase(BaseTestClass):
         order.add_meal_to_order(meal=self.meal2)
         order.save()
         self.assertTrue(order.editable())
-        self.assertFalse(order.editable(now=int(time.time()+60)))
+        self.assertFalse(order.editable(now=int(time.time()+160)))
 
     def test_save_bad_object(self):
         meal = self.meal_model()

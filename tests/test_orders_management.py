@@ -39,24 +39,23 @@ class TestOrdersManagement(BaseTestClass):
     def test_edit_order(self):
         '''test authenticated users can edit orders'''
         self.create_meals()
+        # create order in the past
+        self.user2.save()
 
-        res = self.login_user()
+        order = self.order_model(user_id=self.user2.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
+
+        creds = dict(username=self.user2.username, password='password')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        # get menu
-        data = {'order':[{'meal_id':self.meal1.meal_id, 'quantity':2}]}
-        # place order
-        response = self.client.post(ORDERS_URL, data=json.dumps(data), headers=headers)
-        self.assertEqual(201, response.status_code)
-        order = json.loads(response.data)['order']
-        order_id = order.get('order_id')
-        
-        # put request to edit order
-        data = {'new_data': {'meal_id':self.meal1.meal_id, 'quantity': 5}}
-        url = ORDERS_URL + '/{}'.format(order_id)
-        response = self.client.put(url, data=json.dumps(data),
-                                   headers=headers)
+
+        url = '{}/1'.format(ORDERS_URL)
+        new_data = {'new_data':{'meal_id': 1, 'quantity': 3}}
+
+        response = self.client.put(url, data=json.dumps(new_data), headers=headers)
         self.assertEqual(200, response.status_code)
         expected = 'Order modified succesfully'
         self.assertEqual(expected, json.loads(response.data)['message'])
@@ -216,20 +215,23 @@ class TestOrdersManagement(BaseTestClass):
         res = self.client.get(ORDERS_URL+'/1', headers=headers)
         self.assertEqual(res._status_code, 401)
 
-    # def test_cant_edit_order_after_settime(self):
-    #     # create order in the past
-    #     self.user2.save()
+    def test_cant_edit_order_after_settime(self):
+        self.create_meals()
+        # create order in the past
+        self.user2.save()
 
-    #     then = time.time() - 120
-    #     order = self.order_model(user_id=self.user2.user_id, time_ordered=then)
-    #     order.save()
-    #     creds = dict(username=self.user2.username, password='password')
-    #     res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-    #     self.assertEqual(200, res.status_code)
-    #     access_token = json.loads(res.data)['access_token']
-    #     headers = dict(Authorization='Bearer {}'.format(access_token))
-    #     url = '{}/1'.format(ORDERS_URL)
-    #     new_data = {'new_data':{'meal_id': 1, 'quantity': 1}}
-    #     res = self.client.put(url, data =json.dumps(new_data), headers=headers)
-    #     self.assertEqual('Sorry, you can not edit this order.', json.loads(res.data))
-    #     self.assertEqual(403, res.status_code)
+        then = time.time() - 1200
+        order = self.order_model(user_id=self.user2.user_id, time_ordered=then)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
+        creds = dict(username=self.user2.username, password='password')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        url = '{}/1'.format(ORDERS_URL)
+        new_data = {'new_data':{'meal_id': 1, 'quantity': 3}}
+        res = self.client.put(url, data =json.dumps(new_data), headers=headers)
+        self.assertEqual(403, res.status_code)
+        self.assertEqual('Sorry, you can not edit this order.', json.loads(res.data)['message'])
+        

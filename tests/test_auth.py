@@ -93,7 +93,6 @@ class TestUserManagement(BaseTestClass):
         res = self.client.post(SIGNUP_URL, data=json.dumps(incomplete_details))
         self.assertEqual(400, res.status_code)
         self.assertEqual('Incomplete details', json.loads(res.data)['ERR'])
-        
 
     def test_login_with_invalid_details(self):
         invalid_username = {'username':'ku', 'password':'password'}
@@ -135,4 +134,30 @@ class TestUserManagement(BaseTestClass):
         res = self.client.delete(ACC_URL, headers=headers)
         self.assertEqual(404, res.status_code)
         self.assertEqual('User 1 does not exist', json.loads(res.data)['message'])
+
+    def test_use_of_invalid_token(self):
+        '''Test if user gives invalid token access could be gained'''
+        invalid_token = 'invalid-access_token'
+        headers = dict(Authorization='Bearer {}'.format(invalid_token))
+        expected = 'Invalid token. Please register or login'
+        # test admin functionality
+        res = self.client.post(MEALS_URL, headers=headers)
+        self.assertEqual(401, res.status_code)
+        self.assertEqual(expected, json.loads(res.data)['error'])
+        # test superadmin function
+        res = self.client.get(USERS_URL, headers=headers)
+        self.assertEqual(401, res.status_code)
+        self.assertEqual(expected, json.loads(res.data)['error'])
+        # test normal user function
+        res = self.client.get(MENU_URL, headers=headers)
+        self.assertEqual(401, res.status_code)
+        self.assertEqual(expected, json.loads(res.data)['error'])
+
+    def test_only_superuser_can_access_users_list(self):
+        self.user1.save()
+        token = self.user1.generate_token()
+        headers =dict(Authorization='Bearer {}'.format(token))
+        res = self.client.get(USERS_URL, headers=headers)
+        self.assertEqual(401, res.status_code)
+        self.assertEqual('Unauthorized', json.loads(res.data)['message'])
 

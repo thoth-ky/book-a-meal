@@ -23,7 +23,7 @@ class TestingConfig(Config):
     '''Configuration settings specific to testing environment'''
     DEBUG = True
     ORDER_EDITS_UPTO = 100
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///../tests/test.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
 
 class ProductionConfig(Config):

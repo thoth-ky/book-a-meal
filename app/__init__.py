@@ -19,14 +19,14 @@ def create_app(config_name):
     These act as deictionary keys and call up the specific
     configuration setting'''
 
-    # create fllask app
+    # create flask app
     app = Flask(__name__)
     # insert configurations
     app.config.from_object(config_dict[config_name])
     app.url_map.strict_slashes = False
     DB.init_app(app)
     
-    # import models here to avoid  circular imports
+    # import blueprints here to avoid  circular imports
     from .views.home import HOME_API
     from .views.authresource import AUTH_API
     from .views.mealsresource import MEAL_API

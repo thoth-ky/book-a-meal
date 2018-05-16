@@ -176,6 +176,7 @@ class Meal(BaseModel):
         return [
             {"order_id": a.order_id,
              "time_ordered": a.orders.time_ordered,
+             "due_time": a.orders.due_time.ctime(),
              "quantity": a.quantity,
              "order_by": a.orders.owner.username
             } for a in self.orders]
@@ -186,11 +187,24 @@ class Menu(BaseModel):
 
     __tablename__ = 'menu'
 
-    id = Column(Integer, primary_key=True)
-    date = Column(DateTime, default=datetime.utcnow().date(), unique=True)
+    id = Column(
+        Integer,
+        primary_key=True
+        )
+    date = Column(
+        DateTime, 
+        default=datetime.utcnow().date(),
+        unique=True)
     meals = relationship(
-        'Meal', secondary='menu_meals', backref=backref('menu_meals', lazy=True, uselist=True))
-
+        'Meal',
+        secondary='menu_meals',
+        backref=backref('menu_meals', lazy=True, uselist=True))
+    def __init__(self, date=None):
+        if date:
+            self.date = date
+        else:
+            today = datetime.utcnow().date()
+            self.date = datetime(year=today.year, month=today.month, day=today.day)
 
     def add_meal(self, meal, date=None):
         '''Add meal to menu'''
@@ -220,6 +234,7 @@ class Order(BaseModel):
 
     order_id = Column(Integer, primary_key=True)
     time_ordered = Column(Float, default=time.time())
+    due_time = Column(DateTime, default=datetime.utcnow()+timedelta(minutes=30))
     user_id = Column(Integer, ForeignKey('user.user_id'))
     meal = relationship('MealAssoc', backref='orders', lazy='dynamic', uselist=True)
 
@@ -234,22 +249,26 @@ class Order(BaseModel):
         return {
             'order_id': self.order_id,
             'time_ordered': self.time_ordered,
+            'due_time': self.due_time.ctime(),
             'owner': self.owner.username,
             'meals': order_meals
         }
     
     def update_order(self, meal_id, quantity):
+        '''Update order details'''
         assoc_data = self.meal.filter_by(meal_id=meal_id).first()
         assoc_data.quantity = quantity
         self.save()
         
-    def __init__(self, user_id, time_ordered=None):
+    def __init__(self, user_id, time_ordered=None, due_time=None):
         self.user_id = user_id
         if time_ordered:
             self.time_ordered = time_ordered
-    
+        if due_time:
+            self.due_time = due_time
 
     def add_meal_to_order(self, meal, quantity=1):
+        '''add a meal to order'''
         assoc = MealAssoc(quantity=quantity)
         assoc.meal = meal
         self.meal.append(assoc)
@@ -257,10 +276,9 @@ class Order(BaseModel):
     def editable(self, now=None):
         '''checks if it's allowed to edit order'''
         time_limit = int(current_app.config.get('ORDER_EDITS_UPTO'))
-        if now == None:
+        if now is None:
             now = int(time.time())
         time_lapsed = now - self.time_ordered
         if time_lapsed >= time_limit:
             return False
-        else:
-            return True
+        return True

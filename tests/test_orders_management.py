@@ -1,6 +1,6 @@
 '''Tests for api endpoints'''
 import json, time
-
+from datetime import datetime
 # local imports
 from . import BaseTestClass
 
@@ -21,6 +21,8 @@ class TestOrdersManagement(BaseTestClass):
         self.meal2.user_id = admin.user_id
         self.meal1.save()
         self.meal2.save()
+        self.menu.add_meal([self.meal1, self.meal2]) 
+        self.menu.save()
 
     def test_make_orders(self):
         '''tetst authenticated users can make orders'''
@@ -137,15 +139,20 @@ class TestOrdersManagement(BaseTestClass):
     
     def test_ordering_with_invalid_meal_id(self):
         '''test error returned if order dne with non existent meal_id'''
-        res = self.login_user()
+        
+        self.meal2.save()
+        self.menu2.add_meal(self.meal2)
+        self.menu2.save()
+        self.user1.save()
+
         # no meals exist in db
-        bad_data = {'order':[{'meal_id': 1, 'quantity': 2}]}
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        bad_data = {'order':[{'meal_id': 100, 'quantity': 2}], 'due_time':'19-04-2019 0900'}
+        access_token = self.user1.generate_token().decode()
         headers = dict(Authorization='Bearer {}'.format(access_token))
+
         res = self.client.post(ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)
-        expected = 'Invalid meal id 1 provided'
+        expected = 'Invalid meal id 100 provided. Meal not in Menu'
         self.assertEqual(expected, json.loads(res.data))
     
     def test_quantity_should_be_whole_number(self):
@@ -235,3 +242,28 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(403, res.status_code)
         self.assertEqual('Sorry, you can not edit this order.', json.loads(res.data)['message'])
         
+    def test_place_order_with_invalid_due_date(self):
+        bad_data = {'order':[{'meal_id': 1, 'quantity': 2}], 'due_time':'109-04-2019 0900'}
+        self.user1.save()
+        # no meals exist in db
+        access_token = self.user1.generate_token().decode()
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        res = self.client.post(ORDERS_URL, data=json.dumps(bad_data), headers=headers)
+        self.assertEqual(400, res.status_code)
+        expected = 'Ensure date-time value is of the form "DD-MM-YY HHMM"'
+        self.assertEqual(expected, json.loads(res.data)['message'])
+
+    def test_place_order_day_without_menu(self):
+        bad_data = {'order':[{'meal_id': 1, 'quantity': 2}], 'due_time':'19-04-2019 0900'}
+        self.user1.save()
+        # no meals exist in db
+        access_token = self.user1.generate_token().decode()
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        due_time = datetime(year=2019, month=4, day=19)
+        res = self.client.post(ORDERS_URL, data=json.dumps(bad_data), headers=headers)
+        # self.assertEqual(202, res.status_code)
+        expected = "Menu for {} not available".format(due_time.ctime())
+        self.assertEqual(expected, json.loads(res.data)['message'])
+
+    

@@ -39,8 +39,8 @@ class BaseTestClass(TestCase):
         self.user2 = User(email='bev@mail.com', username='bevah',  password='password')
 
         self.menu = Menu()
-        self.menu1 = Menu(date=datetime(year=2018, month=4, day=18))
-        self.menu2 = Menu(date=datetime(year=2018, month=4, day=19))
+        self.menu1 = Menu(date=datetime(year=2019, month=4, day=18))
+        self.menu2 = Menu(date=datetime(year=2019, month=4, day=19))
 
         self.meal1 = Meal(name='Rice & Beef', price=100.00, description='Rice with beef. Yummy.')
         self.meal2 = Meal(name='Ugali Fish', price=150.00,

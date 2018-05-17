@@ -1,6 +1,6 @@
 '''Tests for api endpoints'''
 import json, time
-from datetime import datetime
+from datetime import datetime, timedelta
 # local imports
 from . import BaseTestClass
 
@@ -146,7 +146,7 @@ class TestOrdersManagement(BaseTestClass):
         self.user1.save()
 
         # no meals exist in db
-        bad_data = {'order':[{'meal_id': 100, 'quantity': 2}], 'due_time':'19-04-2019 0900'}
+        bad_data = {'order':[{'meal_id': 100, 'quantity': 2}], 'due_time':'19-04-2019 09-00'}
         access_token = self.user1.generate_token().decode()
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
@@ -251,11 +251,11 @@ class TestOrdersManagement(BaseTestClass):
 
         res = self.client.post(ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)
-        expected = 'Ensure date-time value is of the form "DD-MM-YY HHMM"'
+        expected = 'Ensure date-time value is of the form "DD-MM-YY HH-MM"'
         self.assertEqual(expected, json.loads(res.data)['message'])
 
     def test_place_order_day_without_menu(self):
-        bad_data = {'order':[{'meal_id': 1, 'quantity': 2}], 'due_time':'19-04-2019 0900'}
+        bad_data = {'order':[{'meal_id': 1, 'quantity': 2}], 'due_time':'19-04-2019 09-00'}
         self.user1.save()
         # no meals exist in db
         access_token = self.user1.generate_token().decode()
@@ -266,4 +266,16 @@ class TestOrdersManagement(BaseTestClass):
         expected = "Menu for {} not available".format(due_time.ctime())
         self.assertEqual(expected, json.loads(res.data)['message'])
 
-    
+    def test_place_order_with_due_less_than_30(self):
+        self.create_meals()
+        due_time = datetime.utcnow() + timedelta(minutes=5)
+        due_time = '{}-{}-{} {}-{}'.format(due_time.day, due_time.month, due_time.year, due_time.hour, due_time.minute)
+        order = {'order':[{"meal_id": 1, "quantity": 3}], 'due_time': str(due_time)}
+        self.user1.save()
+        access_token = self.user1.generate_token().decode()
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        res = self.client.post(ORDERS_URL, data=json.dumps(order), headers=headers)
+        # self.assertEqual(202, res.status_code)
+        expected = 'Unable to place order'
+        self.assertEqual(expected, json.loads(res.data)['message'])
+        self.assertEqual(expected, json.loads(res.data)['message'])

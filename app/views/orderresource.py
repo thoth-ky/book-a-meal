@@ -29,10 +29,10 @@ class OrderResource(Resource):
         try:
             date, time = due_time.split(' ')
             day, month, year  = date.split('-')
-            hour, minute = time[:2], time[2:]
+            hour, minute = time.split('-')
             return datetime(day=int(day), month=int(month), year=int(year), hour=int(hour), minute=int(minute))
         except Exception as e:
-            return 'Ensure date-time value is of the form "DD-MM-YY HHMM"'
+            return 'Ensure date-time value is of the form "DD-MM-YY HH-MM"'
 
     @token_required
     def post(self, user):
@@ -70,7 +70,7 @@ class OrderResource(Resource):
         if isinstance(menu, Menu):
             meals = [meal.meal_id for meal in menu.meals]
         else:
-            return {"message":"Menu for {} not available".format(menu_date.ctime())}, 400
+            return {"message":"Menu for {} not available".format(menu_date.ctime())}, 202
         
         for meal_id, quant in zip(meal_list, quantity):
             # confirm meal is in menu for due_time
@@ -127,6 +127,7 @@ class OrderResource(Resource):
             'message': 'Sorry, you can not edit this order.',
             'delta': time.time()-order.time_ordered
         }, 403
+
 
 ORDER_API = Blueprint('app.views.orderresource', __name__)
 API = Api(ORDER_API)

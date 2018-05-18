@@ -48,7 +48,7 @@ class MenuResource(Resource):
                 meals.append(meal)
             menu.add_meal(meals, date=date)
             menu.save()
-            send_updated_menu(menu)
+            send_updated_menu(menu)  # pragma: no cover
             return {
                 'message': 'Menu created successfully',
                 'menu_id': menu.id,

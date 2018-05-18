@@ -122,7 +122,7 @@ class User(BaseModel):
     def generate_token(self, validity=1000):
         '''generate access_token, validity is period of time before it becomes invalid'''
         payload = {
-            'exp': datetime.utcnow() + timedelta(seconds=validity),
+            'exp': datetime.utcnow() + timedelta(minutes=validity),
             'iat': datetime.utcnow(),
             'username': self.username,
             'admin': self.admin,
@@ -199,6 +199,7 @@ class Menu(BaseModel):
         'Meal',
         secondary='menu_meals',
         backref=backref('menu_meals', lazy=True, uselist=True))
+    
     def __init__(self, date=None):
         if date:
             self.date = date
@@ -209,17 +210,21 @@ class Menu(BaseModel):
     def add_meal(self, meal, date=None):
         '''Add meal to menu'''
         if not date:
-            date = datetime.utcnow().date()
+            today = datetime.utcnow().date()
+            date = datetime(year=today.year, month=today.month, day=today.day)
+        
         menu = Menu.query.filter_by(date=date).first()
         if not menu:
-            menu = Menu()
+            menu = Menu(date=date)
         if isinstance(meal, Meal):
             meal = [meal]
         self.put('meals', meal)
         self.save()
     
     def view(self):
-        meals = [[meal.name, meal.price] for meal in self.meals]
+        meals = [{'meal_id':meal.meal_id,
+                  'name': meal.name,
+                  'price': meal.price } for meal in self.meals]
         return {
             'id': self.id,
             'date': self.date.ctime(),

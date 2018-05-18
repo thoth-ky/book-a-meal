@@ -48,10 +48,7 @@ class TestOrdersManagement(BaseTestClass):
         order.add_meal_to_order(meal=self.meal1)
         order.save()
 
-        creds = dict(username=self.user2.username, password='password')
-        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.user2.generate_token().decode()
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
         url = '{}/1'.format(ORDERS_URL)

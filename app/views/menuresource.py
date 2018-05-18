@@ -6,6 +6,7 @@ from datetime import datetime
 from . import Blueprint
 from ..models.models import Menu, Meal
 from ..helpers.decorators import token_required, admin_token_required
+from ..helpers.email import send_updated_menu
 
 def validate_menu_inputs(meals_list=[], date=None):
     if meals_list:
@@ -37,14 +38,21 @@ class MenuResource(Resource):
         
         meals_list = [id_ for id_ in meals_list if id_ in [meal.meal_id for meal in user.meals]]
 
+        menu = Menu.get(date=date)
+        if not menu:
+            menu = Menu(date=date)
         if meals_list:
             meals = []
-            for id in meals_list:
-                meal = Meal.get(meal_id=id, caterer=user)
+            for id_ in meals_list:
+                meal = Meal.get(meal_id=id_, caterer=user)
                 meals.append(meal)
-            menu = Menu(date=date)
-            menu.add_meal(meals) 
-            return {'message': 'Menu created successfully', 'menu': menu.view()}, 201
+            menu.add_meal(meals, date=date)
+            menu.save()
+            send_updated_menu(menu)
+            return {
+                'message': 'Menu created successfully',
+                'menu_id': menu.id,
+                'menu': menu.view()}, 201
         return {'message': 'Menu object can not be empty'}, 202
 
     @token_required

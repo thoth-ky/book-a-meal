@@ -3,6 +3,7 @@ from flask import Flask, Blueprint
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
+from flask_mail import Mail
 # local imports
 try:
     from config.config import config_dict
@@ -12,6 +13,7 @@ except ModuleNotFoundError:
 DB = SQLAlchemy()
 URL_PREFIX = '/api/v1'
 AUTH = HTTPBasicAuth()
+MAIL = Mail()
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed
@@ -25,7 +27,8 @@ def create_app(config_name):
     app.config.from_object(config_dict[config_name])
     app.url_map.strict_slashes = False
     DB.init_app(app)
-    
+    MAIL.init_app(app)
+
     # import blueprints here to avoid  circular imports
     from .views.home import HOME_API
     from .views.authresource import AUTH_API

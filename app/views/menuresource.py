@@ -1,74 +1,74 @@
 '''This is where code for api resources will go'''
 from flask_restful import Resource, Api
 from flask import request
-
+from datetime import datetime
 # local imports
-from ..models.menu import Menu
-from ..models.user import User
-from .. import DATABASE
 from . import Blueprint
+from ..models.models import Menu, Meal
+from ..helpers.decorators import token_required, admin_token_required
+from ..helpers.email import send_updated_menu
 
+def validate_menu_inputs(meals_list=[], date=None):
+    if meals_list:
+        if not isinstance(meals_list, list):
+            return 'Make meal_list a list of Meal object IDs'
+    if date:
+        day, month, year = date.split('-')
+        try:
+            date = datetime(year=int(year), month=int(month), day=int(day))
+        except Exception as e:
+            return 'Ensure date is provided using format DD-MM-YYYY'
 
 class MenuResource(Resource):
     '''Resource for managing Menu'''
-    def post(self):
+    @admin_token_required
+    def post(self, user):
         '''handle post request to set up menu'''
-        try:
-            auth_header = request.headers.get('Authorization')
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                username = User.decode_token(access_token)
-                user = DATABASE.get_user_by_username(username)
-                try:
-                    if user.admin:
-                        json_data = request.get_json(force=True)
-                        meals_list = json_data.get('meal_list')
-                        date = json_data.get('date', '')
-                        if meals_list:
-                            menu_object = Menu(meals=meals_list, date=date)
-                            err = DATABASE.add(menu_object)
-                            if err:
-                                return{'Error': str(err)}, 202
-                            return {'message': 'Menu created successfully'}, 201
-                        return {'message': 'menu object can not be empty'}, 202
-                    return {'message': 'Unauthorized'}, 401
-                except Exception as error:
-                    return {
-                        'message': 'Unauthorized',
-                        'Error': str(error)
-                    }, 401
-        except Exception as error:
-            return {
-                'message': 'an error occured',
-                'Error': str(error)
-            }, 400
+        json_data = request.get_json(force=True)
+        meals_list = json_data.get('meal_list', '')
+        date = json_data.get('date', '')
+        err = validate_menu_inputs(meals_list=meals_list, date=date)
+        if err:
+            return {'error': err}, 400
+        if date == '':
+            date = datetime.utcnow().date()
+        else:
+            day, month, year = date.split('-')
+            date = datetime(year=int(year), month=int(month), day=int(day))
+        
+        meals_list = [id_ for id_ in meals_list if id_ in [meal.meal_id for meal in user.meals]]
 
-    def get(self):
-        '''handle GET requests'''
-        try:
-            auth_header = request.headers.get('Authorization')
-            access_token = auth_header.split(' ')[1]
-            if access_token:
-                username = User.decode_token(access_token)
-                user = DATABASE.get_user_by_username(username)
-                try:
-                    if user:
-                        menu_items = DATABASE.current_menu
-                        menu = [menu_items[item].make_dict() for item in menu_items]
-                        return {
-                            'message': 'Menu request succesful',
-                            'menu': menu
-                        }, 200
-                except AttributeError as error:
-                    return {
-                        'message': 'Unauthorized',
-                        'Error': str(error)
-                    }, 401
-        except Exception as error:
+        menu = Menu.get(date=date)
+        if not menu:
+            menu = Menu(date=date)
+        if meals_list:
+            meals = []
+            for id_ in meals_list:
+                meal = Meal.get(meal_id=id_, caterer=user)
+                meals.append(meal)
+            menu.add_meal(meals, date=date)
+            menu.save()
+            send_updated_menu(menu)  # pragma: no cover
             return {
-                'message': 'an error occured',
-                'Error': str(error)
-            }, 400
+                'message': 'Menu created successfully',
+                'menu_id': menu.id,
+                'menu': menu.view()}, 201
+        return {'message': 'Menu object can not be empty'}, 202
+
+    @token_required
+    def get(self, user):
+        '''handle GET requests'''
+        today = datetime.utcnow().date()
+        today = datetime(year=today.year, month=today.month, day=today.day)
+        menu = Menu.get(date=today)
+        if not menu:
+            return 'No menu found for {}'.format(today.ctime()), 404
+
+        return {
+            'message': 'Menu request succesful',
+            'menu': menu.view()
+        }, 200
+
 
 MENU_API = Blueprint('app.views.menuresource', __name__)
 API = Api(MENU_API)

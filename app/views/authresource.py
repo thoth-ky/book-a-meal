@@ -3,91 +3,114 @@ from flask_restful import Resource, Api
 from flask import request
 
 # local imports
-from ..models.user import User
-from ..models.admin import Admin
-from .. import  DATABASE
-from ..models import ItemAlreadyExists
+from ..models.models import User
+from ..helpers.decorators import admin_token_required, super_admin_required
+from .. import AUTH
 from . import Blueprint
 
-# Blueprint instance representing authentication blueprint
+def validate_user_details(username=None, email=None, password=None, admin=None):
+    # sanitizing input
+    if username:
+        if not isinstance(username, str) or len(username) <= 3:
+            return 'Invalid username. Ensure username has more than 3 characters'
+    if password:
+        if not isinstance(password, str) or len(password)< 8:
+            return'Invalid password. Ensure password is a string of not less than 8 characters'
+    if email:
+        if not isinstance(email, str) or not '@' in email:
+            return 'Invalid Email'
 
 
 class UserRegistrationResource(Resource):
     '''Manage user registration when method is POST'''
     def post(self):
         '''handle the POST request to register users'''
-        try:
-            post_data = request.get_json(force=True)
-            username = post_data.get('username')
-            password = post_data.get('password')
-            email = post_data.get('email')
-            admin = post_data.get('admin', '')
-            if admin:
-                # register user using Admin model
-                admin = Admin(
-                    username=username, password=password, email=email,
-                    admin=admin)
-                try:
-                    DATABASE.add(item=admin)
-                except ItemAlreadyExists as error:
-                    return {
-                        'message': 'User already exists',
-                        'error': str(error)
-                    }, 202
-                return {
-                    'message': 'Admin registration succesful, proceed to login'
-                }, 201
+        post_data = request.get_json(force=True)
+        username = post_data.get('username')
+        password = post_data.get('password')
+        email = post_data.get('email')
+        admin = post_data.get('admin', False)
+        err = validate_user_details(username=username, email=email, password=password, admin=admin)
+        if username is None or password is None or email is None:
+            return {'ERR': 'Incomplete details'}, 400
+        if err:
+            return {'ERR':err}, 400
+        if User.has(username=username) or User.has(email=email):
+            return{
+                'message': 'Username or Email not available.'
+            }, 202
+        user = User(username=username, password=password, email=email)
+        user.save()
+        access_token = user.generate_token().decode()
+        # register normal user
+        return {
+            'message': 'User registration succesful, and logged in. Your access token is',
+            'access_token': access_token
+            }, 201
 
-            # register normal user
-            user = User(username=username, password=password, email=email)
-            try:
-                DATABASE.add(item=user)
-            except Exception as error:
-                return {
-                    'message': 'User already exists',
-                    'error': str(error)
-                }, 202
-            return {
-                'message': 'User registration succesful, proceed to login'
-                }, 201
 
-        except Exception as error:
-            return {
-                'message': 'Encountered an error during registration',
-                'Error': str(error)
-            }, 400
+class UserManagementResource(Resource):
+    @super_admin_required
+    def get(self, user_id=None):
+        '''Get a list of all users'''
+        if user_id:
+            users =[User.get(user_id=user_id)]
+        else:
+            users = User.get_all()
+        users = [user.view() for user in users]
+        return {'users': users}, 200
 
+    @super_admin_required
+    def put(self, user_id):
+        '''Promote user'''
+        user_to_promote = User.get(user_id=user_id)
+        User.promote_user(user_to_promote)
+        return {'message': 'User has now been made admin', 'user':user_to_promote.view()}
+
+    @super_admin_required
+    def delete(self, user_id):
+        user = User.get(user_id=user_id)
+        if user:
+            user.delete()
+            return {'message': 'User {} has been deleted'.format(user_id)}, 200
+        return {'message': 'User {} does not exist'.format(user_id)}, 404
 
 class LoginResource(Resource):
     '''Manage user log in'''
     def post(self):
         '''Handles POST requests'''
-        try:
-            post_data = request.get_json(force=True)
-            username = post_data.get('username', '')
-            email = post_data.get('email', '')
-            password = post_data.get('password')
+        post_data = request.get_json(force=True)
+        username = post_data.get('username', '')
+        email = post_data.get('email', '')
+        password = post_data.get('password')
+        if email:
+            err = validate_user_details(email=email)
+        if username:
+            err = validate_user_details(username=username)
+        if err:
+            return {'err': err}, 400
+        if User.has(username=username) or User.has(email=email):
+            # proceed to login user
+            if email:
+                user = User.get(email=email)
             if username:
-                user = DATABASE.get_user_by_username(username)
-            elif email:
-                user = DATABASE.get_user_by_email(email)
-            else:
-                user = None
-            if user and User.validate_password(user, password):
+                user = User.get(username=username)
+            if user.validate_password(password):
                 access_token = user.generate_token().decode()
                 return {
                     'message': 'Successfully logged in',
                     'access_token': access_token
                 }, 200
-            return {
-                'message': 'The username/email or password provided is not correct'}, 401
-        except Exception as error:
-            return {
-                'message': 'Encountered an error during log in',
-                'Error': str(error)
-            }, 400
+            # return {'message': 'The username/email or password provided is not correct'}, 401
+        return {
+            'message': 'The username/email or password provided is not correct'}, 401
+
 
 AUTH_API = Blueprint('app.views.authresource', __name__)
 API = Api(AUTH_API)
-API.add_resource(UserRegistrationResource, '/auth/signup', endpoint='signup')
-API.add_resource(LoginResource, '/auth/signin', endpoint='signin')
+API.add_resource(UserRegistrationResource, '/auth/signup', '/signup', '/register', '/auth/register', endpoint='signup')
+API.add_resource(LoginResource, '/auth/signin', '/auth/login', '/login', '/signin', endpoint='signin')
+API.add_resource(UserManagementResource, '/users', endpoint='accounts')
+API.add_resource(UserManagementResource, '/users/<user_id>', '/user/<user_id>', endpoint='account')
+API.add_resource(UserManagementResource, '/users/promote/<user_id>','/user/promote/<user_id>', endpoint='promote')
+# API.add_resource(LogoutResource, '/auth/signout', endpoint='logout')

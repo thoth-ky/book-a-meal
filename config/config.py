@@ -15,12 +15,13 @@ class Config:
         DB_USER, DB_PASSWORD, DB_NAME)
 
     # mail server configs
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 8025)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') or False
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or None
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or None
+    MAIL_SERVER = os.getenv('MAIL_SERVER')
+    MAIL_PORT = int(os.getenv('MAIL_PORT') or 8025)
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS') or False
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME') or None
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD') or None
     ADMINS = ['jmutukudeveloper@gmail.com']
+    TOKEN_VALIDITY = int(os.getenv('TOKEN_VALIDITY'))
 
 class DevelopmentConfig(Config):
     '''Configurations for development. contains configuration settings specific to development'''

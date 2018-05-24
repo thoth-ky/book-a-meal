@@ -15,10 +15,11 @@ SIGNIN_URL = '/api/v1/auth/signin'
 
 
 class BaseTestClass(TestCase):
-    '''An abstract base class for tests, contains
-    all common variables methods'''
+    '''An abstract base class for tests, contains all common variables
+    methods'''
 
     def setUp(self):
+        '''Declare initial variables'''
         self.maxDiff = None
         self.app = create_app('testing')
         self.client = self.app.test_client()
@@ -28,29 +29,42 @@ class BaseTestClass(TestCase):
         DB.drop_all()
         DB.create_all()
         self.today = datetime.utcnow().date()
-        self.test_user = {'username': 'martin', 'email': 'martin@mail.com', 'password': 'password'}
-        self.admin_user = dict(username='admin', email='admin@mail.com', password='admin1234', admin=True)
+        self.test_user = {
+            'username': 'martin',
+            'email': 'martin@mail.com',
+            'password': 'password'}
+        self.admin_user = dict(
+            username='admin',
+            email='admin@mail.com',
+            password='admin1234',
+            admin=True)
         self.meal_model = Meal
         self.order_model = Order
         self.menu_model = Menu
         self.order_model = Order
         self.user_model = User
-        self.user1 = User(email='mike@mail.com', password='password', username='mail')
-        self.user2 = User(email='bev@mail.com', username='bevah',  password='password')
+        self.user1 = User(email='mike@mail.com', password='password',
+                          username='mail')
+        self.user2 = User(email='bev@mail.com', username='bevah',
+                          password='password')
 
         self.menu = Menu()
         self.menu1 = Menu(date=datetime(year=2019, month=4, day=18))
         self.menu2 = Menu(date=datetime(year=2019, month=4, day=19))
 
-        self.meal1 = Meal(name='Rice & Beef', price=100.00, description='Rice with beef. Yummy.')
+        self.meal1 = Meal(name='Rice & Beef', price=100.00,
+                          description='Rice with beef. Yummy.')
         self.meal2 = Meal(name='Ugali Fish', price=150.00,
                           description='Ugali and fish, Nyanza tings!')
-        self.meal3 = Meal(name='Muthokoi', price=100.00, description='Kamba tributes')
+        self.meal3 = Meal(name='Muthokoi', price=100.00,
+                          description='Kamba tributes')
         
     def create_user(self):
         '''create test user'''
-        user = self.user_model(username=self.test_user['username'], email=self.test_user['email'],
-                               password=self.test_user['password'])
+        user = self.user_model(
+            username=self.test_user['username'],
+            email=self.test_user['email'],
+            password=self.test_user['password'])
         user.save()
         return user
     
@@ -70,13 +84,17 @@ class BaseTestClass(TestCase):
                                 email=self.admin_user['email'])
         admin.admin = True
         admin.save()
-        data = {'password': self.admin_user['password'], 'username': self.admin_user['username']}
+        data = {
+            'password': self.admin_user['password'],
+            'username': self.admin_user['username']}
         res = self.client.post(SIGNIN_URL, data=json.dumps(data))
         assert(res.status_code, 200)
         return res
+
     def login_super_admin(self):
         '''helper function to create and login super admin'''
-        super_admin = self.user_model(username='super', email='super@bam.com', password='super1234')
+        super_admin = self.user_model(username='super', email='super@bam.com',
+                                      password='super1234')
         super_admin.admin = True
         super_admin.super_user = True
         super_admin.save()

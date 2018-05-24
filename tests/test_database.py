@@ -15,17 +15,21 @@ class TestDatabase(BaseTestClass):
         self.assertEqual(user, q_user)
 
     def test_user_can_be_promoted(self):
+        '''test users can be promoted to admin'''
         user = self.create_user()
         self.assertEqual(user.admin, False)
         self.user_model.promote_user(user)
         self.assertEqual(user.admin, True)
 
     def test_password_validation(self):
+        '''test password validation works'''
         user = self.create_user()
         self.assertFalse(user.validate_password('wrongpass'))
-        self.assertTrue(user.validate_password(password=self.test_user['password']))
+        self.assertTrue(
+            user.validate_password(password=self.test_user['password']))
 
     def test_token_creation_and_decoding(self):
+        '''test token creation and decoding'''
         user = self.create_user()
         token = user.generate_token()
         username = self.user_model.decode_token(token)['username']
@@ -49,6 +53,7 @@ class TestDatabase(BaseTestClass):
         self.assertEqual(meal.price, new_data['price'])
 
     def test_can_delete_meals(self):
+        '''test can delete meals'''
         meal = self.create_meal()
         meal.save()
         q_meal = self.meal_model.query.filter_by(meal_id=meal.meal_id).first()
@@ -83,6 +88,7 @@ class TestDatabase(BaseTestClass):
         self.assertTrue(isinstance(menu.meals[0], self.meal_model))
 
     def test_user_can_order_several_meals(self):
+        '''test user can order several meals'''
         self.meal1.save()
         self.meal2.save()
         user = self.create_user()
@@ -102,7 +108,8 @@ class TestDatabase(BaseTestClass):
         self.assertTrue(isinstance(assoc2.meal, self.meal_model))
 
     def test_cant_edit_order_after_given_time(self):
-        '''This will assume user is given 30 seconds ater creating an order to edit it, deployment this should be set'''
+        '''This will assume user is given 30 seconds ater creating an order
+        to edit it, deployment this should be set'''
         self.meal1.save()
         self.meal2.save()
         user = self.create_user()
@@ -114,11 +121,13 @@ class TestDatabase(BaseTestClass):
         self.assertFalse(order.editable(now=int(time.time()+160)))
 
     def test_save_bad_object(self):
+        '''test can catch error during save'''
         meal = self.meal_model()
         err = meal.save()
         self.assertEqual(err['message'], 'Save operation not successful')
     
     def test_delete_unsaved_object(self):
+        '''test can catch error during deletion'''
         meal = self.meal_model()
         err = meal.delete()
         self.assertEqual(err['message'], 'Delete operation failed')

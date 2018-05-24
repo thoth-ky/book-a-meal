@@ -6,9 +6,8 @@ import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean, Float, DateTime
-
-
+from sqlalchemy import (Table, Column, Integer, ForeignKey, String, Boolean,
+                        Float, DateTime)
 # local imports
 from .. import DB, AUTH
 
@@ -22,7 +21,8 @@ MENU_MEALS = DB.Table(
 class MealAssoc(DB.Model):
     __tablename__ = 'meals_assoc'
     meal_id = Column(Integer, ForeignKey('meal.meal_id'), primary_key=True)
-    order_id = Column(Integer, ForeignKey('order.order_id'), primary_key=True)
+    order_id = Column(Integer, ForeignKey('order.order_id'),
+                      primary_key=True)
     quantity = Column(Integer)
 
 
@@ -32,8 +32,8 @@ class BaseModel(DB.Model):
 
     def make_dict(self):
         '''serialize class'''
-        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
-        # return  self.__dict__
+        return {col.name: getattr(self, col.name)
+                for col in self.__table__.columns}
 
     def save(self):
         '''save object'''
@@ -49,7 +49,7 @@ class BaseModel(DB.Model):
             }
 
     def delete(self):
-        '''delete'''
+        '''delete object'''
         try:
             DB.session.delete(self)
             DB.session.commit()
@@ -61,11 +61,15 @@ class BaseModel(DB.Model):
             }
 
     def update(self, new_data):
-        '''new_data is a dictionary containing the field as key and new value as value'''
+        '''new_data is a dictionary containing the field as key and new value
+        as value'''
         for key in new_data.keys():
             self.put(key, new_data[key])
 
     def put(self, field, value):
+        '''insert operation. field is the attribute name and value is the
+        value being inseted, it can be a list or not. A list is used to
+        populate a relationship field'''
         if isinstance(value, list):
             old_value = getattr(self, field)
             old_value.extend(value)
@@ -76,17 +80,20 @@ class BaseModel(DB.Model):
 
     @classmethod
     def has(cls,**kwargs):
+        '''check if table contains record atching given kwargs'''
         obj = cls.query.filter_by(**kwargs).first()
-        if obj:
+        if isinstance(obj, cls):
             return True
         return False
 
     @classmethod
     def get(cls, **kwargs):
+        '''get a record from table matching given kwarg'''
         return cls.query.filter_by(**kwargs).first()
 
     @classmethod
     def get_all(cls):
+        '''return a list of all records in the table'''
         return cls.query.all()
 
 
@@ -115,12 +122,15 @@ class User(BaseModel):
         return check_password_hash(self.password_hash, password)
 
     def view(self):
+        '''display user informtion, hide sensitive values'''
         user = self.make_dict()
         user['password_hash'] = '*'*10
         return user
         
-    def generate_token(self, validity=1000):
-        '''generate access_token, validity is period of time before it becomes invalid'''
+    def generate_token(self):
+        '''generate access_token, validity is period of time before it
+        becomes invalid'''
+        validity = current_app.config.get('TOKEN_VALIDITY')
         payload = {
             'exp': datetime.utcnow() + timedelta(minutes=validity),
             'iat': datetime.utcnow(),
@@ -139,14 +149,17 @@ class User(BaseModel):
         '''decode access token from authorization header'''
         try:
             payload = jwt.decode(
-                token, str(current_app.config.get('SECRET')), algorithms=['HS256'])
+                token, str(current_app.config.get('SECRET')),
+                algorithms=['HS256'])
             return payload
         except Exception:
             # the token is invalid, return an error string
-            raise jwt.InvalidTokenError("Invalid token. Please register or login")
+            raise jwt.InvalidTokenError(
+                "Invalid token. Please register or login")
 
     @staticmethod
     def promote_user(user):
+        '''make user admin'''
         user.admin = True
         user.save()
 
@@ -164,15 +177,17 @@ class Meal(BaseModel):
     orders = relationship('MealAssoc', backref='meal', lazy=True, uselist=True)
 
     def view(self):
+        '''display meal'''
         return {
             'meal_id': self.meal_id,
             'name': self.name,
             'price': self.price,
             'description': self.description,
-            'caterer': self.caterer.username,
+            'caterer': self.caterer.username
         }
 
     def order_view(self):
+        '''display meal orders'''
         return [
             {"order_id": a.order_id,
              "time_ordered": a.orders.time_ordered,
@@ -205,7 +220,8 @@ class Menu(BaseModel):
             self.date = date
         else:
             today = datetime.utcnow().date()
-            self.date = datetime(year=today.year, month=today.month, day=today.day)
+            self.date = datetime(
+                year=today.year, month=today.month, day=today.day)
 
     def add_meal(self, meal, date=None):
         '''Add meal to menu'''
@@ -222,6 +238,7 @@ class Menu(BaseModel):
         self.save()
     
     def view(self):
+        '''display menu'''
         meals = [{'meal_id':meal.meal_id,
                   'name': meal.name,
                   'price': meal.price } for meal in self.meals]
@@ -239,11 +256,15 @@ class Order(BaseModel):
 
     order_id = Column(Integer, primary_key=True)
     time_ordered = Column(Float, default=time.time())
-    due_time = Column(DateTime, default=datetime.utcnow()+timedelta(minutes=30))
-    user_id = Column(Integer, ForeignKey('user.user_id'))
-    meal = relationship('MealAssoc', backref='orders', lazy='dynamic', uselist=True)
+    due_time = Column(
+        DateTime, default=datetime.utcnow()+timedelta(minutes=30))
+    user_id = Column(
+        Integer, ForeignKey('user.user_id'))
+    meal = relationship(
+        'MealAssoc', backref='orders', lazy='dynamic', uselist=True)
 
     def view(self):
+        '''display order details'''
         assoc_data = self.meal.all()
         order_meals = [{'meal_id': a.meal.meal_id,
                         'name': a.meal.name,

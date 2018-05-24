@@ -1,9 +1,8 @@
-'''email support'''
+'''Email support'''
 import os
 from threading import Thread
 from flask import render_template, current_app
 from flask_mail import Message
-
 # local imports
 from .. import MAIL
 from ..models.models import User

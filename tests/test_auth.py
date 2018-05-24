@@ -17,12 +17,11 @@ class TestUserManagement(BaseTestClass):
     '''Test User registration and logging in and out'''
     def test_user_registration(self):
         '''test user can register'''
-        # register user
-        # test_user = dict(username='eve', email='eve@mail.com', password='eve1234')
-        response = self.client.post(SIGNUP_URL, data=json.dumps(self.test_user))
+        response = self.client.post(
+            SIGNUP_URL, data=json.dumps(self.test_user))
         # check status code
         self.assertEqual(201, response.status_code)
-        expected = 'User registration succesful, and logged in. Your access token is'
+        expected = '''User registration succesful, and logged in. Your access token is'''
         # check returned message
         result = json.loads(response.data)
         self.assertEqual(expected, result['message'])
@@ -30,10 +29,12 @@ class TestUserManagement(BaseTestClass):
 
     def test_can_not_register_same_user_twice(self):
         '''test registering same user twice raises error'''
-        response = self.client.post(SIGNUP_URL, data=json.dumps(self.test_user))
+        response = self.client.post(
+            SIGNUP_URL, data=json.dumps(self.test_user))
         # check status code
         self.assertEqual(201, response.status_code)
-        response = self.client.post(SIGNUP_URL, data=json.dumps(self.test_user))
+        response = self.client.post(
+            SIGNUP_URL, data=json.dumps(self.test_user))
         self.assertEqual(202, response.status_code)
         expected = 'Username or Email not available.'
         result = json.loads(response.data)['message']
@@ -42,13 +43,17 @@ class TestUserManagement(BaseTestClass):
     def test_user_login(self):
         '''test user can login'''
         # register user
-        response = self.client.post(SIGNUP_URL, data=json.dumps(self.test_user))
+        response = self.client.post(
+            SIGNUP_URL, data=json.dumps(self.test_user))
         # check status code
         self.assertEqual(201, response.status_code)
         # try login with right password
         correct_password = self.test_user['password']
-        data = {'password': correct_password, 'email': self.test_user['email']}
-        response = self.client.post(SIGNIN_URL, data=json.dumps(data))
+        data = {
+            'password': correct_password,
+            'email': self.test_user['email']}
+        response = self.client.post(
+            SIGNIN_URL, data=json.dumps(data))
         self.assertEqual(200, response.status_code)
         access_token = json.loads(response.data)['access_token']
         self.assertTrue(access_token)
@@ -59,8 +64,11 @@ class TestUserManagement(BaseTestClass):
     def test_login_with_wrong_password(self):
         '''test if user can log in with wrong password'''
         wrong_password = 'wrongpassword'
-        data = {'password': wrong_password, 'email': self.test_user['email']}
-        response = self.client.post(SIGNIN_URL, data=json.dumps(data))
+        data = {
+            'password': wrong_password,
+            'email': self.test_user['email']}
+        response = self.client.post(
+            SIGNIN_URL, data=json.dumps(data))
         self.assertEqual(401, response.status_code)
         expected = {
             'message': 'The username/email or password provided is not correct'
@@ -77,18 +85,32 @@ class TestUserManagement(BaseTestClass):
         self.assertEqual(expected, json.loads(response.data))
 
     def test_signup_with_invalid_details(self):
-        invalid_email = {'username': 'jujuju', 'email': 'notemail', 'password': 'password'}
+        invalid_email = {
+            'username': 'jujuju',
+            'email': 'notemail',
+            'password': 'password'}
         res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_email))
         self.assertEqual(400, res.status_code)
         self.assertEqual('Invalid Email', json.loads(res.data)['ERR'])
-        invalid_password = {'username':'user', 'email':'user@gmail.com', 'password':'qwr'}
-        res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_password))
+        invalid_password = {
+            'username':'user',
+            'email':'user@gmail.com',
+            'password':'qwr'}
+        res = self.client.post(
+            SIGNUP_URL, data=json.dumps(invalid_password))
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid password. Ensure password is a string of not less than 8 characters', json.loads(res.data)['ERR'])
-        invalid_username = {'username':"a", 'email':'user@gmail.com', 'password':'password1'}
-        res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_username))
+        self.assertEqual(
+            'Invalid password. Ensure password is a string of not less than 8 characters', json.loads(res.data)['ERR'])
+        invalid_username = {
+            'username':"a",
+            'email':'user@gmail.com',
+            'password':'password1'}
+        res = self.client.post(
+            SIGNUP_URL, data=json.dumps(invalid_username))
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid username. Ensure username has more than 3 characters', json.loads(res.data)['ERR'])
+        self.assertEqual(
+            'Invalid username. Ensure username has more than 3 characters',
+            json.loads(res.data)['ERR'])
         incomplete_details = {'username': None, 'email': '', 'password': None}
         res = self.client.post(SIGNUP_URL, data=json.dumps(incomplete_details))
         self.assertEqual(400, res.status_code)
@@ -129,11 +151,13 @@ class TestUserManagement(BaseTestClass):
         # delete user
         res = self.client.delete(ACC_URL, headers=headers)
         self.assertEqual(200, res.status_code)
-        self.assertEqual('User 1 has been deleted', json.loads(res.data)['message'])
+        self.assertEqual(
+            'User 1 has been deleted', json.loads(res.data)['message'])
         # delete non existent user
         res = self.client.delete(ACC_URL, headers=headers)
         self.assertEqual(404, res.status_code)
-        self.assertEqual('User 1 does not exist', json.loads(res.data)['message'])
+        self.assertEqual(
+            'User 1 does not exist', json.loads(res.data)['message'])
 
     def test_use_of_invalid_token(self):
         '''Test if user gives invalid token access could be gained'''
@@ -160,4 +184,3 @@ class TestUserManagement(BaseTestClass):
         res = self.client.get(USERS_URL, headers=headers)
         self.assertEqual(401, res.status_code)
         self.assertEqual('Unauthorized', json.loads(res.data)['message'])
-

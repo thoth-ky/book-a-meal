@@ -1,15 +1,15 @@
-'''home bueprint'''
+'''Home Blueprint'''
 from flask_restful import Resource, Api
 from flask import request
-
 # local imports
 from ..models.models import User
 from ..helpers.decorators import admin_token_required, super_admin_required
 from .. import AUTH
 from . import Blueprint
 
+
 def validate_user_details(username=None, email=None, password=None, admin=None):
-    # sanitizing input
+    '''sanitizing input'''
     if username:
         if not isinstance(username, str) or len(username) <= 3:
             return 'Invalid username. Ensure username has more than 3 characters'
@@ -30,7 +30,11 @@ class UserRegistrationResource(Resource):
         password = post_data.get('password')
         email = post_data.get('email')
         admin = post_data.get('admin', False)
-        err = validate_user_details(username=username, email=email, password=password, admin=admin)
+        err = validate_user_details(
+            username=username,
+            email=email,
+            password=password,
+            admin=admin)
         if username is None or password is None or email is None:
             return {'ERR': 'Incomplete details'}, 400
         if err:
@@ -42,7 +46,6 @@ class UserRegistrationResource(Resource):
         user = User(username=username, password=password, email=email)
         user.save()
         access_token = user.generate_token().decode()
-        # register normal user
         return {
             'message': 'User registration succesful, and logged in. Your access token is',
             'access_token': access_token
@@ -50,6 +53,7 @@ class UserRegistrationResource(Resource):
 
 
 class UserManagementResource(Resource):
+    '''user management by super admin'''
     @super_admin_required
     def get(self, user_id=None):
         '''Get a list of all users'''
@@ -69,11 +73,13 @@ class UserManagementResource(Resource):
 
     @super_admin_required
     def delete(self, user_id):
+        '''delete user'''
         user = User.get(user_id=user_id)
         if user:
             user.delete()
             return {'message': 'User {} has been deleted'.format(user_id)}, 200
         return {'message': 'User {} does not exist'.format(user_id)}, 404
+
 
 class LoginResource(Resource):
     '''Manage user log in'''
@@ -101,9 +107,9 @@ class LoginResource(Resource):
                     'message': 'Successfully logged in',
                     'access_token': access_token
                 }, 200
-            # return {'message': 'The username/email or password provided is not correct'}, 401
         return {
-            'message': 'The username/email or password provided is not correct'}, 401
+            'message': 'The username/email or password provided is not correct'
+            }, 401
 
 
 AUTH_API = Blueprint('app.views.authresource', __name__)
@@ -113,4 +119,3 @@ API.add_resource(LoginResource, '/auth/signin', '/auth/login', '/login', '/signi
 API.add_resource(UserManagementResource, '/users', endpoint='accounts')
 API.add_resource(UserManagementResource, '/users/<user_id>', '/user/<user_id>', endpoint='account')
 API.add_resource(UserManagementResource, '/users/promote/<user_id>','/user/promote/<user_id>', endpoint='promote')
-# API.add_resource(LogoutResource, '/auth/signout', endpoint='logout')

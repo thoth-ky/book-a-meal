@@ -23,6 +23,7 @@ MANAGER.add_command('db', MigrateCommand)
 
 @MANAGER.command
 def create_super_user():
+    '''fuction to create super user directly'''
     username = input('Enter superuser username: ')
     email  = input('Enter super user email: ')
     password = input('Enter superuser pasword: ')

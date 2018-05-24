@@ -1,13 +1,14 @@
 '''home bueprint'''
 from flask_restful import Resource, Api
 from flask import request
-
 # local imports
 from . import Blueprint
 from ..models.models import User, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
+
 def validate_meal_data(name=None, price=None, description=None):
+    '''sanitize inputs'''
     if not isinstance(name, str) or len(name) <= 0:
         return 'Invalid meal name provided'
     try:
@@ -16,6 +17,7 @@ def validate_meal_data(name=None, price=None, description=None):
         return 'Invalid value for price'
     if not isinstance(description, str) or len(description) <= 0:
         return 'Invalid description'
+
 
 class MealResource(Resource):
     '''Resource for managing meals'''

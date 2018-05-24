@@ -10,12 +10,12 @@ from ..helpers.decorators import token_required, admin_token_required
 
 
 def validate_order_inputs(meal_list=None, quantity=None):
+    '''sanitize post data'''
     if meal_list:
         if isinstance(meal_list, list):
             for i in meal_list:
                 if not isinstance(i, int):
                     return 'Menu ids should be integers'
-
     if quantity:
         if isinstance(quantity, list):
             for i in quantity:
@@ -30,7 +30,8 @@ class OrderResource(Resource):
             date, time = due_time.split(' ')
             day, month, year  = date.split('-')
             hour, minute = time.split('-')
-            return datetime(day=int(day), month=int(month), year=int(year), hour=int(hour), minute=int(minute))
+            return datetime(day=int(day), month=int(month), year=int(year),
+                            hour=int(hour), minute=int(minute))
         except Exception as e:
             return 'Ensure date-time value is of the form "DD-MM-YY HH-MM"'
 
@@ -40,9 +41,8 @@ class OrderResource(Resource):
         order_data = {'due':'2-2-2018 1500',order':[{'meal_id':1, 'quantity':2}, {},{}]}
         data should contain a dictionary with a list of dictionaries specifying meal_id and
         quantity for each as keys'''
-
         post_data = request.get_json(force=True)
-        order_data = post_data['order'] # get a list of dictionaries
+        order_data = post_data['order']
         meal_list = [dictionary['meal_id'] for dictionary in order_data]
         quantity = [dictionary['quantity'] for dictionary in order_data]
         due_time = post_data.get('due_time', None)
@@ -56,21 +56,29 @@ class OrderResource(Resource):
         if due_time:
             due_time = self.get_due_time(due_time)
             if isinstance(due_time, str):
-                return {'message':due_time, 'error':post_data.get('due_time')}, 400
+                return {
+                    'message':due_time,
+                    'error':post_data.get('due_time')
+                }, 400
         else:
             due_time = now + timedelta(minutes=30)
 
         if (due_time -now).total_seconds() < 1800:
-            return {'message': 'Unable to place order',
-                    'help': 'Order should be due atleast 30 minutes from time of placing the order'
-                   }, 202
-        menu_date = datetime(year=due_time.year, month=due_time.month, day=due_time.day)
+            return {
+                'message': 'Unable to place order',
+                'help': 'Order should be due atleast 30 minutes from time\
+                         of placing the order'
+            }, 202
+        menu_date = datetime(
+            year=due_time.year, month=due_time.month, day=due_time.day)
         order = Order(user_id=user.user_id, due_time=due_time)
         menu = Menu.get(date=menu_date)
         if isinstance(menu, Menu):
             meals = [meal.meal_id for meal in menu.meals]
         else:
-            return {"message":"Menu for {} not available".format(menu_date.ctime())}, 202
+            return {
+                "message":"Menu for {} not available".format(menu_date.ctime())
+            }, 202
         
         for meal_id, quant in zip(meal_list, quantity):
             # confirm meal is in menu for due_time
@@ -78,9 +86,13 @@ class OrderResource(Resource):
                 meal = Meal.get(meal_id=meal_id)
                 order.add_meal_to_order(quantity=quant, meal=meal)
             else:
-                return 'Invalid meal id {} provided. Meal not in Menu'.format(meal_id), 400
+                return 'Invalid meal id {} provided. Meal not in Menu'.format(
+                    meal_id), 400
         order.save()
-        return {'message': 'Order has been placed', 'order': order.view()}, 201
+        return {
+            'message': 'Order has been placed',
+            'order': order.view()
+        }, 201
 
     @token_required
     def get(self, user, order_id=None):
@@ -122,7 +134,10 @@ class OrderResource(Resource):
 
         if order.editable() is True:
             order.update_order(meal_id, quantity)
-            return {'message': 'Order modified succesfully', 'order': order.view()}, 200
+            return {
+                'message': 'Order modified succesfully',
+                'order': order.view()
+            }, 200
         return {
             'message': 'Sorry, you can not edit this order.',
             'delta': time.time()-order.time_ordered

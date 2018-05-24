@@ -8,7 +8,9 @@ from ..models.models import Menu, Meal
 from ..helpers.decorators import token_required, admin_token_required
 from ..helpers.email import send_updated_menu
 
+
 def validate_menu_inputs(meals_list=[], date=None):
+    '''sanitize post data'''
     if meals_list:
         if not isinstance(meals_list, list):
             return 'Make meal_list a list of Meal object IDs'
@@ -19,6 +21,7 @@ def validate_menu_inputs(meals_list=[], date=None):
         except Exception as e:
             return 'Ensure date is provided using format DD-MM-YYYY'
 
+
 class MenuResource(Resource):
     '''Resource for managing Menu'''
     @admin_token_required
@@ -28,19 +31,23 @@ class MenuResource(Resource):
         meals_list = json_data.get('meal_list', '')
         date = json_data.get('date', '')
         err = validate_menu_inputs(meals_list=meals_list, date=date)
+
         if err:
             return {'error': err}, 400
+
         if date == '':
             date = datetime.utcnow().date()
         else:
             day, month, year = date.split('-')
             date = datetime(year=int(year), month=int(month), day=int(day))
-        
-        meals_list = [id_ for id_ in meals_list if id_ in [meal.meal_id for meal in user.meals]]
 
+        meals_list = [id_ for id_ in meals_list
+                      if id_ in [meal.meal_id for meal in user.meals]]
         menu = Menu.get(date=date)
+
         if not menu:
             menu = Menu(date=date)
+
         if meals_list:
             meals = []
             for id_ in meals_list:
@@ -52,8 +59,11 @@ class MenuResource(Resource):
             return {
                 'message': 'Menu created successfully',
                 'menu_id': menu.id,
-                'menu': menu.view()}, 201
-        return {'message': 'Menu object can not be empty'}, 202
+                'menu': menu.view()
+                }, 201
+        return {
+            'message': 'Menu object can not be empty'
+        }, 202
 
     @token_required
     def get(self, user):
@@ -63,7 +73,6 @@ class MenuResource(Resource):
         menu = Menu.get(date=today)
         if not menu:
             return 'No menu found for {}'.format(today.ctime()), 404
-
         return {
             'message': 'Menu request succesful',
             'menu': menu.view()

@@ -4,6 +4,7 @@ from flask import request
 # local imports
 from ..models.models import User
 
+
 def get_payload():
     '''get access token and decode it to get payload'''
     try:
@@ -13,6 +14,7 @@ def get_payload():
             return User.decode_token(access_token)
     except Exception as err:
         return str(err)
+
 
 def token_required(func):
     '''checks user have valid tokens'''
@@ -27,6 +29,7 @@ def token_required(func):
         # pragma: no cover
         return func(user=user, *args, **kwargs)
     return decorated
+
 
 def admin_token_required(func):
     '''check users have valid tokens and they have admin property'''
@@ -44,6 +47,7 @@ def admin_token_required(func):
         # pragma: no cover
         return {'message': 'Unauthorized'}, 401
     return decorated
+
 
 def super_admin_required(func):
     '''check users have valid tokens and they have admin property'''

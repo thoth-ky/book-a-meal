@@ -1,6 +1,8 @@
 '''Authentication decorators'''
+import json
+
 from functools import wraps
-from flask import request
+from flask import request, current_app
 # local imports
 from ..models.models import User
 

@@ -6,7 +6,6 @@ from flask import request
 from . import Blueprint
 
 
-
 class HomeResource(Resource):
     '''Display ,message at root url'''
     def get(self):

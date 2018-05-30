@@ -3,7 +3,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 from flask_mail import Mail
+from flask_cors import CORS
 # local imports
+
 try:
     from config.config import config_dict
 except ModuleNotFoundError:
@@ -21,6 +23,7 @@ def create_app(config_name):
 
     # create flask app
     app = Flask(__name__)
+    CORS(app)
 
     # insert configurations
     app.config.from_object(config_dict[config_name])

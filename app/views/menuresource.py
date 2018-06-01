@@ -72,7 +72,7 @@ class MenuResource(Resource):
         today = datetime(year=today.year, month=today.month, day=today.day)
         menu = Menu.get(date=today)
         if not menu:
-            return 'No menu found for {}'.format(today.ctime()), 404
+            return {'message':'No menu found for {}'.format(today.ctime())}, 404
         return {
             'message': 'Menu request succesful',
             'menu': menu.view()

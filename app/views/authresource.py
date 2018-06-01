@@ -1,6 +1,7 @@
 '''Home Blueprint'''
 from flask_restful import Resource, Api
 from flask import request
+from flask_cors import CORS
 # local imports
 from ..models.models import User
 from ..helpers.decorators import admin_token_required, super_admin_required
@@ -114,6 +115,7 @@ class LoginResource(Resource):
 
 AUTH_API = Blueprint('app.views.authresource', __name__)
 API = Api(AUTH_API)
+# CORS(API)
 API.add_resource(UserRegistrationResource, '/auth/signup', '/signup', '/register', '/auth/register', endpoint='signup')
 API.add_resource(LoginResource, '/auth/signin', '/auth/login', '/login', '/signin', endpoint='signin')
 API.add_resource(UserManagementResource, '/users', endpoint='accounts')

@@ -241,7 +241,8 @@ class Menu(BaseModel):
         '''display menu'''
         meals = [{'meal_id':meal.meal_id,
                   'name': meal.name,
-                  'price': meal.price } for meal in self.meals]
+                  'price': meal.price,
+                  'description': meal.description } for meal in self.meals]
         return {
             'id': self.id,
             'date': self.date.ctime(),

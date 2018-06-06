@@ -7,8 +7,8 @@ from flask_mail import Mail
 # local imports
 try:
     from config.config import config_dict
-except ModuleNotFoundError:
-    from ..config.config import config_dict
+except ModuleNotFoundError:# pragma: no cover
+    from ..config.config import config_dict  
 
 DB = SQLAlchemy()
 URL_PREFIX = '/api/v1'

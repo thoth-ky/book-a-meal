@@ -11,5 +11,5 @@ migrations/*
 .vscode/*
 venv/*
 autotestcov.bat
-
+.DS_STORE
  

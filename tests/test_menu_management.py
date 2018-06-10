@@ -136,7 +136,7 @@ class TestMenuManagement(BaseTestClass):
         today = datetime(year=today.year, month=today.month, day=today.day)
         self.assertEqual(
             'No menu found for {}'.format(today.ctime()),
-            json.loads(response.data))
+            json.loads(response.data)['message'])
     
     def test_can_not_post_with_invalid_meal_ids(self):
         '''test only meals with valid meal ids can be posted in menu'''

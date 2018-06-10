@@ -3,12 +3,8 @@ from datetime import datetime
 from unittest import TestCase
 import json
 # local imports
-try:
-    from app import create_app, DB
-    from app.models.models import Meal, User, Order, Menu
-except ModuleNotFoundError:
-    from ..app import create_app, DB
-    from ..app.models.models import Meal, User, Order, Menu
+from app import create_app, DB
+from app.models.models import Meal, User, Order, Menu
 
 SIGNUP_URL = '/api/v1/auth/signup'
 SIGNIN_URL = '/api/v1/auth/signin'

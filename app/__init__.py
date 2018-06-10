@@ -1,9 +1,11 @@
 '''Initialize app'''
+from os import getenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 from flask_mail import Mail
 from flask_cors import CORS
+from celery import Celery
 # local imports
 
 try:
@@ -15,6 +17,7 @@ DB = SQLAlchemy()
 URL_PREFIX = '/api/v1'
 AUTH = HTTPBasicAuth()
 MAIL = Mail()
+CELERY = Celery(__name__, broker=getenv('CELERY_BROKER_URL'))
 
 def create_app(config_name):
     '''This function creates a flask app using the configuration setting passed.
@@ -30,6 +33,9 @@ def create_app(config_name):
     app.url_map.strict_slashes = False
     DB.init_app(app)
     MAIL.init_app(app)
+
+    # update celery config    
+    CELERY.conf.update(app.config)
 
     # import blueprints here to avoid  circular imports
     from .views.home import HOME_API

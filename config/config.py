@@ -11,7 +11,7 @@ class Config:
     DB_NAME = os.getenv('DB_NAME')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
     ORDER_EDITS_UPTO = os.getenv('ORDER_EDITS_UPTO')
-    SQLALCHEMY_DATABASE_URI = 'postgresql://27.0.0.1:5433/{}'.format(
+    SQLALCHEMY_DATABASE_URI = 'postgresql://127.0.0.1:5433/{}'.format(
         DB_USER, DB_PASSWORD, DB_NAME)
 
     # mail server configs

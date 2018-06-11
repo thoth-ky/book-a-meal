@@ -239,10 +239,12 @@ class Menu(BaseModel):
     
     def view(self):
         '''display menu'''
-        meals = [{'meal_id':meal.meal_id,
-                  'name': meal.name,
-                  'price': meal.price,
-                  'description': meal.description } for meal in self.meals]
+        meals = []
+        if self.meals:
+            meals = [{'meal_id':meal.meal_id,
+                      'name': meal.name,
+                      'price': meal.price,
+                      'description': meal.description } for meal in self.meals]
         return {
             'id': self.id,
             'date': self.date.ctime(),

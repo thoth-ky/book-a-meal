@@ -1,12 +1,13 @@
 '''This is where code for api resources will go'''
 from flask_restful import Resource, Api
-from flask import request
+from flask import request, current_app
 from datetime import datetime
 # local imports
 from . import Blueprint
 from ..models.models import Menu, Meal
 from ..helpers.decorators import token_required, admin_token_required
 from ..helpers.email import send_updated_menu
+from threading import Thread
 
 
 def validate_menu_inputs(meals_list=[], date=None):
@@ -55,12 +56,17 @@ class MenuResource(Resource):
                 meals.append(meal)
             menu.add_meal(meals, date=date)
             menu.save()
-            # send_updated_menu()
-            return {
+            response = {
                 'message': 'Menu created successfully',
                 'menu_id': menu.id,
                 'menu': menu.view()
-                }, 201
+                }
+            
+            # start thread to send mail independently
+            send_updated_menu()
+            
+        
+            return response, 201
         return {
             'message': 'Menu object can not be empty'
         }, 202

@@ -1,6 +1,6 @@
 '''Initialize app'''
 from os import getenv
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 from flask_mail import Mail
@@ -46,5 +46,8 @@ def create_app(config_name):
         app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
         app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
 
+    @app.route('/', methods=['GET'])
+    def docs():
+        return render_template('docs.html')
 
     return app

@@ -25,5 +25,5 @@ class ProfileResource(Resource):
 
 HOME_API = Blueprint('app.views.home', __name__)
 API = Api(HOME_API)
-API.add_resource(HomeResource, '/', '/home', endpoint='home')
+API.add_resource(HomeResource, '/home', endpoint='home')
 API.add_resource(ProfileResource, '/profile', endpoint='my_profile')

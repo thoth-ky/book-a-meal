@@ -1,5 +1,6 @@
 # BOOK A MEAL API
 [![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=master)](https://travis-ci.org/jmutuku95/book-a-meal) [![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=master)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=master) 
+
 This is a simple API to help a restaurant track it's customer's needs and customers make orders easily. The customers
 are supposed to create accounts which they can use later to view menus or place orders for meals
 The Restaurant staff/caterers use priviledged user accounts which allow them to modify, delete some resources

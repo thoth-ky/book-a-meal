@@ -19,7 +19,7 @@ class ProfileResource(Resource):
 	def get(self, user):
 		'''return user profile information'''
 		user_info = user.view()
-		return user_info,  200
+		return {'profile': user_info},  200
 
 
 

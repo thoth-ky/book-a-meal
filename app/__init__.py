@@ -10,7 +10,7 @@ from celery import Celery
 
 try:
     from config.config import config_dict
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     from ..config.config import config_dict
 
 DB = SQLAlchemy()

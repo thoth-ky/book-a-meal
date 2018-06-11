@@ -22,7 +22,7 @@ class Config:
     MAIL_USERNAME = os.getenv('MAIL_USERNAME') or None
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD') or None
     ADMINS = ['jmutukudeveloper@gmail.com']
-    MAIL_DEFAULT_SENDER = 'admin@bam.com'
+    MAIL_DEFAULT_SENDER = 'jmutukudeveloper@gmail.com'
 
     TOKEN_VALIDITY = int(os.getenv('TOKEN_VALIDITY'))
 

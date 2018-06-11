@@ -55,7 +55,7 @@ class MenuResource(Resource):
                 meals.append(meal)
             menu.add_meal(meals, date=date)
             menu.save()
-            send_updated_menu()
+            # send_updated_menu()
             return {
                 'message': 'Menu created successfully',
                 'menu_id': menu.id,

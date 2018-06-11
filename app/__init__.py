@@ -40,7 +40,7 @@ def create_app(config_name):
         from .views.orderresource import ORDER_API
 
         # register blueprints
-        app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
+        app.register_blueprint(HOME_API)
         app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
         app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
         app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)

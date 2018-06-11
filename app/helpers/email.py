@@ -24,7 +24,7 @@ def send_updated_menu():  # pragma: no cover
     
     for user in users:
         recipients = [user.email]
-        html_body = render_template('email/menu.html', user=user)
+        html_body = render_template('email/menu.html', user=user)  # pragma: no cover
 
         t = Thread(target=send_email,
                    args=[subject, sender, recipients, html_body],

@@ -60,8 +60,7 @@ def super_admin_required(func):
         if isinstance(payload, str):
             return {'error': payload, 'message': 'Unauthorized'}, 401
         superuser = payload['superuser']
-        if superuser is True:
-            # pragma: no cover
+        if superuser is True:  # pragma: no cover
             return func(*args, **kwargs)
-            # pragma: no cover
+        return {'message': 'Unauthorized'}, 401  # pragma: no cover
     return decorated

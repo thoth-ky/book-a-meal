@@ -62,6 +62,8 @@ class UserManagementResource(Resource):
             users =[User.get(user_id=user_id)]
         else:
             users = User.get_all()
+            if users is None:
+                return {'message': 'User not found'}, 404
         users = [user.view() for user in users]
         return {'users': users}, 200
 

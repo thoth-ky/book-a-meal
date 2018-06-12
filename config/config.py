@@ -7,12 +7,8 @@ class Config:
     DEBUG = False
     SECRET = os.getenv('SECRET')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    DB_USER = os.getenv('DB_USER')
-    DB_NAME = os.getenv('DB_NAME')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
     ORDER_EDITS_UPTO = os.getenv('ORDER_EDITS_UPTO')
-    SQLALCHEMY_DATABASE_URI = 'postgresql://127.0.0.1:5432/{}'.format(
-        DB_USER, DB_PASSWORD, DB_NAME)
+    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI')
 
     # mail server configs
     MAIL_SERVER = 'smtp.googlemail.com'

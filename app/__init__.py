@@ -13,7 +13,7 @@ except ModuleNotFoundError:  # pragma: no cover
     from ..config.config import config_dict
 
 DB = SQLAlchemy()
-URL_PREFIX = '/api/v1'
+URL_PREFIX = '/api/v2'
 AUTH = HTTPBasicAuth()
 MAIL = Mail()
 
@@ -40,7 +40,7 @@ def create_app(config_name):
         from .views.orderresource import ORDER_API
 
         # register blueprints
-        app.register_blueprint(HOME_API)
+        app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
         app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
         app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
         app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)

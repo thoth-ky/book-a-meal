@@ -62,11 +62,11 @@ class UserManagementResource(Resource):
             users =[User.get(user_id=user_id)]
         else:
             users = User.get_all()
-        if users is None:
-            return {'message': 'User not found'}, 404
-        users = [user.view() for user in users]
-        return {'users': users}, 200
-
+        if users:
+            users = [user.view() for user in users]
+            return {'users': users}, 200
+        return {'message': 'User not found'}, 404
+        
     @super_admin_required
     def put(self, user_id):
         '''Promote user'''

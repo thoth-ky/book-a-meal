@@ -63,7 +63,7 @@ class MenuResource(Resource):
                 }
             
             # start thread to send mail independently
-            send_updated_menu()
+            send_updated_menu()  # pragma: no cover
             
         
             return response, 201

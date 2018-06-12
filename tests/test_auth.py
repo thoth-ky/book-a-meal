@@ -4,13 +4,13 @@ import json
 # local imports
 from . import BaseTestClass
 
-SIGNUP_URL = '/api/v1/auth/signup'
-SIGNIN_URL = '/api/v1/auth/signin'
-MEALS_URL = '/api/v1/meals'
-MENU_URL = '/api/v1/menu'
-ORDERS_URL = '/api/v1/orders'
-USERS_URL = '/api/v1/users'
-ACC_URL = '/api/v1/users/1'
+SIGNUP_URL = '/api/v2/auth/signup'
+SIGNIN_URL = '/api/v2/auth/signin'
+MEALS_URL = '/api/v2/meals'
+MENU_URL = '/api/v2/menu'
+ORDERS_URL = '/api/v2/orders'
+USERS_URL = '/api/v2/users'
+ACC_URL = '/api/v2/users/1'
 
 
 class TestUserManagement(BaseTestClass):
@@ -91,7 +91,7 @@ class TestUserManagement(BaseTestClass):
             'password': 'password'}
         res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_email))
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid Email', json.loads(res.data)['ERR'])
+        self.assertEqual('Invalid Email. Ensure email is valid and is of form "example@mail.com"', json.loads(res.data)['ERR'])
         invalid_password = {
             'username':'user',
             'email':'user@gmail.com',
@@ -142,7 +142,7 @@ class TestUserManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         self.assertEqual(user, json.loads(res.data)['users'])
         # promote user to admin
-        res = self.client.put('/api/v1/users/promote/1', headers=headers)
+        res = self.client.put('/api/v2/users/promote/1', headers=headers)
         self.assertEqual(200, res.status_code)
         user = self.user_model.get(user_id=1)
         result = json.loads(res.data)
@@ -163,7 +163,7 @@ class TestUserManagement(BaseTestClass):
         '''Test if user gives invalid token access could be gained'''
         invalid_token = 'invalid-access_token'
         headers = dict(Authorization='Bearer {}'.format(invalid_token))
-        expected = 'Invalid token. Please register or login'
+        expected = 'Authorization Token not found'
         # test admin functionality
         res = self.client.post(MEALS_URL, headers=headers)
         self.assertEqual(401, res.status_code)

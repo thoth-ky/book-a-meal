@@ -16,12 +16,13 @@ def validate_order_inputs(meal_list=None, quantity=None):
             for i in meal_list:
                 if not isinstance(i, int):
                     return 'Menu ids should be integers'
+        
     if quantity:
         if isinstance(quantity, list):
             for i in quantity:
                 if not isinstance(i, int):
                     return 'Quantity should be a whole number e.g 1, 2,4'
-
+        
 
 class OrderResource(Resource):
     '''Resource for managing Orders'''

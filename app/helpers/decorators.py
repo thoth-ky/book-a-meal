@@ -15,7 +15,7 @@ def get_payload():
         if access_token:
             return User.decode_token(access_token)
     except Exception as err:
-        return str(err)
+        return 'Authorization Token not found'
 
 
 def token_required(func):

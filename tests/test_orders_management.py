@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 # local imports
 from . import BaseTestClass
 
-SIGNUP_URL = '/api/v1/auth/signup'
-SIGNIN_URL = '/api/v1/auth/signin'
-MEALS_URL = '/api/v1/meals'
-MENU_URL = 'api/v1/menu'
-ORDERS_URL = 'api/v1/orders'
+SIGNUP_URL = '/api/v2/auth/signup'
+SIGNIN_URL = '/api/v2/auth/signin'
+MEALS_URL = '/api/v2/meals'
+MENU_URL = 'api/v2/menu'
+ORDERS_URL = 'api/v2/orders'
 
 
 class TestOrdersManagement(BaseTestClass):

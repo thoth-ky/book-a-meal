@@ -12,14 +12,14 @@ from . import Blueprint
 def validate_user_details(username=None, email=None, password=None, admin=None):
     '''sanitizing input'''
     if username:
-        if not isinstance(username, str) or len(username) <= 3:
+        if not isinstance(username, str) or len(username) <= 3 or username.strip()=="":
             return 'Invalid username. Ensure username has more than 3 characters'
     if password:
-        if not isinstance(password, str) or len(password)< 8:
+        if not isinstance(password, str) or len(password)< 8 or password.strip()=="":
             return'Invalid password. Ensure password is a string of not less than 8 characters'
     if email:
-        if not isinstance(email, str) or not '@' in email:
-            return 'Invalid Email'
+        if not isinstance(email, str) or not '@' in email or email.strip()=="" or not email.endswith('.com'):
+            return 'Invalid Email. Ensure email is valid and is of form "example@mail.com"'
 
 
 class UserRegistrationResource(Resource):

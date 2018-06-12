@@ -185,7 +185,7 @@ class Meal(BaseModel):
             'description': self.description,
             'caterer': self.caterer.username
         }
-
+        
     def order_view(self):
         '''display meal orders'''
         return [

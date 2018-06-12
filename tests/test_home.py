@@ -9,7 +9,7 @@ class TestHomeResource(BaseTestClass):
 	'''Test for Home Resources'''
 	def test_welcome_message(self):
 		'''test welcome message can be displayed'''
-		res = self.client.get('/api/v1/')
+		res = self.client.get('/api/v2/home')
 		self.assertEqual(200, res.status_code)
 
 	def test_get_profile(self):
@@ -18,6 +18,6 @@ class TestHomeResource(BaseTestClass):
 		access_token = json.loads(res.data)['access_token']
 		headers = dict(Authorization="Bearer {}".format(access_token))
 
-		res = self.client.get('/api/v1/profile', headers=headers)
+		res = self.client.get('/api/v2/profile', headers=headers)
 		self.assertEqual(200, res.status_code)
 		self.assertTrue(json.loads(res.data)['profile'])

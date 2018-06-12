@@ -4,8 +4,8 @@ from datetime import datetime
 # local imports
 from . import BaseTestClass
 
-MENU_URL = '/api/v1/menu'
-SIGNIN_URL = '/api/v1/auth/signin'
+MENU_URL = '/api/v2/menu'
+SIGNIN_URL = '/api/v2/auth/signin'
 
 
 class TestMenuManagement(BaseTestClass):

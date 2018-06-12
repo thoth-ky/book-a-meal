@@ -6,8 +6,8 @@ import json
 from app import create_app, DB
 from app.models.models import Meal, User, Order, Menu
 
-SIGNUP_URL = '/api/v1/auth/signup'
-SIGNIN_URL = '/api/v1/auth/signin'
+SIGNUP_URL = '/api/v2/auth/signup'
+SIGNIN_URL = '/api/v2/auth/signin'
 
 
 class BaseTestClass(TestCase):

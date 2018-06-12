@@ -26,18 +26,16 @@ Follow these instructions to setup Book A Meal API
 
  3. Set the following environment variable
     ```
-    $ export SECRET='a random string to be used as your secret key'
-    $ export FLASK_APP=book_a_meal.py
-    $ export DB_NAME=name_of_database
-    $ export DB_PASSWORD=password_to_access_databases
-    $ export DB_USER=name_of_user_to_access_database
-    $ export APP_SETTINGS=configuration(development, testing or production)
-    $ export ORDER_EDITS_UPTO=600
-    $ export MAIL_SERVER=preferred_email_server
-    $ export MAIL_PORT=email_port
-    $ export MAIL_USE_TLS=1
-    $ export MAIL_USERNAME=username_for_mail_server
-    $ export MAIL_PASSWORD=password_for_mail_server
+    export APP_SETTINGS=<Config setting>
+    export FLASK_APP='book_a_meal.py'
+    export DB_URI='postgresql://127.0.0.1:5432/<Database Name>'
+    export SECRET=<Secret Key>
+
+    export ORDER_EDITS_UPTO=30
+    export MAIL_USERNAME=<MAil USername>
+    export MAIL_PASSWORD=<Mail Password>
+    export TOKEN_VALIDITY=600
+    source venv/bin/activate
     ```
   
   4. Make database migrations: While at project root folder, run the following commands.

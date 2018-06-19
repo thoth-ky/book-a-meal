@@ -16,13 +16,13 @@ def validate_order_inputs(meal_list=None, quantity=None):
             for i in meal_list:
                 if not isinstance(i, int):
                     return 'Menu ids should be integers'
-        
+
     if quantity:
         if isinstance(quantity, list):
             for i in quantity:
                 if not isinstance(i, int):
                     return 'Quantity should be a whole number e.g 1, 2,4'
-        
+
 
 class OrderResource(Resource):
     '''Resource for managing Orders'''
@@ -80,7 +80,7 @@ class OrderResource(Resource):
             return {
                 "message":"Menu for {} not available".format(menu_date.ctime())
             }, 202
-        
+
         for meal_id, quant in zip(meal_list, quantity):
             # confirm meal is in menu for due_time
             if meal_id in meals:
@@ -112,11 +112,11 @@ class OrderResource(Resource):
         else:
             if user.admin is True:
                 orders =  {str(meal.name):meal.order_view() for meal in user.meals}
-            else:            
+            else:
                 orders = Order.query.filter_by(owner=user).all()
                 orders = [order.view() for order in orders]
             if not orders:
-                return 'No order to display', 404
+                return {'message':'No order to display'}, 404
             return {
                 'message': 'All Orders',
                 'orders': orders
@@ -129,7 +129,7 @@ class OrderResource(Resource):
         new_data = post_data['new_data']
         order = Order.get(owner=user, order_id=order_id)
         if not order:
-            return 'You do not have such a order', 404
+            return {'message': 'You do not have such a order'}, 404
         meal_id = new_data['meal_id']
         quantity = new_data['quantity']
 
@@ -145,7 +145,20 @@ class OrderResource(Resource):
         }, 403
 
 
+class OrderManagement(Resource):
+    '''Admin only functions on orders'''    
+    @admin_token_required
+    def patch(self, user, order_id):
+        '''update orders to served'''
+        order = Order.get(order_id=order_id)
+        if order:
+            order.time_served = time.time()
+            order.save()
+            return {"message": "Order processed and served"}, 200
+        return {"message": "Order not found"}, 404
+
 ORDER_API = Blueprint('app.views.orderresource', __name__)
 API = Api(ORDER_API)
 API.add_resource(OrderResource, '/orders', endpoint='orders')
 API.add_resource(OrderResource, '/orders/<order_id>', endpoint='order')
+API.add_resource(OrderManagement, '/orders/serve/<order_id>', endpoint='completeorder')

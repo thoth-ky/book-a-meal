@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import (Table, Column, Integer, ForeignKey, String, Boolean,
                         Float, DateTime)
 # local imports
-from .. import DB, AUTH
+from .. import DB
 
 
 MENU_MEALS = DB.Table(
@@ -116,7 +116,6 @@ class User(BaseModel):
         self.password_hash = generate_password_hash(password)
         self.admin = False
 
-    @AUTH.verify_password
     def validate_password(self, password):
         '''check if user password is correct'''
         return check_password_hash(self.password_hash, password)
@@ -311,3 +310,9 @@ class Order(BaseModel):
         if time_lapsed >= time_limit:
             return False
         return True
+
+
+class RevokedTokens(BaseModel):
+    '''Keep a record of revoked tokens'''
+    id = DB.Column(Integer, primary_key=True)
+    token = DB.Column(String, index=True)

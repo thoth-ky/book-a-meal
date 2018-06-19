@@ -4,7 +4,10 @@ import json
 from functools import wraps
 from flask import request, current_app
 # local imports
-from ..models.models import User
+from ..models.models import User, RevokedTokens
+
+class AuthorisationError(Exception):
+    pass
 
 
 def get_payload():
@@ -12,10 +15,11 @@ def get_payload():
     try:
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(' ')[1]
-        if access_token:
+        if access_token and not RevokedTokens.get(token=access_token):
             return User.decode_token(access_token)
+        raise AuthorisationError('Token has been revoked')
     except Exception as err:
-        return 'Authorization Token not found'
+        return 'Authorization Token not found or invalid!'
 
 
 def token_required(func):

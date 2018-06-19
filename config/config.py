@@ -29,11 +29,13 @@ class Config:
 class DevelopmentConfig(Config):
     '''Configurations for development. contains configuration settings specific to development'''
     DEBUG = True
+    
 
 
 class TestingConfig(Config):
     '''Configuration settings specific to testing environment'''
     DEBUG = True
+    TESTING = True
     ORDER_EDITS_UPTO = 100
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
 

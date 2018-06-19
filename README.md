@@ -1,5 +1,5 @@
 # BOOK A MEAL API
-[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=master)](https://travis-ci.org/jmutuku95/book-a-meal) [![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=master)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=master) 
+[![Build Status](https://travis-ci.org/jmutuku95/book-a-meal.svg?branch=master)](https://travis-ci.org/jmutuku95/book-a-meal) [![Coverage Status](https://coveralls.io/repos/github/jmutuku95/book-a-meal/badge.svg?branch=master)](https://coveralls.io/github/jmutuku95/book-a-meal?branch=master) [![Maintainability](https://api.codeclimate.com/v1/badges/c3883c8a11d1aa477264/maintainability)](https://codeclimate.com/github/jmutuku95/book-a-meal/maintainability)
 
 This is a simple API to help a restaurant track it's customer's needs and customers make orders easily. The customers
 are supposed to create accounts which they can use later to view menus or place orders for meals

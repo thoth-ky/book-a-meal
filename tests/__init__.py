@@ -40,7 +40,7 @@ class BaseTestClass(TestCase):
         self.order_model = Order
         self.user_model = User
         self.user1 = User(email='mike@mail.com', password='password',
-                          username='mail')
+                          username='mike')
         self.user2 = User(email='bev@mail.com', username='bevah',
                           password='password')
 

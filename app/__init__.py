@@ -2,7 +2,6 @@
 from os import getenv
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_httpauth import HTTPBasicAuth
 from flask_mail import Mail
 from flask_cors import CORS
 # local imports
@@ -14,7 +13,6 @@ except ModuleNotFoundError:  # pragma: no cover
 
 DB = SQLAlchemy()
 URL_PREFIX = '/api/v2'
-AUTH = HTTPBasicAuth()
 MAIL = Mail()
 
 def create_app(config_name):
@@ -47,7 +45,7 @@ def create_app(config_name):
         app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
 
     @app.route('/', methods=['GET'])
-    def docs():
+    def docs():  # pragma: no cover
         return render_template('docs.html')
 
     return app

@@ -9,6 +9,8 @@ SIGNIN_URL = '/api/v2/auth/signin'
 MEALS_URL = '/api/v2/meals'
 MENU_URL = 'api/v2/menu'
 ORDERS_URL = 'api/v2/orders'
+ORDERS_MGMT_URL = 'api/v2/orders/serve/1'
+ORDERS_MGMT_URL2 = 'api/v2/orders/serve/10'
 
 
 class TestOrdersManagement(BaseTestClass):
@@ -188,7 +190,7 @@ class TestOrdersManagement(BaseTestClass):
         res = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(404, res.status_code)
         expected = 'No order to display'
-        self.assertEqual(expected, json.loads(res.data))
+        self.assertEqual(expected, json.loads(res.data)['message'])
     
     def test_editing_unavailable_order(self):
         '''test attempt to edit an unavailable order'''
@@ -202,7 +204,7 @@ class TestOrdersManagement(BaseTestClass):
                                    headers=headers)
         self.assertEqual(404, response.status_code)
         expected = 'You do not have such a order'
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_access_order_by_id(self):
         '''test order can be accessed using id'''
@@ -306,3 +308,33 @@ class TestOrdersManagement(BaseTestClass):
         expected = 'Unable to place order'
         self.assertEqual(expected, json.loads(res.data)['message'])
         self.assertEqual(expected, json.loads(res.data)['message'])
+
+    def test_only_admin_can_mark_order_served(self):
+        self.create_meals()
+
+        # user1 orders meal1
+        self.user1.save()
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
+
+        creds = dict(username='admin1', password='admin1234')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
+        self.assertEqual(200, res.status_code)
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        user_token = self.user1.generate_token().decode()
+        user_header = dict(Authorization=f'Bearer {user_token}')
+        # for an existing order using admin token
+        res = self.client.patch(ORDERS_MGMT_URL, headers=headers)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(json.loads(res.data)["message"], "Order processed and served")
+        # for a non-existent order
+        res = self.client.patch(ORDERS_MGMT_URL2, headers=headers)
+        self.assertEqual(404, res.status_code)
+        self.assertEqual(json.loads(res.data)["message"], "Order not found")
+
+        # for an existing order using a user token
+        res = self.client.patch(ORDERS_MGMT_URL, headers=user_header)
+        self.assertEqual(401, res.status_code)

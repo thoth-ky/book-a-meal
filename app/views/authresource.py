@@ -3,9 +3,8 @@ from flask_restful import Resource, Api
 from flask import request
 from flask_cors import CORS
 # local imports
-from ..models.models import User
-from ..helpers.decorators import admin_token_required, super_admin_required
-from .. import AUTH
+from ..models.models import User, RevokedTokens
+from ..helpers.decorators import admin_token_required, super_admin_required, token_required
 from . import Blueprint
 
 
@@ -59,13 +58,18 @@ class UserManagementResource(Resource):
     def get(self, user_id=None):
         '''Get a list of all users'''
         if user_id:
-            users =[User.get(user_id=user_id)]
+            user =User.get(user_id=user_id)
+            if user:
+                users = [user]
+            else:
+                return {'message': 'User not found'}, 404
+
         else:
             users = User.get_all()
-        if users:
-            users = [user.view() for user in users]
-            return {'users': users}, 200
-        return {'message': 'User not found'}, 404
+        
+        users = [user.view() for user in users]
+        return {'message':'User Info','users': users}, 200
+        
         
     @super_admin_required
     def put(self, user_id):
@@ -115,11 +119,24 @@ class LoginResource(Resource):
             }, 401
 
 
+class LogoutResource(Resource):
+    '''manage user logouts'''
+    @token_required
+    def get(self, user):
+        '''handle GET requests'''
+        auth_header = request.headers.get('Authorization')
+        access_token = auth_header.split(' ')[1]
+        token_to_revoke = RevokedTokens(token=access_token)
+        token_to_revoke.save()
+        return {'message': f'{user.username} has been logged out successfully.'}, 200
+
+
+
 AUTH_API = Blueprint('app.views.authresource', __name__)
 API = Api(AUTH_API)
-# CORS(API)
 API.add_resource(UserRegistrationResource, '/auth/signup', '/signup', '/register', '/auth/register', endpoint='signup')
 API.add_resource(LoginResource, '/auth/signin', '/auth/login', '/login', '/signin', endpoint='signin')
 API.add_resource(UserManagementResource, '/users', endpoint='accounts')
 API.add_resource(UserManagementResource, '/users/<user_id>', '/user/<user_id>', endpoint='account')
 API.add_resource(UserManagementResource, '/users/promote/<user_id>','/user/promote/<user_id>', endpoint='promote')
+API.add_resource(LogoutResource, '/signout', '/auth/signout', '/logout', '/auth/logout', endpoint='signout')

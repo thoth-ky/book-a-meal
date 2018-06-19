@@ -61,9 +61,9 @@ class MenuResource(Resource):
                 'menu_id': menu.id,
                 'menu': menu.view()
                 }
-            
+            menu_meals = menu.view()['meals']
             # start thread to send mail independently
-            send_updated_menu()  # pragma: no cover
+            send_updated_menu(menu_meals)  # pragma: no cover
             
         
             return response, 201

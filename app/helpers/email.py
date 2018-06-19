@@ -15,7 +15,7 @@ def send_email(subject, sender, recipients, html_body, app):  # pragma: no cover
     with app.app_context():
         MAIL.send(msg)
 
-def send_updated_menu():  # pragma: no cover
+def send_updated_menu(menu):  # pragma: no cover
     '''Send updated menu, to all clients'''
     # introduce option to opt out of notifications in User model
     users = User.get_all()
@@ -24,7 +24,7 @@ def send_updated_menu():  # pragma: no cover
     
     for user in users:
         recipients = [user.email]
-        html_body = render_template('email/menu.html', user=user)  # pragma: no cover
+        html_body = render_template('email/menu.html', user=user, menu=menu)  # pragma: no cover
 
         t = Thread(target=send_email,
                    args=[subject, sender, recipients, html_body],

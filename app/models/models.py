@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timedelta
 # local imports
 from .. import DB
+from flask import current_app
 from .base import BaseModel
 from sqlalchemy import (Table, Column, Integer, ForeignKey, String, Boolean,
                         Float, DateTime)

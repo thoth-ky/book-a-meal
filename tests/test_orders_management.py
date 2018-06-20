@@ -136,7 +136,7 @@ class TestOrdersManagement(BaseTestClass):
     def test_passing_bad_datatype_for_meal_id(self):
         '''test if order made using wrong datatype fails'''
         res = self.login_user()
-        bad_data = {'order':[{'meal_id': 1.2, 'quantity': 2}]}
+        bad_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id': 1.2, 'quantity': 2}]}
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
@@ -170,7 +170,7 @@ class TestOrdersManagement(BaseTestClass):
     def test_quantity_should_be_whole_number(self):
         '''test meal quantity only valid is it is a whole number'''
         expected = 'Inputs should be integers'
-        bad_data = {'order':[{'meal_id': 1, 'quantity': 2.5}]}
+        bad_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id': 1, 'quantity': 2.5}]}
         res = self.login_user()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']

@@ -117,7 +117,7 @@ class TestMenuManagement(BaseTestClass):
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        data = {}
+        data = {'meal_list':[]}
         response = self.client.post(
             MENU_URL, data=json.dumps(data), headers=headers)
         self.assertEqual(202, response.status_code)

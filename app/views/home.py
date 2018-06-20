@@ -13,6 +13,7 @@ class HomeResource(Resource):
         '''handle GET method'''
         return 'Welcome to Hot Corner Delicacies', 200
 
+
 class ProfileResource(Resource):
 	'''Display User Profile'''
 	@token_required

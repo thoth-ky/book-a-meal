@@ -163,9 +163,9 @@ class TestOrdersManagement(BaseTestClass):
 
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
-        self.assertEqual(400, res.status_code)
-        expected = 'Invalid meal id 100 provided. Meal not in Menu'
-        self.assertEqual(expected, json.loads(res.data))
+        self.assertEqual(201, res.status_code)
+        expected = [100]
+        self.assertEqual(expected, json.loads(res.data)['meals_not_found'])
     
     def test_quantity_should_be_whole_number(self):
         '''test meal quantity only valid is it is a whole number'''
@@ -275,7 +275,7 @@ class TestOrdersManagement(BaseTestClass):
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)
         expected = 'Ensure date-time value is of the form "DD-MM-YY HH-MM"'
-        self.assertEqual(expected, json.loads(res.data)['message'])
+        self.assertEqual(expected, json.loads(res.data)['error'])
 
     def test_place_order_day_without_menu(self):
         '''test placing order before menu is created fails'''

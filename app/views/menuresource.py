@@ -10,17 +10,17 @@ from ..helpers.email import send_updated_menu
 from threading import Thread
 
 
-def validate_menu_inputs(meals_list=[], date=None):
+def validate_meal_lists(meals_list):
     '''sanitize post data'''
-    if meals_list:
-        if not isinstance(meals_list, list):
-            return 'Make meal_list a list of Meal object IDs'
-    if date:
+    if not isinstance(meals_list, list):
+        raise TypeError('Make meal_list a list of Meal object IDs')
+
+def validate_date_input(date):
+    try:
         day, month, year = date.split('-')
-        try:
-            date = datetime(year=int(year), month=int(month), day=int(day))
-        except Exception as e:
-            return 'Ensure date is provided using format DD-MM-YYYY'
+        return datetime(year=int(year), month=int(month), day=int(day))
+    except (TypeError, ValueError) as err:
+        raise TypeError('Ensure date is provided using format DD-MM-YYYY')
 
 
 class MenuResource(Resource):
@@ -28,19 +28,16 @@ class MenuResource(Resource):
     @admin_token_required
     def post(self, user):
         '''handle post request to set up menu'''
+        today= datetime.utcnow()
         json_data = request.get_json(force=True)
         meals_list = json_data.get('meal_list', '')
-        date = json_data.get('date', '')
-        err = validate_menu_inputs(meals_list=meals_list, date=date)
-
-        if err:
-            return {'error': err}, 400
-
-        if date == '':
-            date = datetime.utcnow().date()
-        else:
-            day, month, year = date.split('-')
-            date = datetime(year=int(year), month=int(month), day=int(day))
+        date = json_data.get('date', f'{today.day}-{today.month}-{today.year}')
+        
+        try:
+            validate_meal_lists(meals_list)
+            date = validate_date_input(date)
+        except TypeError as err:
+            return {'error': str(err)}, 400
 
         meals_list = [id_ for id_ in meals_list
                       if id_ in [meal.meal_id for meal in user.meals]]
@@ -64,8 +61,6 @@ class MenuResource(Resource):
             menu_meals = menu.view()['meals']
             # start thread to send mail independently
             send_updated_menu(menu_meals)  # pragma: no cover
-            
-        
             return response, 201
         return {
             'message': 'Menu object can not be empty'

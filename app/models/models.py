@@ -52,7 +52,7 @@ class Meal(BaseModel):
         return [
             {"order_id": a.order_id,
              "time_ordered": a.orders.time_ordered,
-             "due_time": a.orders.due_time.ctime(),
+             "due_time": a.orders.due_time.isoformat(),
              "quantity": a.quantity,
              "order_by": a.orders.owner.username
             } for a in self.orders]
@@ -108,7 +108,7 @@ class Menu(BaseModel):
                       'description': meal.description } for meal in self.meals]
         return {
             'id': self.id,
-            'date': self.date.ctime(),
+            'date': self.date.isoformat(),
             'meals': meals
         }
 

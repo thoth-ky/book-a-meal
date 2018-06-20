@@ -146,7 +146,7 @@ class Order(BaseModel):
         return {
             'order_id': self.order_id,
             'time_ordered': self.time_ordered,
-            'due_time': self.due_time.ctime(),
+            'due_time': self.due_time.isoformat(),
             'owner': self.owner.username,
             'meals': order_meals
         }

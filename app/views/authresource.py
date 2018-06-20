@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 from flask import request
 from flask_cors import CORS
 # local imports
-from ..models.models import User, RevokedTokens
+from ..models.authmodels import User, RevokedTokens
 from ..helpers.decorators import admin_token_required, super_admin_required, token_required
 from . import Blueprint
 

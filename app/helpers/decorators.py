@@ -4,7 +4,7 @@ import json
 from functools import wraps
 from flask import request, current_app
 # local imports
-from ..models.models import User, RevokedTokens
+from ..models.authmodels import User, RevokedTokens
 
 class AuthorisationError(Exception):
     pass

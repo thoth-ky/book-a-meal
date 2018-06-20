@@ -4,7 +4,8 @@ from unittest import TestCase
 import json
 # local imports
 from app import create_app, DB
-from app.models.models import Meal, User, Order, Menu
+from app.models.models import Meal, Order, Menu
+from app.models.authmodels import User
 
 SIGNUP_URL = '/api/v2/auth/signup'
 SIGNIN_URL = '/api/v2/auth/signin'

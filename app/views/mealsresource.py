@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 from flask import request
 # local imports
 from . import Blueprint
-from ..models.models import User, Meal
+from ..models.authmodels import User, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
 

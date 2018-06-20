@@ -6,10 +6,10 @@ from flask_migrate import Migrate, MigrateCommand
 # local imports
 try:
     from app import create_app, DB
-    from app.models.models import User
+    from app.models import User
 except ModuleNotFoundError:
     from .app import create_app, DB
-    from .app.models.models import User
+    from .app.models import User
 
 # initialize app with all its configs
 APP = create_app(config_name=os.getenv('APP_SETTINGS'))

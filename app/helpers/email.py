@@ -5,7 +5,7 @@ from flask import render_template, current_app
 from flask_mail import Message
 # local imports
 from .. import MAIL
-from ..models.models import User
+from ..models.authmodels import User
 
 
 def send_email(subject, sender, recipients, html_body, app):  # pragma: no cover

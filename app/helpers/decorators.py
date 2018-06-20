@@ -8,7 +8,7 @@ from ..models.authmodels import User, RevokedTokens
 
 class AuthorisationError(Exception):
     pass
-
+ 
 
 def get_payload():
     '''get access token and decode it to get payload'''

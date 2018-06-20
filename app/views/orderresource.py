@@ -45,16 +45,16 @@ class OrderResource(Resource):
     @token_required
     def post(self, user):
         '''place orders post_data = {'due_time':'2-2-2018 1500',order':[{'meal_id':1, 'quantity':2}, {},{}]}'''
-        post_data = request.get_json(force=True)
-        order_data = post_data['order']
-        meal_list = [dictionary['meal_id'] for dictionary in order_data]
-        quantity = [dictionary['quantity'] for dictionary in order_data]
-        due_time = post_data.get('due_time')
+        post_data = request.get_json(force=True)   
         try:
+            order_data = post_data['order']
+            due_time = post_data.get('due_time')
+            meal_list = [dictionary['meal_id'] for dictionary in order_data]
+            quantity = [dictionary['quantity'] for dictionary in order_data]
             validate_order_inputs(meal_list)
             validate_order_inputs(quantity)
             due_time = get_due_time(due_time)
-        except TypeError as err:
+        except (KeyError, TypeError) as err:
             return {'error': str(err)}, 400
         if (due_time -datetime.utcnow()).total_seconds() < 1800:
             return {'message': 'Unable to place order','help': 'Order should\

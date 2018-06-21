@@ -6,16 +6,15 @@ from . import Blueprint
 from ..models.authmodels import User, Meal
 from ..helpers.decorators import token_required, admin_token_required
 
-
 def validate_meal_data(name=None, price=None, description=None):
     '''sanitize inputs'''
-    if not isinstance(name, str) or len(name) <= 0:
+    if not isinstance(name, str) or len(name) <= 0 or name.strip()=="":
         return 'Invalid meal name provided'
     try:
         price = float(price)
     except:
         return 'Invalid value for price'
-    if not isinstance(description, str) or len(description) <= 0:
+    if not isinstance(description, str) or len(description) <= 0 or description.strip()=="":
         return 'Invalid description'
 
 
@@ -25,9 +24,9 @@ class MealResource(Resource):
     def post(self, user):
         '''Add a meal'''
         post_data = request.get_json(force=True)
-        name = post_data.get('name', None)
-        price = post_data.get('price', None)
-        description = post_data.get('description', None)
+        name = post_data.get('name')
+        price = post_data.get('price')
+        description = post_data.get('description')
         err = validate_meal_data(
             name=name, price=price, description=description)
         if err:

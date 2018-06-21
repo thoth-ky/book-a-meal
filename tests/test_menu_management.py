@@ -11,6 +11,7 @@ SIGNIN_URL = '/api/v2/auth/signin'
 class TestMenuManagement(BaseTestClass):
     '''tests for menu resource'''
     def create_meals(self):
+        '''helper function to populate meals'''
         admin = self.user_model(
             username='admin1', email='admin1@bam.com', password='admin1234')
         admin.admin = True

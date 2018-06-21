@@ -1,7 +1,6 @@
 '''home bueprint'''
 from flask_restful import Resource, Api
 from flask import request
-
 # local imports
 from . import Blueprint
 from ..helpers.decorators import token_required

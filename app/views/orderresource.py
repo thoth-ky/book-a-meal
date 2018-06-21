@@ -9,7 +9,6 @@ from ..models.models import Order, Meal, Menu
 from ..models.authmodels import User
 from ..helpers.decorators import token_required, admin_token_required
 
-
 def validate_order_inputs(inputs=[]):
     '''sanitize post data'''
     for i in inputs:
@@ -36,7 +35,7 @@ def get_due_time(due_time):
         hour, minute = time.split('-')
         return datetime(day=int(day), month=int(month), year=int(year),
                         hour=int(hour), minute=int(minute))
-    except Exception as e:
+    except Exception:
         raise TypeError('Ensure date-time value is of the form "DD-MM-YY HH-MM"')
 
 

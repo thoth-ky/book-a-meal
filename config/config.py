@@ -31,7 +31,6 @@ class DevelopmentConfig(Config):
     DEBUG = True
     
 
-
 class TestingConfig(Config):
     '''Configuration settings specific to testing environment'''
     DEBUG = True

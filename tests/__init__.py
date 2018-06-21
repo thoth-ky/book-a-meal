@@ -14,7 +14,6 @@ SIGNIN_URL = '/api/v2/auth/signin'
 class BaseTestClass(TestCase):
     '''An abstract base class for tests, contains all common variables
     methods'''
-
     def setUp(self):
         '''Declare initial variables'''
         self.maxDiff = None

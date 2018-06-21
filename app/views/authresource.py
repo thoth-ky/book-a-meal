@@ -7,7 +7,6 @@ from ..models.authmodels import User, RevokedTokens
 from ..helpers.decorators import admin_token_required, super_admin_required, token_required
 from . import Blueprint
 
-
 def validate_user_details(username=None, email=None, password=None, admin=None):
     '''sanitizing input'''
     if username:

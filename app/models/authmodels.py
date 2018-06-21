@@ -6,10 +6,10 @@ from flask import current_app
 from sqlalchemy.orm import relationship
 from sqlalchemy import (Table, Column, Integer, ForeignKey, String, Boolean,
                         Float, DateTime)
-
-
+# local imports
 from .models import Order, Meal
 from .base import BaseModel
+
 
 class User(BaseModel):
     """General user details"""

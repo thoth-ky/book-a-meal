@@ -46,6 +46,7 @@ def create_app(config_name):
 
     @app.route('/', methods=['GET'])
     def docs():  # pragma: no cover
+        '''Render docs at rootfile'''
         return render_template('docs.html')
 
     return app

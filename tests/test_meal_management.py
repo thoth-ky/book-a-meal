@@ -37,7 +37,7 @@ class TestMealsManagement(BaseTestClass):
         meal = dict(name='Mukimo', price=100, description='Mt Kenya heritage')
         response = self.client.post(
             MEALS_URL, data=json.dumps(meal), headers=headers)
-        url = '{}/1'.format(MEALS_URL)
+        url = f'{MEALS_URL}/1'
         response = self.client.get(url, headers=headers)
         self.assertEqual(200, response.status_code)
 
@@ -153,7 +153,7 @@ class TestMealsManagement(BaseTestClass):
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
         # populate meals table
-        url = '{}/1'.format(MEALS_URL)
+        url = f'{MEALS_URL}/1'
         response = self.client.get(url, headers=headers)
         self.assertEqual(404, response.status_code)
         self.assertEqual('Meal 1 not found', json.loads(response.data))
@@ -166,7 +166,7 @@ class TestMealsManagement(BaseTestClass):
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
         # populate meals table
-        url = '{}/1'.format(MEALS_URL)
+        url = f'{MEALS_URL}/1'
         response = self.client.delete(url, headers=headers)
         self.assertEqual(404, response.status_code)
         self.assertEqual('Meal 1 not found', json.loads(response.data))
@@ -188,7 +188,7 @@ class TestMealsManagement(BaseTestClass):
         res = self.login_admin()
         self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
-        headers = dict(Authorization='Bearer {}'.format(access_token))
+        headers = dict(Authorization=f'Bearer {access_token}')
         # invalid name
         response = self.client.post(
             MEALS_URL, data=json.dumps(invalid_name), headers=headers)

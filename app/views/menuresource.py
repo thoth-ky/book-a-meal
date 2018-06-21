@@ -9,7 +9,6 @@ from ..helpers.decorators import token_required, admin_token_required
 from ..helpers.email import send_updated_menu
 from threading import Thread
 
-
 def validate_meal_lists(meals_list):
     '''sanitize post data'''
     if not isinstance(meals_list, list):
@@ -19,7 +18,7 @@ def validate_date_input(date):
     try:
         day, month, year = date.split('-')
         return datetime(year=int(year), month=int(month), day=int(day))
-    except (TypeError, ValueError) as err:
+    except (TypeError, ValueError):
         raise TypeError('Ensure date is provided using format DD-MM-YYYY')
 
 
@@ -60,7 +59,7 @@ class MenuResource(Resource):
                 }
             menu_meals = menu.view()['meals']
             # start thread to send mail independently
-            send_updated_menu(menu_meals)  # pragma: no cover
+            send_updated_menu(menu_meals)
             return response, 201
         return {
             'message': 'Menu object can not be empty'

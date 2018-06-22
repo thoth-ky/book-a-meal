@@ -21,6 +21,7 @@ class BaseTestClass(TestCase):
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
+
         self.database = DB
         DB.drop_all()
         DB.create_all()
@@ -66,12 +67,8 @@ class BaseTestClass(TestCase):
     
     def login_user(self):
         '''login test user'''
-        self.create_user()
-        username = self.test_user['username']
-        password = self.test_user['password']
-        user_info = dict(username=username, password=password)
-        res = self.client.post(SIGNIN_URL, data=json.dumps(user_info))
-        return res
+        user = self.create_user()
+        return user.generate_token().decode()
 
     def login_admin(self):
         '''helper function to create an admin user and log them in '''
@@ -80,12 +77,7 @@ class BaseTestClass(TestCase):
                                 email=self.admin_user['email'])
         admin.admin = True
         admin.save()
-        data = {
-            'password': self.admin_user['password'],
-            'username': self.admin_user['username']}
-        res = self.client.post(SIGNIN_URL, data=json.dumps(data))
-        assert(res.status_code, 200)
-        return res
+        return admin.generate_token().decode()
 
     def login_super_admin(self):
         '''helper function to create and login super admin'''
@@ -94,14 +86,15 @@ class BaseTestClass(TestCase):
         super_admin.admin = True
         super_admin.super_user = True
         super_admin.save()
-        data = dict(username='super', password='super1234')
-        res = self.client.post(SIGNIN_URL, data=json.dumps(data))
-        return res
+        return super_admin.generate_token().decode()
 
-    def create_meal(self):
+    def create_meal(self, username=None):
         '''helper function to populate Meals so tests on menu and orders 
         can work'''
         meal = self.meal_model(name='Fish', price=100, description='Tasty Tilapia')
+        if username:
+            user_id = self.user_model.get(username=username).user_id
+            meal.user_id = user_id
         meal.save()
         return meal
 

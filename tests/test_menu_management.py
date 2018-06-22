@@ -26,12 +26,9 @@ class TestMenuManagement(BaseTestClass):
         self.create_meals()
         creds = dict(username='admin1', password='admin1234')
         res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        
         menu = {'meal_list': [self.meal1.meal_id, self.meal2.meal_id]}
-        
         response = self.client.post(
             MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
@@ -43,12 +40,9 @@ class TestMenuManagement(BaseTestClass):
         self.create_meals()
         creds = dict(username='admin1', password='admin1234')
         res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
-        headers = dict(Authorization='Bearer {}'.format(access_token))
-        
+        headers = dict(Authorization='Bearer {}'.format(access_token))  
         menu = {'meal_list': [self.meal1.meal_id], 'date': '12-4-2018'}
-        
         response = self.client.post(
             MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
@@ -57,12 +51,8 @@ class TestMenuManagement(BaseTestClass):
 
     def test_only_admin_can_setup_menu(self):
         '''test normal user can't create menu'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        
-
         menu = {'meal_list': ['dummy data']}
         response = self.client.post(
             MENU_URL, data=json.dumps(menu), headers=headers)
@@ -75,12 +65,9 @@ class TestMenuManagement(BaseTestClass):
         self.menu.add_meal(meal=[self.meal1, self.meal2], date=self.today)
         self.menu.save()
         menu = self.menu_model.get_all()[-1]
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
-        headers = dict(Authorization='Bearer {}'.format(access_token))
+        access_token = self.login_user()
+        headers = dict(Authorization=f'Bearer {access_token}')
         response = self.client.get(MENU_URL, headers=headers)
-        
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Menu request succesful',
                     'menu': menu.view()}
@@ -88,11 +75,8 @@ class TestMenuManagement(BaseTestClass):
 
     def test_menu_setup_with_invalid_data(self):
         '''test users cannot create menu with invalid data'''
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
-        headers = dict(Authorization='Bearer {}'.format(access_token))
-        
+        access_token = self.login_admin()
+        headers = dict(Authorization=f'Bearer {access_token}')
         self.meal1.save()
         self.meal2.save()
         # use invalid meal_list
@@ -114,9 +98,7 @@ class TestMenuManagement(BaseTestClass):
  
     def test_can_not_add_empty_menu(self):
         '''test cannot add empty menu items'''
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         data = {'meal_list':[]}
         response = self.client.post(
@@ -127,9 +109,7 @@ class TestMenuManagement(BaseTestClass):
     
     def test_returns_404_when_no_menu(self):
         '''test when no menu to return http code 404 is returned'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         response = self.client.get(MENU_URL, headers=headers)
         self.assertEqual(404, response.status_code)
@@ -141,11 +121,8 @@ class TestMenuManagement(BaseTestClass):
     
     def test_can_not_post_with_invalid_meal_ids(self):
         '''test only meals with valid meal ids can be posted in menu'''
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        
         menu = {'meal_list': [1]}
         response = self.client.post(
             MENU_URL, data=json.dumps(menu), headers=headers)

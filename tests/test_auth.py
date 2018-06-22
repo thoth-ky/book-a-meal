@@ -128,9 +128,7 @@ class TestUserManagement(BaseTestClass):
     
     def test_super_admin_functions(self):
         '''test super admin functionalities'''
-        res = self.login_super_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_super_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         # create user
         self.create_user()

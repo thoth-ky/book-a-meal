@@ -14,25 +14,23 @@ ORDERS_URL = 'api/v2/orders'
 class TestMealsManagement(BaseTestClass):
     '''Test for MEal Resource'''
     def test_get_all_meals(self):
-        '''test client can get all meals'''
+        '''test admin can get all meals'''
         # login admin user
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
+        username = self.user_model.decode_token(access_token)['username']
         headers = dict(Authorization="Bearer {}".format(access_token))
         # populate meals
-        self.create_meal()
+        meal = self.create_meal(username=username)
         response = self.client.get(MEALS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
+        meal = [meal.view()]
+        self.assertEqual(meal, json.loads(response.data)['data'])
 
     def test_get_meal_with_meal_id(self):
         '''test client can get a specific meal using meal id only'''
         # login an admin user
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
         # populate meals table
         meal = dict(name='Mukimo', price=100, description='Mt Kenya heritage')
         response = self.client.post(
@@ -43,11 +41,8 @@ class TestMealsManagement(BaseTestClass):
 
     def test_only_admin_gets_all_meals(self):
         '''GET /apiv1/meals is reserved for admin only'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
         response = self.client.get(MEALS_URL, headers=headers)
         self.assertEqual(401, response.status_code)
         expected = 'Unauthorized'
@@ -55,9 +50,7 @@ class TestMealsManagement(BaseTestClass):
 
     def test_add_a_meal(self):
         '''test admin can add meals'''
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         meal = dict(
             name='Mukimo', price=100, description='Mt Kenya heritage')
@@ -70,9 +63,7 @@ class TestMealsManagement(BaseTestClass):
     def test_only_admin_can_add_meals(self):
         '''POST  to /api/v1/meals is a route reserverd for admin, normal users
         lack priviledges'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         meal_data = {
             'name': 'Muthokoi',
@@ -85,9 +76,7 @@ class TestMealsManagement(BaseTestClass):
     def test_delete_a_meal(self):
         '''test admin can delete a meal'''
         # add a meal
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         meal = dict(
             name='Mukimo',
@@ -101,9 +90,7 @@ class TestMealsManagement(BaseTestClass):
 
     def test_only_admin_deletes_meals(self):
         '''test only user with admin rights can delete meals'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         self.create_meal()
         url = '{}/1'.format(MEALS_URL)
@@ -112,16 +99,14 @@ class TestMealsManagement(BaseTestClass):
 
     def test_edit_a_meal(self):
         '''test admin can edit a meal'''
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
+        username = self.user_model.decode_token(access_token)['username']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         meal = dict(name='Mukimo', price=100, description='Mt Kenya heritage')
-        response = self.client.post(
-            MEALS_URL, data=json.dumps(meal), headers=headers)
-        data = {'new_data': {'price': 200}}
-        
-        url = '{}/1'.format(MEALS_URL)
+        self.create_meal(username=username)
+        data = {'new_data': {'price': 200}}   
+        url = f'{MEALS_URL}/1'
+
         response = self.client.put(
             url, data=json.dumps(data), headers=headers)
         self.assertEqual(202, response.status_code)
@@ -131,13 +116,11 @@ class TestMealsManagement(BaseTestClass):
 
     def test_only_admin_can_edit_meals(self):
         '''test editing meals required admin rights'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         self.create_meal()
         new_data = {'price': 200}
-        url = '{}/1'.format(MEALS_URL)
+        url = f'{MEALS_URL}/1'
         response = self.client.put(url,data=new_data, headers=headers)
         self.assertEqual(401, response.status_code)
         expected = 'Unauthorized'
@@ -147,12 +130,8 @@ class TestMealsManagement(BaseTestClass):
     def test_get_unsaved_meal(self):
         '''test client can get a specific meal using meal id only'''
         # login an admin user
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
-        # populate meals table
         url = f'{MEALS_URL}/1'
         response = self.client.get(url, headers=headers)
         self.assertEqual(404, response.status_code)
@@ -160,12 +139,8 @@ class TestMealsManagement(BaseTestClass):
     
     def test_delete_unavailable_meal(self):
         '''Test attempt o delete unavailable meal returns 404'''
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
-        # populate meals table
         url = f'{MEALS_URL}/1'
         response = self.client.delete(url, headers=headers)
         self.assertEqual(404, response.status_code)
@@ -185,9 +160,7 @@ class TestMealsManagement(BaseTestClass):
             'name':'Fish',
             'price':10,
             'description':''}
-        res = self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_admin()
         headers = dict(Authorization=f'Bearer {access_token}')
         # invalid name
         response = self.client.post(

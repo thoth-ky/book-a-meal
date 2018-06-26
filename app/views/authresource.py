@@ -64,7 +64,7 @@ class UserManagementResource(Resource):
                 return {'message': 'User not found'}, 404
 
         else:
-            users = User.get_all()
+            users = User.query.filter_by(is_active=True).all()
         
         users = [user.view() for user in users]
         return {'message':'User Info','users': users}, 200
@@ -80,10 +80,10 @@ class UserManagementResource(Resource):
     @super_admin_required
     def delete(self, user_id):
         '''delete user'''
-        user = User.get(user_id=user_id)
+        user = User.get(user_id=user_id, is_active=True)
         if user:
-            user.delete()
-            return {'message': 'User {} has been deleted'.format(user_id)}, 200
+            user.is_active = False
+            return {'message': 'User {} has been deactivated'.format(user_id)}, 200
         return {'message': 'User {} does not exist'.format(user_id)}, 404
 
 

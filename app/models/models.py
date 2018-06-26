@@ -17,7 +17,7 @@ MENU_MEALS = DB.Table(
     DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id', ondelete='CASCADE')))
 
 
-class MealAssoc(DB.Model):
+class MealAssoc(BaseModel):
     __tablename__ = 'meals_assoc'
     meal_id = Column(Integer, ForeignKey('meal.meal_id'), primary_key=True)
     order_id = Column(Integer, ForeignKey('order.order_id'),
@@ -160,12 +160,11 @@ class Order(BaseModel):
         self.save()
 
     def remove_meal(self, meal_id):
-        meal = Meal.get(meal_id=meal_id)
+        '''remove meal from the order'''
         assoc_data = self.meal.all()
         for dish in assoc_data:
-            if dish == meal:
-                assoc_data.remove(meal)
-        self.save()
+            if dish.meal.meal_id == meal_id:
+                dish.delete()
           
     def add_meal_to_order(self, meal, quantity=1):
         '''add a meal to order'''

@@ -9,6 +9,8 @@ SIGNIN_URL = '/api/v2/auth/signin'
 MEALS_URL = '/api/v2/meals'
 MENU_URL = 'api/v2/menu'
 ORDERS_URL = 'api/v2/orders'
+REMOVE_ORDERS_MEALS = 'api/v2/orders/1'
+FAKE_ORDERS_MEALS = 'api/v2/orders/10'
 ORDERS_MGMT_URL = 'api/v2/orders/serve/1'
 ORDERS_MGMT_URL2 = 'api/v2/orders/serve/10'
 
@@ -302,7 +304,6 @@ class TestOrdersManagement(BaseTestClass):
 
         creds = dict(username='admin1', password='admin1234')
         res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
@@ -320,3 +321,29 @@ class TestOrdersManagement(BaseTestClass):
         # for an existing order using a user token
         res = self.client.patch(ORDERS_MGMT_URL, headers=user_header)
         self.assertEqual(401, res.status_code)
+    
+    def test_can_remove_meal_from_order(self):
+        self.create_meals()
+        self.user1.save()
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
+
+        creds = dict(username='admin1', password='admin1234')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        user_token = self.user1.generate_token().decode()
+        user_header = dict(Authorization=f'Bearer {user_token}')
+        meals_to_remove = {'meal_ids':[1]}
+        res = self.client.patch(REMOVE_ORDERS_MEALS, data=json.dumps(meals_to_remove), headers=user_header)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual([], json.loads(res.data)['order']['meals'])
+
+        # remove meal from a non-existent meal
+        res = self.client.patch(FAKE_ORDERS_MEALS, data=json.dumps(meals_to_remove), headers=user_header)
+        self.assertEqual(404, res.status_code)
+        self.assertEqual('You do not have such a order', json.loads(res.data)['message'])
+
+    

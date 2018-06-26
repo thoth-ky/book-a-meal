@@ -29,7 +29,7 @@ def token_required(func):
         if isinstance(payload, str):
             return {'error': payload, 'message': 'Unauthorized'}, 401
         username = payload['username']
-        user = User.get(username=username)
+        user = User.get(username=username, is_active=True)
         return func(user=user, *args, **kwargs)
     return decorated
 
@@ -42,7 +42,7 @@ def admin_token_required(func):
         if isinstance(payload, str):
             return {'error': payload, 'message': 'Unauthorized'}, 401
         user_name, admin = payload['username'], payload['admin']
-        user = User.get(username=user_name)
+        user = User.get(username=user_name, is_active=True)
         if admin is True:
             return func(user=user, *args, **kwargs)
         return {'message': 'Unauthorized'}, 401

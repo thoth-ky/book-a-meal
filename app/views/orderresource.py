@@ -118,8 +118,28 @@ class OrderResource(Resource):
                 'order': order.view()
             }, 200
         return {
-            'message': 'Sorry, you can not edit this order.',
+            'message': "Sorry you can not edit this order, either required time has elapsed or it has been served already",
             'delta': time.time()-order.time_ordered
+        }, 403
+
+    @token_required
+    def patch(self, user, order_id):
+        '''remove meal from order'''
+        meal_ids = request.get_json(force=True)['meal_ids']
+        order = Order.get(owner=user, order_id=order_id)
+        if not order:
+            return {'message': 'You do not have such a order'}, 404
+        
+        if order.editable() is True:
+            for id_ in meal_ids:
+                order.remove_meal(id_)
+            order.save()
+            return {
+                'message': 'Order modified succesfully',
+                'order': order.view()
+            }, 200
+        return {
+            'message': "Sorry you can not edit this order, either required time has elapsed or it has been served already"
         }, 403
 
 
@@ -130,7 +150,7 @@ class OrderManagement(Resource):
         '''update orders to served'''
         order = Order.get(order_id=order_id)
         if order:
-            order.time_served = time.time()
+            order.is_served = True
             order.save()
             return {"message": "Order processed and served"}, 200
         return {"message": "Order not found"}, 404
@@ -139,4 +159,5 @@ ORDER_API = Blueprint('app.views.orderresource', __name__)
 API = Api(ORDER_API)
 API.add_resource(OrderResource, '/orders', endpoint='orders')
 API.add_resource(OrderResource, '/orders/<order_id>', endpoint='order')
+API.add_resource(OrderResource, 'orders/edit/<order_id>', endpoint='edit_order')
 API.add_resource(OrderManagement, '/orders/serve/<order_id>', endpoint='completeorder')

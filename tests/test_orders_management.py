@@ -107,23 +107,18 @@ class TestOrdersManagement(BaseTestClass):
         data = {'username':self.user1.username, 'password':'password'}
         res = self.client.post(SIGNIN_URL, data=json.dumps(data))
         access_token = json.loads(res.data)['access_token']
-        # access_token = self.user1.generate_token()
-        headers = dict(Authorization=f'Bearer {access_token}')
-        
+        headers = dict(Authorization=f'Bearer {access_token}')    
         # user1 makes order
         order = self.order_model(user_id=self.user1.user_id)
         order.add_meal_to_order(meal=self.meal1)
         order.save()
-
         # user2 makes order
         order = self.order_model(user_id=self.user2.user_id)
         order.add_meal_to_order(meal=self.meal2)
         order.save()
-
         # get user1 orders 
         response = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
-
         orders = self.order_model.query.filter_by(
             user_id=self.user1.user_id).all()
         orders = [order.view() for order in orders]
@@ -207,16 +202,13 @@ class TestOrdersManagement(BaseTestClass):
         order = self.order_model(user_id=self.user1.user_id)
         order.add_meal_to_order(meal=self.meal1)
         order.save()
-
         # login owner and try accessing order
         creds = {'username':self.user1.username, 'password':'password'}
         res = self.client.post(SIGNIN_URL, data =json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.get(ORDERS_URL+'/1', headers=headers)
         self.assertEqual(res.status_code, 200)
-
         # log in user, not owner and try accessing order
         access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
@@ -236,7 +228,6 @@ class TestOrdersManagement(BaseTestClass):
         order.save()
         creds = dict(username=self.user2.username, password='password')
         res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         url = '{}/1'.format(ORDERS_URL)
@@ -245,7 +236,7 @@ class TestOrdersManagement(BaseTestClass):
             url, data =json.dumps(new_data), headers=headers)
         self.assertEqual(403, res.status_code)
         self.assertEqual(
-            'Sorry, you can not edit this order.',
+            "Sorry you can not edit this order, either required time has elapsed or it has been served already",
             json.loads(res.data)['message'])
         
     def test_place_order_with_invalid_due_date(self):
@@ -258,7 +249,6 @@ class TestOrdersManagement(BaseTestClass):
         # no meals exist in db
         access_token = self.user1.generate_token().decode()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)

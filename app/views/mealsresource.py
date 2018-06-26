@@ -30,6 +30,9 @@ class MealResource(Resource):
         price = post_data.get('price', '')
         description = post_data.get('description', '')
         err = validate_meal_data(name=name, price=price, description=description)
+        meal = Meal.get(caterer=user, name=name)
+        if meal is not None:
+            err = "You already have a similar meal"
         if err:
             return {'error': err}, 400
         meal = Meal(

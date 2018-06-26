@@ -180,3 +180,34 @@ class TestMealsManagement(BaseTestClass):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             'Invalid description', json.loads(response.data)['error'])
+
+    def test_cannot_edit_meal_with_inavlid_details(self):
+        self.meal1.save()
+        invalid_name = {'new_data': {'name': '', 'price': 45, 'description': 'blah blah'}}
+        invalid_price = {'new_data': {'name': 'Fish', 'price':'lo', 'description': 'blah blah'}}
+        invalid_descr = {'new_data': {'name':'Fish', 'price':30, 'description':''}}
+
+        access_token = self.login_admin()
+        headers = dict(Authorization=f'Bearer {access_token}')
+        url = f'{MEALS_URL}/1'
+        res = self.client.put(url,data=json.dumps(invalid_name), headers=headers)
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Invalid meal name provided', json.loads(res.data)['error'])
+        res = self.client.put(url,data=json.dumps(invalid_price), headers=headers)
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Invalid value for price', json.loads(res.data)['error'])
+        res = self.client.put(url,data=json.dumps(invalid_descr), headers=headers)
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Invalid description', json.loads(res.data)['error'])
+
+    def test_caterer_cannot_have_duplicate_meals(self):
+        access_token = self.login_admin()
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+        meal = dict(
+            name='Mukimo', price=100, description='Kamba heritage')
+        response = self.client.post(
+            MEALS_URL, data=json.dumps(meal), headers=headers)
+        response = self.client.post(
+            MEALS_URL, data=json.dumps(meal), headers=headers)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("You already have a similar meal", json.loads(response.data)['error'])

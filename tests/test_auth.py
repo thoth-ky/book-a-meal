@@ -159,7 +159,7 @@ class TestUserManagement(BaseTestClass):
         res = self.client.delete(ACC_URL, headers=headers)
         self.assertEqual(200, res.status_code)
         self.assertEqual(
-            'User 1 has been deleted', json.loads(res.data)['message'])
+            'User 1 has been deactivated', json.loads(res.data)['message'])
         
         # delete non existent user
         res = self.client.delete(ACC_URL, headers=headers)

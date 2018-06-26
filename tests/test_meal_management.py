@@ -149,8 +149,8 @@ class TestMealsManagement(BaseTestClass):
     def test_add_meal_with_missing_details(self):
         '''test can not add meal with missing details'''
         invalid_name = {
-            'name':'',
-            'price':10,
+            'name': '',
+            'price':'10',
             'description':'blah blah'}
         invalid_price = {
             'name':'Fish',

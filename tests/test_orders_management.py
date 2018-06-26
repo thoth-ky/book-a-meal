@@ -346,4 +346,16 @@ class TestOrdersManagement(BaseTestClass):
         self.assertEqual(404, res.status_code)
         self.assertEqual('You do not have such a order', json.loads(res.data)['message'])
 
-    
+    def test_cannot_edit_served_meals(self):
+        self.create_meals()
+        self.user1.save()
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(self.meal1)
+        order.is_served = True
+        order.save()
+        user_token = self.user1.generate_token().decode()
+        user_header = dict(Authorization=f'Bearer {user_token}')
+        meals_to_remove = {'meal_ids':[1]}
+        res = self.client.patch(REMOVE_ORDERS_MEALS, data=json.dumps(meals_to_remove), headers=user_header)
+        self.assertEqual(403, res.status_code)
+        self.assertEqual("Sorry you can not edit this order, either required time has elapsed or it has been served already", json.loads(res.data)['message'])

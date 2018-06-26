@@ -7,7 +7,7 @@ try:
     from app import create_app, DB
     from app.models.models import Meal, Order, Menu
     from app.models.authmodels import User
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     from .app import create_app, DB
     from .app.models.models import Meal, Order, Menu
     from .app.models.authmodels import User

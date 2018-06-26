@@ -10,10 +10,12 @@ def validate_meal_data(name=None, price=None, description=None):
     '''sanitize inputs'''
     if not isinstance(name, str) or len(name) <= 0 or name.strip()=="":
         return 'Invalid meal name provided'
+
     try:
         price = float(price)
     except:
         return 'Invalid value for price'
+
     if not isinstance(description, str) or len(description) <= 0 or description.strip()=="":
         return 'Invalid description'
 
@@ -24,11 +26,10 @@ class MealResource(Resource):
     def post(self, user):
         '''Add a meal'''
         post_data = request.get_json(force=True)
-        name = post_data.get('name')
-        price = post_data.get('price')
-        description = post_data.get('description')
-        err = validate_meal_data(
-            name=name, price=price, description=description)
+        name = post_data.get('name', '')
+        price = post_data.get('price', '')
+        description = post_data.get('description', '')
+        err = validate_meal_data(name=name, price=price, description=description)
         if err:
             return {'error': err}, 400
         meal = Meal(
@@ -71,9 +72,26 @@ class MealResource(Resource):
     @admin_token_required
     def put(self, user, meal_id):
         '''edit a specified meal id'''
-        json_data = request.get_json(force=True)
-        new_data = json_data['new_data']
+        new_data = request.get_json(force=True)['new_data']
+        name, price, description = new_data.get('name', None), new_data.get('price', None), new_data.get('description', None)
+
+        err =None
+        print(name, price, description)
+        if name or name=="":
+            if not isinstance(name, str) or len(name) <= 0 or name.strip()=="":
+                err = 'Invalid meal name provided'
+        if price or price=="":
+            try:
+                price = float(price)
+            except:
+                err = 'Invalid value for price'
+        if description or description=="":
+            if not isinstance(description, str) or len(description) <= 0 or description.strip()=="":
+                err = 'Invalid description'
+        if err:
+            return{'error': err}, 400
         meal = Meal.get(meal_id=meal_id, caterer=user)
+        new_data = {'price': price, 'name': name, 'description': description}
         meal.update(new_data)
         return {
             'message': 'Meal {} edited'.format(meal_id),

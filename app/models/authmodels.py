@@ -22,6 +22,7 @@ class User(BaseModel):
     super_user = Column(Boolean, default=False)
     orders = relationship('Order', backref='owner', lazy=True, uselist=True)
     meals = relationship('Meal', backref='caterer', lazy=True, uselist=True)
+    is_active = Column(Boolean, default=True)
 
     def __init__(self, username, email, password):
         '''necessary to avoid setting admins directly'''
@@ -29,6 +30,7 @@ class User(BaseModel):
         self.email = email
         self.password_hash = generate_password_hash(password)
         self.admin = False
+        self.is_active = True
 
     def validate_password(self, password):
         '''check if user password is correct'''

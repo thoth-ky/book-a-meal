@@ -40,7 +40,8 @@ class BaseModel(DB.Model):
         '''new_data is a dictionary containing the field as key and new value
         as value'''
         for key in new_data.keys():
-            self.put(key, new_data[key])
+            if new_data[key]:
+                self.put(key, new_data[key])
 
     def put(self, field, value):
         '''insert operation. field is the attribute name and value is the

@@ -14,7 +14,7 @@ from sqlalchemy.orm import relationship, backref
 MENU_MEALS = DB.Table(
     'menu_meals',
     DB.Column('menu_id', DB.Integer(), DB.ForeignKey('menu.id')),
-    DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id')))
+    DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id', ondelete='CASCADE')))
 
 
 class MealAssoc(DB.Model):
@@ -122,11 +122,13 @@ class Order(BaseModel):
     time_ordered = Column(Float, default=time.time())
     due_time = Column(
         DateTime, default=datetime.utcnow()+timedelta(minutes=30))
+    is_served = Column(Boolean, default=False)
     user_id = Column(
         Integer, ForeignKey('user.user_id'))
     meal = relationship(
         'MealAssoc', backref='orders', lazy='dynamic', uselist=True)
 
+    
     def __init__(self, user_id, time_ordered=None, due_time=None):
         self.user_id = user_id
         if time_ordered:
@@ -156,6 +158,14 @@ class Order(BaseModel):
         assoc_data = self.meal.filter_by(meal_id=meal_id).first()
         assoc_data.quantity = quantity
         self.save()
+
+    def remove_meal(self, meal_id):
+        meal = Meal.get(meal_id=meal_id)
+        assoc_data = self.meal.all()
+        for dish in assoc_data:
+            if dish == meal:
+                assoc_data.remove(meal)
+        self.save()
           
     def add_meal_to_order(self, meal, quantity=1):
         '''add a meal to order'''
@@ -169,6 +179,6 @@ class Order(BaseModel):
         if now is None:
             now = int(time.time())
         time_lapsed = now - self.time_ordered
-        if time_lapsed >= time_limit:
+        if time_lapsed >= time_limit or self.is_served == True:
             return False
         return True

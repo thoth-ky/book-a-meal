@@ -1,0 +1,27 @@
+{
+  "name": "book-a-meal",
+  "description": "",
+  "scripts": {
+  },
+  "env": {
+    "SECRET": {
+      "generator": "secret"
+    },
+    "APP_SETTINGS": "development",
+    "ORDER_EDITS_UPTO": "900",
+    "TOKEN_VALIDITY": "3600"
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+    "heroku-postgresql"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}

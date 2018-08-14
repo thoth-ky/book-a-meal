@@ -1,13 +1,13 @@
-'''This is where code for api resources will go'''
-from flask_restful import Resource, Api
-from flask import request, current_app
+'''Menu Blueprint'''
 from datetime import datetime
+from flask import request
+from flask_restful import Resource, Api
+
 # local imports
 from . import Blueprint
 from ..models.models import Menu, Meal
 from ..helpers.decorators import token_required, admin_token_required
 from ..helpers.email import send_updated_menu
-from threading import Thread
 
 def validate_meal_lists(meals_list):
     '''sanitize post data'''
@@ -15,6 +15,7 @@ def validate_meal_lists(meals_list):
         raise TypeError('Make meal_list a list of Meal object IDs')
 
 def validate_date_input(date):
+    '''validate that date input is valid'''
     try:
         day, month, year = date.split('-')
         return datetime(year=int(year), month=int(month), day=int(day))
@@ -24,14 +25,15 @@ def validate_date_input(date):
 
 class MenuResource(Resource):
     '''Resource for managing Menu'''
+    @staticmethod
     @admin_token_required
-    def post(self, user):
+    def post(user):
         '''handle post request to set up menu'''
-        today= datetime.utcnow()
+        today = datetime.utcnow()
         json_data = request.get_json(force=True)
         meals_list = json_data.get('meal_list', '')
         date = json_data.get('date', f'{today.day}-{today.month}-{today.year}')
-        
+
         try:
             validate_meal_lists(meals_list)
             date = validate_date_input(date)
@@ -65,17 +67,27 @@ class MenuResource(Resource):
             'message': 'Menu object can not be empty'
         }, 202
 
+    @staticmethod
     @token_required
-    def get(self, user):
+    def get(user):
         '''handle GET requests'''
+        default_meals = Meal.get(default=True)
         today = datetime.utcnow().date()
         today = datetime(year=today.year, month=today.month, day=today.day)
-        menu = Menu.get(date=today)
+        menu = Menu.get_by_date(date=today)
+        
         if not menu:
-            return {'message':'No menu found for {}'.format(today.ctime())}, 404
+            return {
+                'message':'No menu found for {}'.format(today.ctime()),
+                'menu':{
+                    'meals':[],
+                    'date': today.ctime()
+                    }
+            }, 404
         return {
             'message': 'Menu request succesful',
-            'menu': menu.view()
+            'menu': menu,
+            'user': user.admin
         }, 200
 
 

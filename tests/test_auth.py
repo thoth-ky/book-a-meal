@@ -92,7 +92,7 @@ class TestUserManagement(BaseTestClass):
             'password': 'password'}
         res = self.client.post(SIGNUP_URL, data=json.dumps(invalid_email))
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid Email. Ensure email is valid and is of form "example@mail.com"', json.loads(res.data)['ERR'])
+        self.assertEqual('Invalid Email. Ensure email is valid and is of form "example@mail.com"', json.loads(res.data)['message'])
         invalid_password = {
             'username':'user',
             'email':'user@gmail.com',
@@ -101,7 +101,7 @@ class TestUserManagement(BaseTestClass):
             SIGNUP_URL, data=json.dumps(invalid_password))
         self.assertEqual(400, res.status_code)
         self.assertEqual(
-            'Invalid password. Ensure password is a string of not less than 8 characters', json.loads(res.data)['ERR'])
+            'Invalid password. Ensure password is a string of not less than 8 characters', json.loads(res.data)['message'])
         invalid_username = {
             'username':"a",
             'email':'user@gmail.com',
@@ -111,11 +111,11 @@ class TestUserManagement(BaseTestClass):
         self.assertEqual(400, res.status_code)
         self.assertEqual(
             'Invalid username. Ensure username has more than 3 characters',
-            json.loads(res.data)['ERR'])
+            json.loads(res.data)['message'])
         incomplete_details = {'username': None, 'email': '', 'password': None}
         res = self.client.post(SIGNUP_URL, data=json.dumps(incomplete_details))
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Incomplete details', json.loads(res.data)['ERR'])
+        self.assertEqual('Incomplete details', json.loads(res.data)['message'])
 
     def test_login_with_invalid_details(self):
         '''test login with invalid details'''

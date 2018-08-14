@@ -1,9 +1,9 @@
 '''Initialize app'''
 from os import getenv
 from flask import Flask, render_template
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
-from flask_cors import CORS
 # local imports
 
 try:
@@ -40,7 +40,7 @@ def create_app(config_name):
         # register blueprints
         app.register_blueprint(HOME_API, url_prefix=URL_PREFIX)
         app.register_blueprint(AUTH_API, url_prefix=URL_PREFIX)
-        app.register_blueprint(MEAL_API, url_prefix=URL_PREFIX)
+        app.register_blueprint(MEAL_API)
         app.register_blueprint(MENU_API, url_prefix=URL_PREFIX)
         app.register_blueprint(ORDER_API, url_prefix=URL_PREFIX)
 
@@ -48,5 +48,13 @@ def create_app(config_name):
     def docs():  # pragma: no cover
         '''Render docs at rootfile'''
         return render_template('docs.html')
+    @app.errorhandler(404)
+    def handle_404():
+        '''Handle 404 error for unknown urls'''
+        return {'message': 'Oops, that path is unknown'}
 
+    @app.errorhandler(500)
+    def handle_500():
+        '''handle server error 500'''
+        return {'message': 'Sorry, a server error seems to have occured'}
     return app

@@ -7,12 +7,12 @@ from . import BaseTestClass
 SIGNUP_URL = '/api/v2/auth/signup'
 SIGNIN_URL = '/api/v2/auth/signin'
 MEALS_URL = '/api/v2/meals'
-MENU_URL = 'api/v2/menu'
-ORDERS_URL = 'api/v2/orders'
-REMOVE_ORDERS_MEALS = 'api/v2/orders/1'
-FAKE_ORDERS_MEALS = 'api/v2/orders/10'
-ORDERS_MGMT_URL = 'api/v2/orders/serve/1'
-ORDERS_MGMT_URL2 = 'api/v2/orders/serve/10'
+MENU_URL = '/api/v2/menu'
+ORDERS_URL = '/api/v2/orders'
+REMOVE_ORDERS_MEALS = '/api/v2/orders/1'
+FAKE_ORDERS_MEALS = '/api/v2/orders/10'
+ORDERS_MGMT_URL = '/api/v2/orders/serve/1'
+ORDERS_MGMT_URL2 = '/api/v2/orders/serve/10'
 
 
 class TestOrdersManagement(BaseTestClass):
@@ -67,7 +67,7 @@ class TestOrdersManagement(BaseTestClass):
         expected = 'Order modified succesfully'
         self.assertEqual(expected, json.loads(response.data)['message'])
 
-    def test_get_all_orders(self):
+    def test_admin_can_get_all_orders(self):
         '''test admin can get all orders'''
         # create an order
         self.create_meals()
@@ -91,15 +91,17 @@ class TestOrdersManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
+
         response = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
+
         admin1 = self.user_model.get(username='admin1')
         orders = {str(meal.name):meal.order_view() for meal in admin1.meals}
         expected = {
                 'message': 'All Orders',
-                'orders': orders
+                'admin_orders': orders
             }
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(expected['admin_orders'], json.loads(response.data)['admin_orders'])
 
     def test_user_only_get_own_orders(self):
         '''test only admin can access orders'''
@@ -126,7 +128,7 @@ class TestOrdersManagement(BaseTestClass):
         orders = [order.view() for order in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(expected['orders'], json.loads(response.data)['orders'])
 
     def test_passing_bad_datatype_for_meal_id(self):
         '''test if order made using wrong datatype fails'''
@@ -180,10 +182,6 @@ class TestOrdersManagement(BaseTestClass):
         expected = {'message':'Order does not exist'}
         
         self.assertEqual(expected, json.loads(res.data))
-        res = self.client.get(ORDERS_URL, headers=headers)
-        self.assertEqual(404, res.status_code)
-        expected = 'No order to display'
-        self.assertEqual(expected, json.loads(res.data)['message'])
     
     def test_editing_unavailable_order(self):
         '''test attempt to edit an unavailable order'''
@@ -254,7 +252,7 @@ class TestOrdersManagement(BaseTestClass):
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)
-        expected = 'Ensure date-time value is of the form "DD-MM-YY HH-MM"'
+        expected = 'Ensure date-time value is of the form "DD-MM-YYYY HH-MM"'
         self.assertEqual(expected, json.loads(res.data)['error'])
 
     def test_place_order_day_without_menu(self):

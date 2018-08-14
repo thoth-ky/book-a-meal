@@ -41,7 +41,7 @@ class User(BaseModel):
         user = self.make_dict()
         user['password_hash'] = '*'*10
         return user
-        
+
     def generate_token(self):
         '''generate access_token, validity is period of time before it
         becomes invalid'''
@@ -83,6 +83,3 @@ class RevokedTokens(BaseModel):
     '''Keep a record of revoked tokens'''
     id = Column(Integer, primary_key=True)
     token = Column(String, index=True)
-
-
-

@@ -1,8 +1,9 @@
-'''This is where code for api resources will go'''
-from datetime import datetime, timedelta
-from flask_restful import Resource, Api
-from flask import request
+'''Order Resource'''
 import time
+from datetime import datetime
+from flask import request
+from flask_restful import Resource, Api
+
 # local imports
 from . import Blueprint
 from ..models.models import Order, Meal, Menu
@@ -16,6 +17,7 @@ def validate_order_inputs(inputs=[]):
             raise TypeError('Inputs should be integers')
 
 def place_order(menu, order, meal_list, quantity):
+    '''Place order'''
     meals = [meal.meal_id for meal in menu.meals]
     not_found = []
     for meal_id, quant in zip(meal_list, quantity):
@@ -29,22 +31,23 @@ def place_order(menu, order, meal_list, quantity):
     return order, not_found
 
 def get_due_time(due_time):
+    '''validate due_time'''
     try:
-        date, time = due_time.split(' ')
-        day, month, year  = date.split('-')
-        hour, minute = time.split('-')
+        date, time_ = due_time.split(' ')
+        day, month, year = date.split('-')
+        hour, minute = time_.split('-')
         return datetime(day=int(day), month=int(month), year=int(year),
                         hour=int(hour), minute=int(minute))
     except Exception:
-        raise TypeError('Ensure date-time value is of the form "DD-MM-YY HH-MM"')
+        raise TypeError('Ensure date-time value is of the form "DD-MM-YYYY HH-MM"')
 
 
 class OrderResource(Resource):
     '''Resource for managing Orders'''
     @token_required
     def post(self, user):
-        '''place orders post_data = {'due_time':'2-2-2018 1500',order':[{'meal_id':1, 'quantity':2}, {},{}]}'''
-        post_data = request.get_json(force=True)   
+        '''place orders post_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id':1, 'quantity':2}, {},{}]}'''
+        post_data = request.get_json(force=True)
         try:
             order_data = post_data['order']
             due_time = post_data.get('due_time')
@@ -55,9 +58,12 @@ class OrderResource(Resource):
             due_time = get_due_time(due_time)
         except (KeyError, TypeError) as err:
             return {'error': str(err)}, 400
-        if (due_time -datetime.utcnow()).total_seconds() < 1800:
-            return {'message': 'Unable to place order','help': 'Order should\
-                    be due atleast 30 minutes from time of placing the order'
+        if (due_time - datetime.utcnow()).total_seconds() < 1800:
+            return {'message': 'Unable to place order',
+                    'help': 'Order should be due atleast 30 minutes from time of placing the order',
+                    'grace': (due_time - datetime.utcnow()).total_seconds(),
+                    'due_time': due_time.isoformat(),
+                    'now': datetime.utcnow().isoformat()
                     }, 202
         menu_date = datetime(year=due_time.year, month=due_time.month,
                              day=due_time.day)
@@ -70,9 +76,9 @@ class OrderResource(Resource):
                 'meals_not_found': not_found, 'order': order.view()}, 201
 
         return {
-            "message":"Menu for {} not available".format(menu_date.ctime())
+            "message": "Menu for {} not available".format(menu_date.ctime())
         }, 202
-     
+
     @token_required
     def get(self, user, order_id=None):
         '''get orders'''
@@ -88,16 +94,17 @@ class OrderResource(Resource):
                     'order': order.view()}, 200
             return {'message': 'Unauthorized'}, 401
         else:
+            admin_orders = None
             if user.admin is True:
-                orders =  {str(meal.name):meal.order_view() for meal in user.meals}
-            else:
-                orders = Order.query.filter_by(owner=user).all()
-                orders = [order.view() for order in orders]
-            if not orders:
-                return {'message':'No order to display'}, 404
+                admin_orders =  {str(meal.name):meal.order_view() for meal in user.meals}
+
+            orders = Order.query.filter_by(owner=user).all()
+            orders = [order.view() for order in orders]
+            
             return {
                 'message': 'All Orders',
-                'orders': orders
+                'orders': orders,
+                'admin_orders': admin_orders
             }, 200
 
     @token_required
@@ -129,7 +136,7 @@ class OrderResource(Resource):
         order = Order.get(owner=user, order_id=order_id)
         if not order:
             return {'message': 'You do not have such a order'}, 404
-        
+
         if order.editable() is True:
             for id_ in meal_ids:
                 order.remove_meal(id_)
@@ -144,7 +151,7 @@ class OrderResource(Resource):
 
 
 class OrderManagement(Resource):
-    '''Admin only functions on orders'''    
+    '''Admin only functions on orders'''
     @admin_token_required
     def patch(self, user, order_id):
         '''update orders to served'''

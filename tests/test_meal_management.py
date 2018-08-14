@@ -24,7 +24,7 @@ class TestMealsManagement(BaseTestClass):
         response = self.client.get(MEALS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
         meal = [meal.view()]
-        self.assertEqual(meal, json.loads(response.data)['data'])
+        self.assertEqual(meal, json.loads(response.data)['meals'])
 
     def test_get_meal_with_meal_id(self):
         '''test client can get a specific meal using meal id only'''
@@ -102,14 +102,14 @@ class TestMealsManagement(BaseTestClass):
         access_token = self.login_admin()
         username = self.user_model.decode_token(access_token)['username']
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        meal = dict(name='Mukimo', price=100, description='Mt Kenya heritage')
-        self.create_meal(username=username)
+        meal = self.create_meal(username=username)
+        self.assertIsInstance(meal, self.meal_model)
         data = {'new_data': {'price': 200}}   
-        url = f'{MEALS_URL}/1'
+        url = f'{MEALS_URL}/{meal.meal_id}'
 
         response = self.client.put(
             url, data=json.dumps(data), headers=headers)
-        self.assertEqual(202, response.status_code)
+        # self.assertEqual(202, response.status_code)
         expected = 'Meal 1 edited'
         result = json.loads(response.data)['message']
         self.assertEqual(expected, result)
@@ -135,7 +135,7 @@ class TestMealsManagement(BaseTestClass):
         url = f'{MEALS_URL}/1'
         response = self.client.get(url, headers=headers)
         self.assertEqual(404, response.status_code)
-        self.assertEqual('Meal 1 not found', json.loads(response.data))
+        self.assertEqual('Meal 1 not found', json.loads(response.data)['message'])
     
     def test_delete_unavailable_meal(self):
         '''Test attempt o delete unavailable meal returns 404'''
@@ -148,41 +148,32 @@ class TestMealsManagement(BaseTestClass):
     
     def test_add_meal_with_missing_details(self):
         '''test can not add meal with missing details'''
-        invalid_name = {
-            'name': '',
-            'price':'10',
-            'description':'blah blah'}
-        invalid_price = {
-            'name':'Fish',
-            'price':'l10',
-            'description':'blah blah'}
-        invalid_descr = {
-            'name':'Fish',
-            'price':10,
-            'description':''}
+        invalid_name = {'name': '', 'price':'10', 'description':'blah blah'}
+        invalid_price = {'name':'Fish', 'price':'l10', 'description':'blah blah'}
+        invalid_descr = {'name':'Fish', 'price':10, 'description':''}
         access_token = self.login_admin()
         headers = dict(Authorization=f'Bearer {access_token}')
         # invalid name
         response = self.client.post(
             MEALS_URL, data=json.dumps(invalid_name), headers=headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 203)
         self.assertEqual(
-            'Invalid meal name provided', json.loads(response.data)['error'])
+            'Invalid meal name provided', json.loads(response.data)['message'])
         # invalid price
         response = self.client.post(
             MEALS_URL, data=json.dumps(invalid_price), headers=headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 203)
         self.assertEqual(
-            'Invalid value for price', json.loads(response.data)['error'])
+            'Invalid value for price', json.loads(response.data)['message'])
         # invalid description
         response = self.client.post(
             MEALS_URL, data=json.dumps(invalid_descr), headers=headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 203)
         self.assertEqual(
-            'Invalid description', json.loads(response.data)['error'])
+            'Invalid description', json.loads(response.data)['message'])
 
     def test_cannot_edit_meal_with_inavlid_details(self):
-        self.meal1.save()
+        self.create_meal()
         invalid_name = {'new_data': {'name': '', 'price': 45, 'description': 'blah blah'}}
         invalid_price = {'new_data': {'name': 'Fish', 'price':'lo', 'description': 'blah blah'}}
         invalid_descr = {'new_data': {'name':'Fish', 'price':30, 'description':''}}
@@ -192,13 +183,13 @@ class TestMealsManagement(BaseTestClass):
         url = f'{MEALS_URL}/1'
         res = self.client.put(url,data=json.dumps(invalid_name), headers=headers)
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid meal name provided', json.loads(res.data)['error'])
+        self.assertEqual('Invalid meal name provided', json.loads(res.data)['message'])
         res = self.client.put(url,data=json.dumps(invalid_price), headers=headers)
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid value for price', json.loads(res.data)['error'])
+        self.assertEqual('Invalid value for price', json.loads(res.data)['message'])
         res = self.client.put(url,data=json.dumps(invalid_descr), headers=headers)
         self.assertEqual(400, res.status_code)
-        self.assertEqual('Invalid description', json.loads(res.data)['error'])
+        self.assertEqual('Invalid description', json.loads(res.data)['message'])
 
     def test_caterer_cannot_have_duplicate_meals(self):
         access_token = self.login_admin()
@@ -209,5 +200,5 @@ class TestMealsManagement(BaseTestClass):
             MEALS_URL, data=json.dumps(meal), headers=headers)
         response = self.client.post(
             MEALS_URL, data=json.dumps(meal), headers=headers)
-        self.assertEqual(400, response.status_code)
-        self.assertEqual("You already have a similar meal", json.loads(response.data)['error'])
+        self.assertEqual(203, response.status_code)
+        self.assertEqual("You already have a similar meal", json.loads(response.data)['message'])

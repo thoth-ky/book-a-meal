@@ -60,8 +60,7 @@ class TestMenuManagement(BaseTestClass):
 
     def test_get_menu(self):
         '''Test users can get menu'''
-        self.meal1.save()
-        self.meal2.save()
+        self.create_meals()
         self.menu.add_meal(meal=[self.meal1, self.meal2], date=self.today)
         self.menu.save()
         menu = self.menu_model.get_all()[-1]
@@ -70,8 +69,9 @@ class TestMenuManagement(BaseTestClass):
         response = self.client.get(MENU_URL, headers=headers)
         self.assertEqual(200, response.status_code)
         expected = {'message': 'Menu request succesful',
+                    'default': self.meal_model.get(default=True),
                     'menu': menu.view()}
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(expected['menu'], json.loads(response.data)['menu'])
 
     def test_menu_setup_with_invalid_data(self):
         '''test users cannot create menu with invalid data'''

@@ -36,6 +36,7 @@ class Meal(BaseModel):
     description = Column(String(250), nullable=False)
     user_id = Column(Integer, ForeignKey('user.user_id'))
     orders = relationship('MealAssoc', backref='meal', lazy=True, uselist=True)
+    default = Column(Boolean, default=False)
 
     def view(self):
         '''display meal'''
@@ -46,7 +47,7 @@ class Meal(BaseModel):
             'description': self.description,
             'caterer': self.caterer.username
         }
-        
+
     def order_view(self):
         '''display meal orders'''
         return [
@@ -68,14 +69,14 @@ class Menu(BaseModel):
         primary_key=True
         )
     date = Column(
-        DateTime, 
+        DateTime,
         default=datetime.utcnow().date(),
         unique=True)
     meals = relationship(
         'Meal',
         secondary='menu_meals',
         backref=backref('menu_meals', lazy=True, uselist=True))
-    
+
     def __init__(self, date=None):
         if date:
             self.date = date
@@ -89,7 +90,7 @@ class Menu(BaseModel):
         if not date:
             today = datetime.utcnow().date()
             date = datetime(year=today.year, month=today.month, day=today.day)
-        
+
         menu = Menu.query.filter_by(date=date).first()
         if not menu:
             menu = Menu(date=date)
@@ -97,7 +98,7 @@ class Menu(BaseModel):
             meal = [meal]
         self.put('meals', meal)
         self.save()
-    
+
     def view(self):
         '''display menu'''
         meals = []
@@ -105,13 +106,30 @@ class Menu(BaseModel):
             meals = [{'meal_id':meal.meal_id,
                       'name': meal.name,
                       'price': meal.price,
-                      'description': meal.description } for meal in self.meals]
+                      'description': meal.description,
+                      'caterer': meal.caterer.username } for meal in self.meals]
         return {
             'id': self.id,
             'date': self.date.isoformat(),
             'meals': meals
         }
 
+    @staticmethod
+    def get_by_date(date):
+        menu = Menu.get(date=date)
+        if menu:
+            menu = menu.view()
+        else:
+            menu = {
+                'date': date.isoformat(),
+                'meals': []
+            }
+        default_meals = Meal.query.filter_by(default=True).all()
+        default_meals = [meal.view() for meal in default_meals]
+        menu['meals'].extend(default_meals)
+        if menu['meals']:
+            return menu
+        return None
 
 class Order(BaseModel):
     '''class for orders'''
@@ -128,7 +146,7 @@ class Order(BaseModel):
     meal = relationship(
         'MealAssoc', backref='orders', lazy='dynamic', uselist=True)
 
-    
+
     def __init__(self, user_id, time_ordered=None, due_time=None):
         self.user_id = user_id
         if time_ordered:
@@ -143,16 +161,18 @@ class Order(BaseModel):
                         'name': a.meal.name,
                         'quantity': a.quantity,
                         'unit_price': a.meal.price,
-                        'caterer': a.meal.caterer.username
+                        'caterer': a.meal.caterer.username,
+                        'sub_total': a.quantity * a.meal.price
                        } for a in assoc_data]
         return {
             'order_id': self.order_id,
             'time_ordered': self.time_ordered,
             'due_time': self.due_time.isoformat(),
             'owner': self.owner.username,
-            'meals': order_meals
+            'meals': order_meals,
+            'total': sum([meal['sub_total'] for meal in order_meals])
         }
-   
+
     def update_order(self, meal_id, quantity):
         '''Update order details'''
         assoc_data = self.meal.filter_by(meal_id=meal_id).first()
@@ -165,7 +185,7 @@ class Order(BaseModel):
         for dish in assoc_data:
             if dish.meal.meal_id == meal_id:
                 dish.delete()
-          
+
     def add_meal_to_order(self, meal, quantity=1):
         '''add a meal to order'''
         assoc = MealAssoc(quantity=quantity)

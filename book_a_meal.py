@@ -5,10 +5,12 @@ import os
 # local imports
 try:
     from app import create_app, DB
-    from app.models.models import Meal, User, Order, Menu
-except ModuleNotFoundError:
+    from app.models.models import Meal, Order, Menu
+    from app.models.authmodels import User
+except (ModuleNotFoundError, ImportError):
     from .app import create_app, DB
-    from .app.models.models import Meal, User, Order, Menu
+    from .app.models.models import Meal, Order, Menu
+    from .app.models.authmodels import User
 
 # get configuration environment
 CONFIG = os.environ.get('APP_SETTINGS') or 'development'

@@ -22,15 +22,10 @@ class Config:
 
     TOKEN_VALIDITY = int(os.getenv('TOKEN_VALIDITY'))
 
-    # celery configs
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-
 class DevelopmentConfig(Config):
     '''Configurations for development. contains configuration settings specific to development'''
     DEBUG = True
     
-
 
 class TestingConfig(Config):
     '''Configuration settings specific to testing environment'''

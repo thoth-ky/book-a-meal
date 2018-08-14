@@ -5,28 +5,28 @@ from flask import render_template, current_app
 from flask_mail import Message
 # local imports
 from .. import MAIL
-from ..models.models import User
+from ..models.authmodels import User
 
 
-def send_email(subject, sender, recipients, html_body, app):  # pragma: no cover
+def send_email(message, app):
     '''create email and send it using a thread'''
-    msg = Message(subject, sender=sender, recipients=recipients)
-    msg.html = html_body
     with app.app_context():
-        MAIL.send(msg)
+        MAIL.send(message)
 
-def send_updated_menu(menu):  # pragma: no cover
+def send_updated_menu(menu):
     '''Send updated menu, to all clients'''
     # introduce option to opt out of notifications in User model
     users = User.get_all()
     subject = "Today's Menu Updates"
-    sender = current_app.config.get('ADMINS')[0]
-    
+    sender = current_app.config.get('ADMINS')[0]  
     for user in users:
         recipients = [user.email]
-        html_body = render_template('email/menu.html', user=user, menu=menu)  # pragma: no cover
+        html_body = render_template('email/menu.html', user=user, menu=menu)
+        # create message
+        msg = Message(subject, sender=sender, recipients=recipients)
+        msg.html = html_body
 
         t = Thread(target=send_email,
-                   args=[subject, sender, recipients, html_body],
+                   args=[msg],
                    kwargs={'app': current_app._get_current_object()})
         t.start()

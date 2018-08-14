@@ -7,10 +7,12 @@ from . import BaseTestClass
 SIGNUP_URL = '/api/v2/auth/signup'
 SIGNIN_URL = '/api/v2/auth/signin'
 MEALS_URL = '/api/v2/meals'
-MENU_URL = 'api/v2/menu'
-ORDERS_URL = 'api/v2/orders'
-ORDERS_MGMT_URL = 'api/v2/orders/serve/1'
-ORDERS_MGMT_URL2 = 'api/v2/orders/serve/10'
+MENU_URL = '/api/v2/menu'
+ORDERS_URL = '/api/v2/orders'
+REMOVE_ORDERS_MEALS = '/api/v2/orders/1'
+FAKE_ORDERS_MEALS = '/api/v2/orders/10'
+ORDERS_MGMT_URL = '/api/v2/orders/serve/1'
+ORDERS_MGMT_URL2 = '/api/v2/orders/serve/10'
 
 
 class TestOrdersManagement(BaseTestClass):
@@ -31,14 +33,15 @@ class TestOrdersManagement(BaseTestClass):
     def test_make_orders(self):
         '''tetst authenticated users can make orders'''
         self.create_meals()
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-        data = {'order':[{'meal_id':self.meal1.meal_id, 'quantity':2}]}
+        due_time = datetime.utcnow() + timedelta(minutes=40)
+        due_time = f'{due_time.day}-{due_time.month}-{due_time.year} {due_time.hour}-{due_time.minute}'
+
+        data = {'due_time': due_time, 'order':[{'meal_id':self.meal1.meal_id, 'quantity':2}]}
         response = self.client.post(
             ORDERS_URL, data=json.dumps(data), headers=headers)
-        self.assertEqual(201, response.status_code)
+        # self.assertEqual(201, response.status_code)
         expected = 'Order has been placed'
         self.assertEqual(expected, json.loads(response.data)['message'])
 
@@ -64,7 +67,7 @@ class TestOrdersManagement(BaseTestClass):
         expected = 'Order modified succesfully'
         self.assertEqual(expected, json.loads(response.data)['message'])
 
-    def test_get_all_orders(self):
+    def test_admin_can_get_all_orders(self):
         '''test admin can get all orders'''
         # create an order
         self.create_meals()
@@ -88,38 +91,36 @@ class TestOrdersManagement(BaseTestClass):
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
+
         response = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
+
         admin1 = self.user_model.get(username='admin1')
         orders = {str(meal.name):meal.order_view() for meal in admin1.meals}
         expected = {
                 'message': 'All Orders',
-                'orders': orders
+                'admin_orders': orders
             }
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(expected['admin_orders'], json.loads(response.data)['admin_orders'])
 
     def test_user_only_get_own_orders(self):
         '''test only admin can access orders'''
         self.create_meals()
-
         self.user1.save()
         self.user2.save()
-        creds = {'username':self.user1.username, 'password': 'password'}
-        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
+        data = {'username':self.user1.username, 'password':'password'}
+        res = self.client.post(SIGNIN_URL, data=json.dumps(data))
         access_token = json.loads(res.data)['access_token']
-        headers = dict(Authorization='Bearer {}'.format(access_token))
-        
+        headers = dict(Authorization=f'Bearer {access_token}')    
         # user1 makes order
         order = self.order_model(user_id=self.user1.user_id)
         order.add_meal_to_order(meal=self.meal1)
         order.save()
-
         # user2 makes order
         order = self.order_model(user_id=self.user2.user_id)
         order.add_meal_to_order(meal=self.meal2)
         order.save()
-
+        # get user1 orders 
         response = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
         orders = self.order_model.query.filter_by(
@@ -127,20 +128,18 @@ class TestOrdersManagement(BaseTestClass):
         orders = [order.view() for order in orders]
         expected = {'message': 'All Orders',
                     'orders': orders}
-        self.assertEqual(expected, json.loads(response.data))
+        self.assertEqual(expected['orders'], json.loads(response.data)['orders'])
 
     def test_passing_bad_datatype_for_meal_id(self):
         '''test if order made using wrong datatype fails'''
-        res = self.login_user()
-        bad_data = {'order':[{'meal_id': 1.2, 'quantity': 2}]}
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
+        bad_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id': 1.2, 'quantity': 2}]}
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(
-            'Menu ids should be integers', json.loads(res.data)['Error'])
+            'Inputs should be integers', json.loads(res.data)['error'])
     
     def test_ordering_with_invalid_meal_id(self):
         '''test error returned if order dne with non existent meal_id'''
@@ -159,44 +158,34 @@ class TestOrdersManagement(BaseTestClass):
 
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
-        self.assertEqual(400, res.status_code)
-        expected = 'Invalid meal id 100 provided. Meal not in Menu'
-        self.assertEqual(expected, json.loads(res.data))
+        self.assertEqual(201, res.status_code)
+        expected = [100]
+        self.assertEqual(expected, json.loads(res.data)['meals_not_found'])
     
     def test_quantity_should_be_whole_number(self):
         '''test meal quantity only valid is it is a whole number'''
-        expected = 'Quantity should be a whole number e.g 1, 2,4'
-        bad_data = {'order':[{'meal_id': 1, 'quantity': 2.5}]}
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        expected = 'Inputs should be integers'
+        bad_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id': 1, 'quantity': 2.5}]}
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)
-        self.assertEqual(expected, json.loads(res.data)['Error'])
+        self.assertEqual(expected, json.loads(res.data)['error'])
     
     def test_get_unavailable_order(self):
         '''Test attempt to access an unavailable order'''
-        res =self.login_admin()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token =self.login_admin()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.get(ORDERS_URL+'/1', headers=headers)
         self.assertEqual(404, res.status_code)
         expected = {'message':'Order does not exist'}
         
         self.assertEqual(expected, json.loads(res.data))
-        res = self.client.get(ORDERS_URL, headers=headers)
-        self.assertEqual(404, res.status_code)
-        expected = 'No order to display'
-        self.assertEqual(expected, json.loads(res.data)['message'])
     
     def test_editing_unavailable_order(self):
         '''test attempt to edit an unavailable order'''
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         data = {'new_data': {'meal_id':1, 'quantity': 2}}
         url = ORDERS_URL + '/1'
@@ -213,20 +202,15 @@ class TestOrdersManagement(BaseTestClass):
         order = self.order_model(user_id=self.user1.user_id)
         order.add_meal_to_order(meal=self.meal1)
         order.save()
-
         # login owner and try accessing order
         creds = {'username':self.user1.username, 'password':'password'}
         res = self.client.post(SIGNIN_URL, data =json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.get(ORDERS_URL+'/1', headers=headers)
         self.assertEqual(res.status_code, 200)
-
         # log in user, not owner and try accessing order
-        res = self.login_user()
-        self.assertEqual(200, res.status_code)
-        access_token = json.loads(res.data)['access_token']
+        access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.get(ORDERS_URL+'/1', headers=headers)
         self.assertEqual(res._status_code, 401)
@@ -244,7 +228,6 @@ class TestOrdersManagement(BaseTestClass):
         order.save()
         creds = dict(username=self.user2.username, password='password')
         res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
         url = '{}/1'.format(ORDERS_URL)
@@ -253,7 +236,7 @@ class TestOrdersManagement(BaseTestClass):
             url, data =json.dumps(new_data), headers=headers)
         self.assertEqual(403, res.status_code)
         self.assertEqual(
-            'Sorry, you can not edit this order.',
+            "Sorry you can not edit this order, either required time has elapsed or it has been served already",
             json.loads(res.data)['message'])
         
     def test_place_order_with_invalid_due_date(self):
@@ -266,12 +249,11 @@ class TestOrdersManagement(BaseTestClass):
         # no meals exist in db
         access_token = self.user1.generate_token().decode()
         headers = dict(Authorization='Bearer {}'.format(access_token))
-
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
         self.assertEqual(400, res.status_code)
-        expected = 'Ensure date-time value is of the form "DD-MM-YY HH-MM"'
-        self.assertEqual(expected, json.loads(res.data)['message'])
+        expected = 'Ensure date-time value is of the form "DD-MM-YYYY HH-MM"'
+        self.assertEqual(expected, json.loads(res.data)['error'])
 
     def test_place_order_day_without_menu(self):
         '''test placing order before menu is created fails'''
@@ -320,7 +302,6 @@ class TestOrdersManagement(BaseTestClass):
 
         creds = dict(username='admin1', password='admin1234')
         res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
-        self.assertEqual(200, res.status_code)
         access_token = json.loads(res.data)['access_token']
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
@@ -338,3 +319,41 @@ class TestOrdersManagement(BaseTestClass):
         # for an existing order using a user token
         res = self.client.patch(ORDERS_MGMT_URL, headers=user_header)
         self.assertEqual(401, res.status_code)
+    
+    def test_can_remove_meal_from_order(self):
+        self.create_meals()
+        self.user1.save()
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(meal=self.meal1)
+        order.save()
+
+        creds = dict(username='admin1', password='admin1234')
+        res = self.client.post(SIGNIN_URL, data=json.dumps(creds))
+        access_token = json.loads(res.data)['access_token']
+        headers = dict(Authorization='Bearer {}'.format(access_token))
+
+        user_token = self.user1.generate_token().decode()
+        user_header = dict(Authorization=f'Bearer {user_token}')
+        meals_to_remove = {'meal_ids':[1]}
+        res = self.client.patch(REMOVE_ORDERS_MEALS, data=json.dumps(meals_to_remove), headers=user_header)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual([], json.loads(res.data)['order']['meals'])
+
+        # remove meal from a non-existent meal
+        res = self.client.patch(FAKE_ORDERS_MEALS, data=json.dumps(meals_to_remove), headers=user_header)
+        self.assertEqual(404, res.status_code)
+        self.assertEqual('You do not have such a order', json.loads(res.data)['message'])
+
+    def test_cannot_edit_served_meals(self):
+        self.create_meals()
+        self.user1.save()
+        order = self.order_model(user_id=self.user1.user_id)
+        order.add_meal_to_order(self.meal1)
+        order.is_served = True
+        order.save()
+        user_token = self.user1.generate_token().decode()
+        user_header = dict(Authorization=f'Bearer {user_token}')
+        meals_to_remove = {'meal_ids':[1]}
+        res = self.client.patch(REMOVE_ORDERS_MEALS, data=json.dumps(meals_to_remove), headers=user_header)
+        self.assertEqual(403, res.status_code)
+        self.assertEqual("Sorry you can not edit this order, either required time has elapsed or it has been served already", json.loads(res.data)['message'])

@@ -52,10 +52,10 @@ class Meal(BaseModel):
         '''display meal orders'''
         return [
             {"order_id": a.order_id,
-             "time_ordered": a.orders.time_ordered,
+             "time_ordered": int(a.orders.time_ordered),
              "due_time": a.orders.due_time.isoformat(),
              "quantity": a.quantity,
-             "order_by": a.orders.owner.username
+             "order_by": a.orders.owner.username,
             } for a in self.orders]
 
 
@@ -110,7 +110,7 @@ class Menu(BaseModel):
                       'caterer': meal.caterer.username } for meal in self.meals]
         return {
             'id': self.id,
-            'date': self.date.isoformat(),
+            'date': self.date.timestamp(),
             'meals': meals
         }
 
@@ -121,7 +121,7 @@ class Menu(BaseModel):
             menu = menu.view()
         else:
             menu = {
-                'date': date.isoformat(),
+                'date': date.timestamp(),
                 'meals': []
             }
         default_meals = Meal.query.filter_by(default=True).all()
@@ -166,8 +166,8 @@ class Order(BaseModel):
                        } for a in assoc_data]
         return {
             'order_id': self.order_id,
-            'time_ordered': self.time_ordered,
-            'due_time': self.due_time.isoformat(),
+            'time_ordered': int(self.time_ordered),
+            'due_time': self.due_time.timestamp(),
             'owner': self.owner.username,
             'meals': order_meals,
             'total': sum([meal['sub_total'] for meal in order_meals])

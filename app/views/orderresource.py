@@ -13,12 +13,14 @@ from ..helpers.decorators import token_required, admin_token_required
 def validate_order_inputs(inputs=[]):
     '''sanitize post data'''
     for i in inputs:
-        if not isinstance(i, int):
+        try:
+            int(i)
+        except:
             raise TypeError('Inputs should be integers')
 
 def place_order(menu, order, meal_list, quantity):
     '''Place order'''
-    meals = [meal.meal_id for meal in menu.meals]
+    meals = [meal['meal_id'] for meal in menu['meals']]
     not_found = []
     for meal_id, quant in zip(meal_list, quantity):
         # confirm meal is in menu for due_time
@@ -41,6 +43,28 @@ def get_due_time(due_time):
     except Exception:
         raise TypeError('Ensure date-time value is of the form "DD-MM-YYYY HH-MM"')
 
+def get_daily_summaries(orders):
+    summary = {}
+    dates = set()
+    for order in orders:
+        date_ordered = datetime.fromtimestamp(order.time_ordered).strftime("%Y-%m-%d")
+        dates.add(date_ordered)
+        summary.update({date_ordered: []})
+    
+    print(summary)
+    for order in orders:
+        for date in dates:
+            date_ordered = datetime.fromtimestamp(order.time_ordered).strftime("%Y-%m-%d")
+            # print(date, '-----', date_ordered)
+            if date == date_ordered:
+                order_view = order.view()
+
+                summary[date].append({'total': order_view['total'], 'order_id': order_view['order_id']})
+    print(summary)
+    return summary
+            
+
+
 
 class OrderResource(Resource):
     '''Resource for managing Orders'''
@@ -53,11 +77,13 @@ class OrderResource(Resource):
             due_time = post_data.get('due_time')
             meal_list = [dictionary['meal_id'] for dictionary in order_data]
             quantity = [dictionary['quantity'] for dictionary in order_data]
+            
             validate_order_inputs(meal_list)
             validate_order_inputs(quantity)
             due_time = get_due_time(due_time)
         except (KeyError, TypeError) as err:
             return {'error': str(err)}, 400
+        
         if (due_time - datetime.utcnow()).total_seconds() < 1800:
             return {'message': 'Unable to place order',
                     'help': 'Order should be due atleast 30 minutes from time of placing the order',
@@ -65,15 +91,20 @@ class OrderResource(Resource):
                     'due_time': due_time.isoformat(),
                     'now': datetime.utcnow().isoformat()
                     }, 202
+        
         menu_date = datetime(year=due_time.year, month=due_time.month,
                              day=due_time.day)
         order = Order(user_id=user.user_id, due_time=due_time)
-        menu = Menu.get(date=menu_date)
+        menu = Menu.get_by_date(date=menu_date)
+
         if menu:
+            meal_list = [int(i) for i in meal_list]
+            quantity = [int(i) for i in quantity]
             order, not_found = place_order(menu, order, meal_list, quantity)
             return {
                 'message': 'Order has been placed',
-                'meals_not_found': not_found, 'order': order.view()}, 201
+                'meals_not_found': not_found,
+                'order': order.view()}, 201
 
         return {
             "message": "Menu for {} not available".format(menu_date.ctime())
@@ -95,16 +126,21 @@ class OrderResource(Resource):
             return {'message': 'Unauthorized'}, 401
         else:
             admin_orders = None
+            daily_summaries = None
             if user.admin is True:
-                admin_orders =  {str(meal.name):meal.order_view() for meal in user.meals}
+                admin_view =  Order.query.all()
+                admin_orders = [order.view() for order in admin_view]
+                daily_summaries = get_daily_summaries(admin_view)
 
             orders = Order.query.filter_by(owner=user).all()
             orders = [order.view() for order in orders]
             
+            
             return {
                 'message': 'All Orders',
                 'orders': orders,
-                'admin_orders': admin_orders
+                'admin_orders': admin_orders,
+                'daily_summaries': daily_summaries
             }, 200
 
     @token_required

@@ -32,8 +32,6 @@ class TestMenuManagement(BaseTestClass):
         response = self.client.post(
             MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
-        expected = 'Menu created successfully'
-        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_setup_menu_for_a_date(self):
         '''test admin can create menu for specific dates'''
@@ -46,8 +44,6 @@ class TestMenuManagement(BaseTestClass):
         response = self.client.post(
             MENU_URL, data=json.dumps(menu), headers=headers)
         self.assertEqual(201, response.status_code)
-        expected = 'Menu created successfully'
-        self.assertEqual(expected, json.loads(response.data)['message'])
 
     def test_only_admin_can_setup_menu(self):
         '''test normal user can't create menu'''

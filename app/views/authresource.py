@@ -49,7 +49,7 @@ class UserRegistrationResource(Resource):
         user.save()
         access_token = user.generate_token().decode()
         return {
-            'message': 'User registration succesful, and logged in. Your access token is',
+            'message': 'User registration succesful, and logged in.',
             'access_token': access_token,
             'is_admin': user.admin
             }, 201

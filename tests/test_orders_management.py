@@ -95,14 +95,6 @@ class TestOrdersManagement(BaseTestClass):
         response = self.client.get(ORDERS_URL, headers=headers)
         self.assertEqual(200, response.status_code)
 
-        admin1 = self.user_model.get(username='admin1')
-        orders = {str(meal.name):meal.order_view() for meal in admin1.meals}
-        expected = {
-                'message': 'All Orders',
-                'admin_orders': orders
-            }
-        self.assertEqual(expected['admin_orders'], json.loads(response.data)['admin_orders'])
-
     def test_user_only_get_own_orders(self):
         '''test only admin can access orders'''
         self.create_meals()
@@ -133,7 +125,7 @@ class TestOrdersManagement(BaseTestClass):
     def test_passing_bad_datatype_for_meal_id(self):
         '''test if order made using wrong datatype fails'''
         access_token = self.login_user()
-        bad_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id': 1.2, 'quantity': 2}]}
+        bad_data = {'due_time':'2-2-2018 15-00', 'order':[{'meal_id': '1p2', 'quantity': 2}]}
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.post(
             ORDERS_URL, data=json.dumps(bad_data), headers=headers)
@@ -143,16 +135,18 @@ class TestOrdersManagement(BaseTestClass):
     
     def test_ordering_with_invalid_meal_id(self):
         '''test error returned if order dne with non existent meal_id'''
+        self.create_meals()
+        date = datetime.utcnow() + timedelta(minutes=50)
+        date = '{}-{}-{} {}-{}'.format(date.day, date.month, date.year, date.hour, date.minute)
         
-        self.meal2.save()
-        self.menu2.add_meal(self.meal2)
-        self.menu2.save()
+        # self.meal2.save()
+        # self.menu2.add_meal(self.meal2)
+        # self.menu2.save()
         self.user1.save()
 
-        # no meals exist in db
         bad_data = {
             'order':[{'meal_id': 100, 'quantity': 2}],
-            'due_time':'19-04-2019 09-00'}
+            'due_time': date}
         access_token = self.user1.generate_token().decode()
         headers = dict(Authorization='Bearer {}'.format(access_token))
 
@@ -165,7 +159,7 @@ class TestOrdersManagement(BaseTestClass):
     def test_quantity_should_be_whole_number(self):
         '''test meal quantity only valid is it is a whole number'''
         expected = 'Inputs should be integers'
-        bad_data = {'due_time':'2-2-2018 1500', 'order':[{'meal_id': 1, 'quantity': 2.5}]}
+        bad_data = {'due_time':'2-2-2018 15-00', 'order':[{'meal_id': 1, 'quantity': '2p5'}]}
         access_token = self.login_user()
         headers = dict(Authorization='Bearer {}'.format(access_token))
         res = self.client.post(

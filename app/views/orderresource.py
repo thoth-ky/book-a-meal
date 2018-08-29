@@ -51,16 +51,13 @@ def get_daily_summaries(orders):
         dates.add(date_ordered)
         summary.update({date_ordered: []})
     
-    print(summary)
     for order in orders:
         for date in dates:
             date_ordered = datetime.fromtimestamp(order.time_ordered).strftime("%Y-%m-%d")
-            # print(date, '-----', date_ordered)
             if date == date_ordered:
                 order_view = order.view()
 
                 summary[date].append({'total': order_view['total'], 'order_id': order_view['order_id']})
-    print(summary)
     return summary
             
 

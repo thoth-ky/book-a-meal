@@ -23,7 +23,7 @@ class TestUserManagement(BaseTestClass):
             SIGNUP_URL, data=json.dumps(self.test_user))
         # check status code
         self.assertEqual(201, response.status_code)
-        expected = '''User registration succesful, and logged in. Your access token is'''
+        expected = 'User registration succesful, and logged in.'
         # check returned message
         result = json.loads(response.data)
         self.assertEqual(expected, result['message'])

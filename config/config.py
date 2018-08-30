@@ -8,7 +8,7 @@ class Config:
     SECRET = os.getenv('SECRET')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ORDER_EDITS_UPTO = os.getenv('ORDER_EDITS_UPTO')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DB_URI')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
     # mail server configs
     MAIL_SERVER = 'smtp.googlemail.com'

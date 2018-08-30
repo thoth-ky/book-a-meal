@@ -33,7 +33,24 @@ def create_super_user():
     err =   user.save()
     if err:
         print(err)
-    print('Super User created successfully')
+    else:
+        print('Super User created successfully')
+
+@MANAGER.command
+def make_admin():
+    '''function to make users admin'''
+    username = input('Enter username to promote to admin: ')
+    user = User.get(username=username)
+    if user:
+        user.admin = True
+        err =   user.save()
+        if err:
+            print(err)
+        else:
+            print('User {} successfully promoted to admin'.format(username))
+    else:
+        print("That user does not exist")
+
 
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ class MenuResource(Resource):
                 meals.append(meal)
             menu.add_meal(meals, date=date)
             menu.save()
-            msg = '{} successfully added to the menu for {}'.format(meal.name, menu.date.isoformat())
+            msg = '{} successfully added to the menu for {}'.format(meal.name, menu.date.strftime("%d-%m-%Y"))
             response = {
                 'message': msg,
                 'menu_id': menu.id,

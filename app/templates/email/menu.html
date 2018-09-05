@@ -1,8 +1,51 @@
-<p>Dear {{ user.username }},</p>
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+		table {
+		    border-collapse: collapse;
+		    width: 100%;
+		}
 
-<p>A new menu for {{ menu.date.ctime() }} is out. Check it out
-    <a href="{{ url_for('app.views.menuresource.menu', _external=True) }}">here</a></p>
+		th, td {
+		    text-align: left;
+		    padding: 8px;
+		}
+		th {
+			background-color: #4CAF50;
+    		color: white;
+		}
 
-<p>Yours Truly,</p>
-<p>Hot Corner Delicacies</p>
-<p><em>Food is our business, you eat!</em></p>
+		tr:nth-child(even) {background-color: #f2f2f2;}
+	</style>
+</head>
+<body>
+	<p>Dear {{ user.username }},</p>
+
+	<p>A new menu for today is out. 
+		Here are the highlights:
+		<table>
+			<thead>
+				<tr>
+					<th>Meal Name</th>
+					<th>Meal Description</th>
+					<th>Price(Kes) </th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for meal in menu %}
+					<tr>
+						<td>{{ meal.name }}</td>
+						<td>{{ meal.description }}</td>
+						<td>{{ meal.price }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	<p>Yours Truly,</p>
+	<p>Hot Corner Delicacies</p>
+	<p><em>Food is our business, you eat!</em></p>
+
+
+</body>
+</html>

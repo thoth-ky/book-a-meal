@@ -2,153 +2,27 @@
 import time
 import random
 from datetime import datetime, timedelta
-import jwt
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean, Float, DateTime
-
-
 # local imports
-from .. import DB, AUTH
+from .. import DB
+from flask import current_app
+from .base import BaseModel
+from sqlalchemy import (Table, Column, Integer, ForeignKey, String, Boolean,
+                        Float, DateTime)
+from sqlalchemy.orm import relationship, backref
 
 
 MENU_MEALS = DB.Table(
     'menu_meals',
     DB.Column('menu_id', DB.Integer(), DB.ForeignKey('menu.id')),
-    DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id')))
+    DB.Column('meal_id', DB.Integer(), DB.ForeignKey('meal.meal_id', ondelete='CASCADE')))
 
 
-class MealAssoc(DB.Model):
+class MealAssoc(BaseModel):
     __tablename__ = 'meals_assoc'
     meal_id = Column(Integer, ForeignKey('meal.meal_id'), primary_key=True)
-    order_id = Column(Integer, ForeignKey('order.order_id'), primary_key=True)
+    order_id = Column(Integer, ForeignKey('order.order_id'),
+                      primary_key=True)
     quantity = Column(Integer)
-
-
-class BaseModel(DB.Model):
-    '''Base model to be inherited  by other modells'''
-    __abstract__ = True
-
-    def make_dict(self):
-        '''serialize class'''
-        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
-        # return  self.__dict__
-
-    def save(self):
-        '''save object'''
-        try:
-            DB.session.add(self)
-            DB.session.commit()
-            return None
-        except Exception as e:
-            DB.session.rollback()
-            return {
-                'message': 'Save operation not successful',
-                'error': str(e)
-            }
-
-    def delete(self):
-        '''delete'''
-        try:
-            DB.session.delete(self)
-            DB.session.commit()
-        except Exception as e:
-            DB.session.rollback()
-            return {
-                'message': 'Delete operation failed',
-                'error': str(e)
-            }
-
-    def update(self, new_data):
-        '''new_data is a dictionary containing the field as key and new value as value'''
-        for key in new_data.keys():
-            self.put(key, new_data[key])
-
-    def put(self, field, value):
-        if isinstance(value, list):
-            old_value = getattr(self, field)
-            old_value.extend(value)
-            self.save()
-        else:
-            setattr(self, field, value)
-            self.save()
-
-    @classmethod
-    def has(cls,**kwargs):
-        obj = cls.query.filter_by(**kwargs).first()
-        if obj:
-            return True
-        return False
-
-    @classmethod
-    def get(cls, **kwargs):
-        return cls.query.filter_by(**kwargs).first()
-
-    @classmethod
-    def get_all(cls):
-        return cls.query.all()
-
-
-class User(BaseModel):
-    """General user details"""
-    __tablename__ = 'user'
-    user_id = Column(Integer, primary_key=True)
-    email = Column(String, unique=True, nullable=False)
-    username = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    admin = Column(Boolean, default=False)
-    super_user = Column(Boolean, default=False)
-    orders = relationship('Order', backref='owner', lazy=True, uselist=True)
-    meals = relationship('Meal', backref='caterer', lazy=True, uselist=True)
-
-    def __init__(self, username, email, password):
-        '''necessary to avoid setting admins directly'''
-        self.username = username
-        self.email = email
-        self.password_hash = generate_password_hash(password)
-        self.admin = False
-
-    @AUTH.verify_password
-    def validate_password(self, password):
-        '''check if user password is correct'''
-        return check_password_hash(self.password_hash, password)
-
-    def view(self):
-        user = self.make_dict()
-        user['password_hash'] = '*'*10
-        return user
-        
-    def generate_token(self, validity=1000):
-        '''generate access_token, validity is period of time before it becomes invalid'''
-        payload = {
-            'exp': datetime.utcnow() + timedelta(minutes=validity),
-            'iat': datetime.utcnow(),
-            'username': self.username,
-            'admin': self.admin,
-            'superuser': self.super_user
-        }
-        token = jwt.encode(payload,
-                            str(current_app.config.get('SECRET')),
-                            algorithm='HS256'
-                            )
-        return token
-
-    @staticmethod
-    def decode_token(token):
-        '''decode access token from authorization header'''
-        try:
-            payload = jwt.decode(
-                token, str(current_app.config.get('SECRET')), algorithms=['HS256'])
-            return payload
-        except Exception:
-            # the token is invalid, return an error string
-            raise jwt.InvalidTokenError("Invalid token. Please register or login")
-
-    @staticmethod
-    def promote_user(user):
-        user.admin = True
-        user.save()
 
 
 class Meal(BaseModel):
@@ -162,23 +36,26 @@ class Meal(BaseModel):
     description = Column(String(250), nullable=False)
     user_id = Column(Integer, ForeignKey('user.user_id'))
     orders = relationship('MealAssoc', backref='meal', lazy=True, uselist=True)
+    default = Column(Boolean, default=False)
 
     def view(self):
+        '''display meal'''
         return {
             'meal_id': self.meal_id,
             'name': self.name,
             'price': self.price,
             'description': self.description,
-            'caterer': self.caterer.username,
+            'caterer': self.caterer.username
         }
 
     def order_view(self):
+        '''display meal orders'''
         return [
             {"order_id": a.order_id,
-             "time_ordered": a.orders.time_ordered,
-             "due_time": a.orders.due_time.ctime(),
+             "time_ordered": int(a.orders.time_ordered),
+             "due_time": a.orders.due_time.isoformat(),
              "quantity": a.quantity,
-             "order_by": a.orders.owner.username
+             "order_by": a.orders.owner.username,
             } for a in self.orders]
 
 
@@ -192,27 +69,28 @@ class Menu(BaseModel):
         primary_key=True
         )
     date = Column(
-        DateTime, 
+        DateTime,
         default=datetime.utcnow().date(),
         unique=True)
     meals = relationship(
         'Meal',
         secondary='menu_meals',
         backref=backref('menu_meals', lazy=True, uselist=True))
-    
+
     def __init__(self, date=None):
         if date:
             self.date = date
         else:
             today = datetime.utcnow().date()
-            self.date = datetime(year=today.year, month=today.month, day=today.day)
+            self.date = datetime(
+                year=today.year, month=today.month, day=today.day)
 
     def add_meal(self, meal, date=None):
         '''Add meal to menu'''
         if not date:
             today = datetime.utcnow().date()
             date = datetime(year=today.year, month=today.month, day=today.day)
-        
+
         menu = Menu.query.filter_by(date=date).first()
         if not menu:
             menu = Menu(date=date)
@@ -220,17 +98,38 @@ class Menu(BaseModel):
             meal = [meal]
         self.put('meals', meal)
         self.save()
-    
+
     def view(self):
-        meals = [{'meal_id':meal.meal_id,
-                  'name': meal.name,
-                  'price': meal.price } for meal in self.meals]
+        '''display menu'''
+        meals = []
+        if self.meals:
+            meals = [{'meal_id':meal.meal_id,
+                      'name': meal.name,
+                      'price': meal.price,
+                      'description': meal.description,
+                      'caterer': meal.caterer.username } for meal in self.meals]
         return {
             'id': self.id,
-            'date': self.date.ctime(),
+            'date': self.date.timestamp(),
             'meals': meals
         }
 
+    @staticmethod
+    def get_by_date(date):
+        menu = Menu.get(date=date)
+        if menu:
+            menu = menu.view()
+        else:
+            menu = {
+                'date': date.timestamp(),
+                'meals': []
+            }
+        default_meals = Meal.query.filter_by(default=True).all()
+        default_meals = [meal.view() for meal in default_meals]
+        menu['meals'].extend(default_meals)
+        if menu['meals']:
+            return menu
+        return None
 
 class Order(BaseModel):
     '''class for orders'''
@@ -239,38 +138,53 @@ class Order(BaseModel):
 
     order_id = Column(Integer, primary_key=True)
     time_ordered = Column(Float, default=time.time())
-    due_time = Column(DateTime, default=datetime.utcnow()+timedelta(minutes=30))
-    user_id = Column(Integer, ForeignKey('user.user_id'))
-    meal = relationship('MealAssoc', backref='orders', lazy='dynamic', uselist=True)
+    due_time = Column(
+        DateTime, default=datetime.utcnow()+timedelta(minutes=30))
+    is_served = Column(Boolean, default=False)
+    user_id = Column(
+        Integer, ForeignKey('user.user_id'))
+    meal = relationship(
+        'MealAssoc', backref='orders', lazy='dynamic', uselist=True)
 
-    def view(self):
-        assoc_data = self.meal.all()
-        order_meals = [{'meal_id': a.meal.meal_id,
-                        'name': a.meal.name,
-                        'quantity': a.quantity,
-                        'unit_price': a.meal.price,
-                        'caterer': a.meal.caterer.username
-                       } for a in assoc_data]
-        return {
-            'order_id': self.order_id,
-            'time_ordered': self.time_ordered,
-            'due_time': self.due_time.ctime(),
-            'owner': self.owner.username,
-            'meals': order_meals
-        }
-    
-    def update_order(self, meal_id, quantity):
-        '''Update order details'''
-        assoc_data = self.meal.filter_by(meal_id=meal_id).first()
-        assoc_data.quantity = quantity
-        self.save()
-        
+
     def __init__(self, user_id, time_ordered=None, due_time=None):
         self.user_id = user_id
         if time_ordered:
             self.time_ordered = time_ordered
         if due_time:
             self.due_time = due_time
+
+    def view(self):
+        '''display order details'''
+        assoc_data = self.meal.all()
+        order_meals = [{'meal_id': a.meal.meal_id,
+                        'name': a.meal.name,
+                        'quantity': a.quantity,
+                        'unit_price': a.meal.price,
+                        'caterer': a.meal.caterer.username,
+                        'sub_total': a.quantity * a.meal.price
+                       } for a in assoc_data]
+        return {
+            'order_id': self.order_id,
+            'time_ordered': int(self.time_ordered),
+            'due_time': self.due_time.timestamp(),
+            'owner': self.owner.username,
+            'meals': order_meals,
+            'total': sum([meal['sub_total'] for meal in order_meals])
+        }
+
+    def update_order(self, meal_id, quantity):
+        '''Update order details'''
+        assoc_data = self.meal.filter_by(meal_id=meal_id).first()
+        assoc_data.quantity = quantity
+        self.save()
+
+    def remove_meal(self, meal_id):
+        '''remove meal from the order'''
+        assoc_data = self.meal.all()
+        for dish in assoc_data:
+            if dish.meal.meal_id == meal_id:
+                dish.delete()
 
     def add_meal_to_order(self, meal, quantity=1):
         '''add a meal to order'''
@@ -284,6 +198,6 @@ class Order(BaseModel):
         if now is None:
             now = int(time.time())
         time_lapsed = now - self.time_ordered
-        if time_lapsed >= time_limit:
+        if time_lapsed >= time_limit or self.is_served == True:
             return False
         return True
